@@ -7,9 +7,9 @@ urlpatterns = [
     url(r'^api/user/login$', 'backend.views.log_in'),
     url(r'^api/store/create$', 'backend.views.create_store'),
     url(r'^api/inventory/create$', 'backend.views.create_inventory'),
-    url(r'^api/inventory/add$', 'backend.views.add_inventory'),
-    url(r'^api/item/create$', 'backend.views.add_inventory'),
-]
+    url(r'^api/inventory/add$', 'backend.views.create_item'),
+    url(r'^api/item/create$', 'backend.views.create_item'),
+    url(r'^api/item/edit$', 'backend.views.edit_item'),
 ]
 
 

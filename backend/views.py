@@ -7,7 +7,8 @@ from django.contrib.auth import authenticate, login
 from django import forms
 from django.core.exceptions import ValidationError
 
-
+    # Use this code if the POST request sends parameters
+    # post = request.POST
     # Use this code if the POST request sends a JSON instead of parameters
     # post = QueryDict('', mutable=True)
     # post.update(json.loads(request.body))
@@ -26,7 +27,8 @@ def home(request):
 def create_user(request):
     assert request.method == 'POST', 'api/user/create requires a POST request'
     errors = []
-    post = request.POST
+    post = QueryDict('', mutable=True)
+    post.update(json.loads(request.body))
     username = post.get('username', '')
     if not username:
         errors.append('username must be non-empty')
@@ -75,9 +77,12 @@ def create_user(request):
 
 
 def log_in(request):
+    # Log in should be a POST request because it requires sending a username and
+    # and password through the body and not the url
     assert request.method == 'POST', 'api/user/login requires a POST request'
     errors = []
-    post = request.POST
+    post = QueryDict('', mutable=True)
+    post.update(json.loads(request.body))
     username = post.get('username', '')
     if not username:
         errors.append('username must be non-empty')
@@ -112,12 +117,13 @@ def log_in(request):
 def create_store(request):
     assert request.method == 'POST', 'api/create/inventory requires a POST request'
     errors = []
-    post = request.POST
+    post = QueryDict('', mutable=True)
+    post.update(json.loads(request.body))
     name = post.get('userID', '')
     try:
         userID = int(userID)
     except ValueError:
-        userID = ''
+        userID = None
         errors.append('userID must be an integer')
     if not userID:
         errors.append('userID must be non-empty')
@@ -164,12 +170,13 @@ def create_store(request):
 def create_inventory(request):
     assert request.method == 'POST', 'api/create/inventory requires a POST request'
     errors = []
-    post = request.POST
+    post = QueryDict('', mutable=True)
+    post.update(json.loads(request.body))
     storeID = post.get('storeID', '')
     try:
         storeID = int(storeID)
     except ValueError:
-        storeID = ''
+        storeID = None
         errors.append('storeID must be an integer')
     if not storeID:
         errors.append('storeID must be non-empty')
@@ -199,16 +206,16 @@ def create_inventory(request):
     return HttpResponse(json.dumps(reponse), content_type='application/json')
 
 
-def add_inventory(request):
+def create_item(request):
     assert request.method == 'POST', 'api/create/inventory requires a POST request'
     errors = []
-    post = request.POST
+    post = QueryDict('', mutable=True)
+    post.update(json.loads(request.body))
     inventoryID = post.get('inventoryID', '')
-
     try:
         inventoryID = int(inventoryID)
     except ValueError:
-        inventoryID = ''
+        inventoryID = None
         errors.append('inventoryID must be an integer')
     if not inventoryID:
         errors.append('inventoryID must be non-empty')
@@ -226,9 +233,9 @@ def add_inventory(request):
     try:
         price = float(price)
     except ValueError:
-        price = ''
+        price = None
         errors.append('price must be a number')
-    if (price != '') and price < 0.0:
+    if (price is not None) and price < 0.0:
         errors.append('price must be a positive number')
     picture = post.get('picture', '')
     if len(errors) > 0:
@@ -242,7 +249,7 @@ def add_inventory(request):
                         description=description, price=price, picture=picture)
         new_item.full_clean()
         new_item.save()
-    except Exception as e:
+    except ValidationError as e:
         errors.append(e)
         reponse = {
                    'status': 400,
@@ -253,3 +260,68 @@ def add_inventory(request):
                'status': 200,
               }
     return HttpResponse(json.dumps(reponse), content_type='application/json')
+
+def add_inventory(request):
+    return create_item(request)
+
+def edit_item(request):
+    assert request.method == 'POST', 'api/create/inventory requires a POST request'
+    errors = []
+    post = QueryDict('', mutable=True)
+    post.update(json.loads(request.body))
+    itemID = post.get('inventoryID', '')
+    try:
+        itemID = int(itemID)
+    except ValueError:
+        itemID = None
+        errors.append('itemID must be an integer')
+    if not itemID:
+        errors.append('itemID must be non-empty')
+    elif not Item.objects.filter(id=itemID).exists():
+        errors.append('invalid itemID')
+    else:
+        current_item = Item.objects.filter(id=itemID)[0]
+
+    name = post.get('name', '')
+    description = post.get('description', '')
+    price = post.get('price', '')
+    if price:
+        try:
+            price = float(price)
+            if price < 0.0:
+                errors.append('price must be a positive number')
+        except ValueError:
+            price = None
+            errors.append('price must be a number')
+    picture = post.get('picture', '')
+    if len(errors) > 0:
+        reponse = {
+                   'status': 400,
+                   'errors': errors,
+                  }
+        return HttpResponse(json.dumps(reponse), content_type='application/json')
+    try:
+        if name:
+            current_item.name = name
+        if description:
+            current_item.description = description
+        if picture:
+            current_item.picture = picture
+        if price:
+            current_item.price = price
+        current_item.full_clean()
+        current_item.save()
+    except ValidationError as e:
+        errors.append(e)
+        reponse = {
+                   'status': 400,
+                   'errors': errors,
+                  }
+        return HttpResponse(json.dumps(reponse), content_type='application/json')
+    reponse = {
+               'status': 200,
+              }
+    return HttpResponse(json.dumps(reponse), content_type='application/json')
+
+def edit_inventory(request):
+    return edit_item(request)
