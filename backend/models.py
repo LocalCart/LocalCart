@@ -27,6 +27,7 @@ class Store(models.Model):
     # Add hours
 
 
+
 class Inventory(models.Model):
 
     storeID = models.ForeignKey(Store)
@@ -47,7 +48,6 @@ class Item(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
 
 
-
 class Reviews(models.Model):
 
     userID = models.ForeignKey(User)
@@ -58,4 +58,19 @@ class Reviews(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
+
+
+class List(models.Model):
+
+    userID = models.ForeignKey(User)
+    name = models.CharField(max_length=64)
+
+
+
+class ListItem(models.Model):
+
+    listID = models.ForeignKey(List)
+    itemID = models.ForeignKey(Item, null=True)
+    item_name = models.CharField(max_length=64)
+    list_position = models.PositiveSmallIntegerField(unique=True)
 

@@ -244,6 +244,13 @@ def create_item(request):
                    'errors': errors,
                   }
         return HttpResponse(json.dumps(reponse), content_type='application/json')
+    if Item.objects.filter(name=name, inventoryID=inventoryID).exists():
+        errors.append('items in inventory must have unique names')
+        reponse = {
+                   'status': 400,
+                   'errors': errors,
+                  }
+        return HttpResponse(json.dumps(reponse), content_type='application/json')        
     try:
         new_item = Item(storeID=storeID, inventoryID=inventoryID, name=name,
                         description=description, price=price, picture=picture)
@@ -281,7 +288,6 @@ def edit_item(request):
         errors.append('invalid itemID')
     else:
         current_item = Item.objects.filter(id=itemID)[0]
-
     name = post.get('name', '')
     description = post.get('description', '')
     price = post.get('price', '')
@@ -300,6 +306,14 @@ def edit_item(request):
                    'errors': errors,
                   }
         return HttpResponse(json.dumps(reponse), content_type='application/json')
+    not_unique = Item.objects.filter(name=name, inventoryID=current_item.inventoryID).exists()
+    if (current_item.name != name) and not_unique:
+        errors.append('items in inventory must have unique names')
+        reponse = {
+                   'status': 400,
+                   'errors': errors,
+                  }
+        return HttpResponse(json.dumps(reponse), content_type='application/json')   
     try:
         if name:
             current_item.name = name
