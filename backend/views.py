@@ -20,7 +20,7 @@ def empty_db(request):
                   Store, 
                   Inventory, 
                   Item, 
-                  Reviews
+                  Reviews,
                   CartList,
                   ListItem,
                   ]
