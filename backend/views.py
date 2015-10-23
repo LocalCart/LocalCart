@@ -410,7 +410,7 @@ def search_items(request):
         return HttpResponse(json.dumps(reponse), content_type='application/json')
     items = Item.objects.filter(name__icontains=query, store__address_zip=address_zip)
     if not items.exists():
-        errors.append('items in inventory must have unique names')
+        errors.append('empty query')
         reponse = {
                    'status': 400,
                    'errors': errors,
