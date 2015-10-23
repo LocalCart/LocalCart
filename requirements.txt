@@ -1,0 +1,13 @@
+Django==1.8.4
+dj-database-url==0.3.0
+dj-static==0.0.6
+django-cors-headers==1.1.0
+django-crispy-forms==1.4.0
+django-durationfield==0.5.1
+django-toolbelt==0.0.1
+django-toolkit==0.3.3
+gunicorn==19.3.0
+python-dateutil==2.4.2
+virtualenv==1.11.4
+wsgiref==0.1.2
+coverage==4.0.1
