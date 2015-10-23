@@ -10,7 +10,7 @@ urlpatterns = [
     url(r'^api/inventory/add$', 'backend.views.create_item'),
     url(r'^api/item/create$', 'backend.views.create_item'),
     url(r'^api/item/edit$', 'backend.views.edit_item'),
-    url(r'^api/search/items$', 'backend.views.edit_item'),
+    url(r'^api/search/items$', 'backend.views.search_items'),
 ]
 
 
