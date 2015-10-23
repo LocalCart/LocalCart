@@ -360,6 +360,7 @@ def edit_inventory(request):
 def getZip(address):
     return address.split('\n')[4]
 
+# Basic version of search checks if item name contains
 def search_items(request):
     assert request.method == 'GET', 'search requires a GET request'
     errors = []
