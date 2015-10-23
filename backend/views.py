@@ -57,8 +57,7 @@ def create_user(request):
                         first_name = first_name, last_name = last_name)
         new_user.full_clean()
         new_user.save()
-        userID = new_user.id
-        new_user_info = UserInfo(userID=userID, user_type=user_type, picture=picture)
+        new_user_info = UserInfo(user=new_user, user_type=user_type, picture=picture)
         new_user_info.full_clean()
         new_user_info.save()
     except ValidationError as e:
@@ -122,16 +121,25 @@ def create_store(request):
     name = post.get('userID', '')
     try:
         userID = int(userID)
+        user = User.objects.get(id=userID)
     except ValueError:
         userID = None
         errors.append('userID must be an integer')
     if not userID:
         errors.append('userID must be non-empty')
     name = post.get('name', '')
-    address_street = post.get('address_street', '')
-    address_city = post.get('address_city', '')
-    address_state = post.get('address_state', '')
-    address_zip = post.get('address_zip', '')
+    # address_street = post.get('address_street', '')
+    # address_city = post.get('address_city', '')
+    # address_state = post.get('address_state', '')
+    # address_zip = post.get('address_zip', '')
+
+    # If using the address format
+    address = post.get('address', '').split('\n')
+    address_street = address[0]
+    address_city = address[1]
+    address_state = address[2]
+    address_zip = address[3]
+
     phone_number = post.get('phone_number', '')
     description = post.get('description', '')
     picture = post.get('picture', '')
@@ -152,7 +160,10 @@ def create_store(request):
                   }
         return HttpResponse(json.dumps(reponse), content_type='application/json')
     try:
-        new_store = Store(storeID=storeID)
+        new_store = Store(user = user, name=name, description=description, picture=picture,
+                          address_street=address_street, address_city=address_city,
+                          address_state = address_state, address_zip = address_zip,
+                          phone_number=phone_number)
         new_store.full_clean()
         new_store.save()
     except ValidationError as e:
@@ -182,8 +193,10 @@ def create_inventory(request):
         errors.append('storeID must be non-empty')
     elif not Store.objects.filter(id=storeID).exists():
         errors.append('invalid storeID')
-    elif Inventory.objects.filter(storeID=storeID).exists():
+    elif Inventory.objects.filter(store_id=storeID).exists():
         errors.append('store already has an inventory')
+    else:
+        store = Store.objects.get(id=storeID)
     if len(errors) > 0:
         reponse = {
                    'status': 400,
@@ -191,7 +204,7 @@ def create_inventory(request):
                   }
         return HttpResponse(json.dumps(reponse), content_type='application/json')
     try:
-        new_inventory = Inventory(storeID=storeID)
+        new_inventory = Inventory(store=store)
         new_inventory.save()
     except ValidationError as e:
         errors.append(e)
@@ -216,15 +229,18 @@ def create_item(request):
         inventoryID = int(inventoryID)
     except ValueError:
         inventoryID = None
+        inventory = None
         errors.append('inventoryID must be an integer')
     if not inventoryID:
         errors.append('inventoryID must be non-empty')
-        storeID = ''
+        store = None
     elif not Inventory.objects.filter(id=inventoryID).exists():
         errors.append('invalid inventoryID')
-        storeID = ''
+        inventory = None
+        store = None
     else:
-        storeID = Inventory.objects.filter(id=inventoryID)[0].storeID
+        inventory = Inventory.objects.get(id=inventoryID)
+        store = inventory.store
     name = post.get('name', '')
     if not name:
         errors.append('name must be non-empty')
@@ -244,7 +260,7 @@ def create_item(request):
                    'errors': errors,
                   }
         return HttpResponse(json.dumps(reponse), content_type='application/json')
-    if Item.objects.filter(name=name, inventoryID=inventoryID).exists():
+    if Item.objects.filter(name=name, inventory_id=inventoryID).exists():
         errors.append('items in inventory must have unique names')
         reponse = {
                    'status': 400,
@@ -252,7 +268,7 @@ def create_item(request):
                   }
         return HttpResponse(json.dumps(reponse), content_type='application/json')        
     try:
-        new_item = Item(storeID=storeID, inventoryID=inventoryID, name=name,
+        new_item = Item(store=store, inventory=inventory, name=name,
                         description=description, price=price, picture=picture)
         new_item.full_clean()
         new_item.save()
@@ -287,7 +303,7 @@ def edit_item(request):
     elif not Item.objects.filter(id=itemID).exists():
         errors.append('invalid itemID')
     else:
-        current_item = Item.objects.filter(id=itemID)[0]
+        current_item = Item.objects.get(id=itemID)
     name = post.get('name', '')
     description = post.get('description', '')
     price = post.get('price', '')
@@ -306,7 +322,7 @@ def edit_item(request):
                    'errors': errors,
                   }
         return HttpResponse(json.dumps(reponse), content_type='application/json')
-    not_unique = Item.objects.filter(name=name, inventoryID=current_item.inventoryID).exists()
+    not_unique = Item.objects.filter(name=name, inventory_id=current_item.inventory.id).exists()
     if (current_item.name != name) and not_unique:
         errors.append('items in inventory must have unique names')
         reponse = {
@@ -339,3 +355,59 @@ def edit_item(request):
 
 def edit_inventory(request):
     return edit_item(request)
+
+
+def getZip(address):
+    return address.split('\n')[4]
+
+def search_items(request):
+    assert request.method == 'GET', 'search requires a GET request'
+    errors = []
+    get = request.GET
+    query = get.get('query', '')
+    if not query:
+        errors.append('query must be non-empty')
+    location = get.get('query', '')
+    if len(locations.split('\n')) != 5:
+        errors.append('location incorrectly formatted')
+        address_zip = '!!!!!'
+    else:
+        address_zip = getZip(location)
+    if len(address_zip) != 5:
+        errors.append('zip code must be 5 characters')
+    if len(errors) > 0:
+        reponse = {
+                   'status': 400,
+                   'errors': errors,
+                  }
+        return HttpResponse(json.dumps(reponse), content_type='application/json')
+    items = Item.objects.filter(name__icontains=query, store__address_zip=address_zip)
+    if not items.exists():
+        errors.append('items in inventory must have unique names')
+        reponse = {
+                   'status': 400,
+                   'errors': errors,
+                  }
+        return HttpResponse(json.dumps(reponse), content_type='application/json')
+    retrieve = ['store',
+                'inventory',
+                'name',
+                'description',
+                'price',
+                'picture',
+                'store__user',
+                'store__name',
+                'store__address_street',
+                'store__address_city',
+                'store__address_state',
+                'store__address_zip',
+                'store__phone_number',
+                'store__description',
+                'store__picture',
+                ]  
+    json_items = [i for i in items.values(retrieve)]
+    reponse = {
+               'status': 200,
+               'errors': json_items,
+              }
+    return HttpResponse(json.dumps(reponse), content_type='application/json')
