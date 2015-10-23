@@ -13,6 +13,32 @@ from django.core.exceptions import ValidationError
     # post = QueryDict('', mutable=True)
     # post.update(json.loads(request.body))
 
+def empty_db(request):
+    try:
+        models = [User, 
+                  UserInfo, 
+                  Store, 
+                  Inventory, 
+                  Item, 
+                  Reviews
+                  CartList,
+                  ListItem,
+                  ]
+        for m in models:
+            m.objects.all().delete()
+    except Exception as e:
+        errors.append(e)
+        reponse = {
+                   'status': 400,
+                   'errors': errors,
+                  }
+        return HttpResponse(json.dumps(reponse), content_type='application/json')
+    reponse = {
+               'status': 200,
+              }
+    return HttpResponse(json.dumps(reponse), content_type='application/json')
+
+
 def check_empty(fields, post, errors):
     for field in fields:
         field = post.get('field', '')
