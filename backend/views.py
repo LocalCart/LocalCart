@@ -435,6 +435,6 @@ def search_items(request):
     json_items = [i for i in items.values(retrieve)]
     reponse = {
                'status': 200,
-               'errors': json_items,
+               'items': json_items,
               }
     return HttpResponse(json.dumps(reponse), content_type='application/json')
