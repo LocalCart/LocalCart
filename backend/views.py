@@ -394,7 +394,7 @@ def search_items(request):
     query = get.get('query', '')
     if not query:
         errors.append('query must be non-empty')
-    location = get.get('query', '')
+    location = get.get('location', '')
     if len(location.split('\n')) != 5:
         errors.append('location incorrectly formatted')
         address_zip = '!!!!!'
