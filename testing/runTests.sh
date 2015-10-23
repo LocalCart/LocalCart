@@ -18,19 +18,19 @@ function help {
 thisdir=`dirname $0`
 thisdir=`cd $thisdir && pwd`
 
-# # Check that TEST_SERVER is specified
-# if test -z ${TEST_SERVER:-} ;then
-#     echo "ERROR: You must specify TEST_SERVER"
-#     help
-#     exit 1
-# fi
-
-# Check that SMILE_SPACE is specified
+# Check that TEST_SERVER is specified
 if test -z ${TEST_SERVER:-} ;then
-    echo "ERROR: You must specify SMILE_SPACE"
+    echo "ERROR: You must specify TEST_SERVER"
     help
     exit 1
 fi
+
+# # Check that SMILE_SPACE is specified
+# if test -z ${TEST_SERVER:-} ;then
+#     echo "ERROR: You must specify SMILE_SPACE"
+#     help
+#     exit 1
+# fi
 
 # We have to be in the parent directory
 cd $thisdir/..

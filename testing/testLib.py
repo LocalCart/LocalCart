@@ -92,9 +92,11 @@ class RestTestCase(unittest.TestCase):
 
     def setUp(self):
         self.conn = httplib.HTTPConnection(RestTestCase.serverToTest, timeout=1)
+        #print("setUpsetUpsetUpsetUpsetUpsetUpsetUpsetUpsetUpsetUpsetUp")
 
     def tearDown(self):
         self.conn.close ()
+        #print("tearDowntearDowntearDowntearDowntearDowntearDowntearDown")
 
 
 ## NOW SOME METHODS THAT ARE USEFUL FOR TESTING SMILES
@@ -108,6 +110,8 @@ class CartTestCase(RestTestCase):
         # Run first the setUp from the superclass
         RestTestCase.setUp(self)
 
+    def tearDown(self):
+        self.conn.close ()
     # def getSmiles(self,
     #               count=None,
     #               order_by=None):
@@ -136,4 +140,4 @@ class CartTestCase(RestTestCase):
         """
         Check that the response is not an error response
         """
-        self.assertEquals(1, respData['status'], msg)
+        self.assertEquals(200, respData['status'], msg)
