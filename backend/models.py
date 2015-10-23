@@ -69,7 +69,7 @@ class CartList(models.Model):
 
 class ListItem(models.Model):
 
-    cartlist = models.ForeignKey(List)
+    cartlist = models.ForeignKey(CartList)
     item = models.ForeignKey(Item, null=True)
     item_name = models.CharField(max_length=64)
     list_position = models.PositiveSmallIntegerField(unique=True)
