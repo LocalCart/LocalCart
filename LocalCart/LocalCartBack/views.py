@@ -51,7 +51,7 @@ def check_empty(fields, post, errors):
 
 @csrf_exempt
 def home(request):
-    return render(request, 'static/landing.html', context={})
+    return render(request, '../../staticpages/index.html', context={})
 
 @csrf_exempt
 def create_user(request):
