@@ -144,7 +144,117 @@ class TestCarts(testLib.CartTestCase):
 
 
 
-        
+    def testCreateItem(self):
+        respCreate = self.makeRequest("/api/user/create", method="POST",
+                                    data = { 'username' : 'Tom',
+                                             'password' : '123456',
+                                             'user_type' : 'customer',
+                                             'email' : 'tommeng@berkeley.edu'
+                                             })
+
+        self.assertSuccessResponse(respCreate)
+
+        respCreateStore = self.makeRequest("/api/store/create", method="POST",
+                                    data = { 'username' : 'Tom',
+                                             'name' : 'Tom store',
+                                             'address' : '1234 12th st.\nBerkeley\nCA\n94704',
+                                             'phone_number' : '(510)642-6000'
+                                             })
+        self.assertSuccessResponse(respCreateStore)
+
+        respCreateInventory = self.makeRequest("/api/inventory/create", method="POST",
+                                    data = { 'storeID' : respCreateStore['storeID']
+                                             })
+        self.assertSuccessResponse(respCreateInventory)
+
+        respCreateItem = self.makeRequest("/api/inventory/add", method="POST",
+                                    data = { 'inventoryID' : respCreateInventory['inventoryID'],
+                                             'name' : 'apple',
+                                             'description': 'Fuji',
+                                             'picture': 'the picture',
+                                             'price': '2.00'
+                                             })
+        self.assertSuccessResponse(respCreateItem)
+
+    def testEditItem(self):
+        respCreate = self.makeRequest("/api/user/create", method="POST",
+                                    data = { 'username' : 'Tom',
+                                             'password' : '123456',
+                                             'user_type' : 'customer',
+                                             'email' : 'tommeng@berkeley.edu'
+                                             })
+
+        self.assertSuccessResponse(respCreate)
+
+        respCreateStore = self.makeRequest("/api/store/create", method="POST",
+                                    data = { 'username' : 'Tom',
+                                             'name' : 'Tom store',
+                                             'address' : '1234 12th st.\nBerkeley\nCA\n94704',
+                                             'phone_number' : '(510)642-6000'
+                                             })
+        self.assertSuccessResponse(respCreateStore)
+
+        respCreateInventory = self.makeRequest("/api/inventory/create", method="POST",
+                                    data = { 'storeID' : respCreateStore['storeID']
+                                             })
+        self.assertSuccessResponse(respCreateInventory)
+
+        respCreateItem = self.makeRequest("/api/inventory/add", method="POST",
+                                    data = { 'inventoryID' : respCreateInventory['inventoryID'],
+                                             'name' : 'apple',
+                                             'description': 'Fuji',
+                                             'picture': 'the picture',
+                                             'price': '2.00'
+                                             })
+        self.assertSuccessResponse(respCreateItem)
+
+        respEditItem = self.makeRequest("/api/item/edit", method="POST",
+                                    data = { 'itemID' : respCreateItem['itemID'],
+                                             'name' : 'apple',
+                                             'description': 'Fuji',
+                                             'picture': 'the picture',
+                                             'price': '3.00'
+                                             })
+        self.assertSuccessResponse(respEditItem)    
+
+    def testSearchItem(self):
+        respCreate = self.makeRequest("/api/user/create", method="POST",
+                                    data = { 'username' : 'Tom',
+                                             'password' : '123456',
+                                             'user_type' : 'customer',
+                                             'email' : 'tommeng@berkeley.edu'
+                                             })
+
+        self.assertSuccessResponse(respCreate)
+
+        respCreateStore = self.makeRequest("/api/store/create", method="POST",
+                                    data = { 'username' : 'Tom',
+                                             'name' : 'Tom store',
+                                             'address' : '1234 12th st.\nBerkeley\nCA\n94704',
+                                             'phone_number' : '(510)642-6000'
+                                             })
+        self.assertSuccessResponse(respCreateStore)
+
+        respCreateInventory = self.makeRequest("/api/inventory/create", method="POST",
+                                    data = { 'storeID' : respCreateStore['storeID']
+                                             })
+        self.assertSuccessResponse(respCreateInventory)
+
+        respCreateItem = self.makeRequest("/api/inventory/add", method="POST",
+                                    data = { 'inventoryID' : respCreateInventory['inventoryID'],
+                                             'name' : 'apple',
+                                             'description': 'Fuji',
+                                             'picture': 'the picture',
+                                             'price': '2.00'
+                                             })
+        self.assertSuccessResponse(respCreateItem)
+
+        respSearchItem = self.makeRequest("/api/search/items", method="GET",
+                                    data = { 'query' : 'apple',
+                                             'location' : 'a\n1234 12th st.\nBerkeley\nCA\n94704',
+                                             })    
+
+        self.assertSuccessResponse(respSearchItem)                                      
     #     # Now read the smiles
     #     respGet = self.getSmiles(count='all')
     #     self.assertSuccessResponse(respGet)

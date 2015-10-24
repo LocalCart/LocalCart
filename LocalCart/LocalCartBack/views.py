@@ -272,9 +272,10 @@ def create_item(request):
         storeID = ''
     elif not Inventory.objects.filter(id=inventoryID).exists():
         errors.append('invalid inventoryID')
-        storeID = ''
+        inventoryID = ''
     else:
-        storeID = Inventory.objects.filter(id=inventoryID)[0].storeID
+        inventory = Inventory.objects.filter(id=inventoryID)[0]
+        store = inventory.store
     name = post.get('name', '')
     if not name:
         errors.append('name must be non-empty')
@@ -294,7 +295,7 @@ def create_item(request):
                    'errors': errors,
                   }
         return HttpResponse(json.dumps(reponse), content_type='application/json')
-    if Item.objects.filter(name=name, inventoryID=inventoryID).exists():
+    if Item.objects.filter(name=name, inventory_id=inventoryID).exists():
         errors.append('items in inventory must have unique names')
         reponse = {
                    'status': 400,
@@ -302,7 +303,7 @@ def create_item(request):
                   }
         return HttpResponse(json.dumps(reponse), content_type='application/json')        
     try:
-        new_item = Item(storeID=storeID, inventoryID=inventoryID, name=name,
+        new_item = Item(store=store, inventory=inventory, name=name,
                         description=description, price=price, picture=picture)
         new_item.full_clean()
         new_item.save()
@@ -315,6 +316,7 @@ def create_item(request):
         return HttpResponse(json.dumps(reponse), content_type='application/json')
     reponse = {
                'status': 200,
+               'itemID': new_item.id
               }
     return HttpResponse(json.dumps(reponse), content_type='application/json')
 @csrf_exempt
@@ -322,11 +324,11 @@ def add_inventory(request):
     return create_item(request)
 @csrf_exempt
 def edit_item(request):
-    assert request.method == 'POST', 'api/create/inventory requires a POST request'
+    assert request.method == 'POST', ' requires a POST request'
     errors = []
     post = QueryDict('', mutable=True)
     post.update(json.loads(request.body))
-    itemID = post.get('inventoryID', '')
+    itemID = post.get('itemID', '')
     try:
         itemID = int(itemID)
     except ValueError:
@@ -356,7 +358,7 @@ def edit_item(request):
                    'errors': errors,
                   }
         return HttpResponse(json.dumps(reponse), content_type='application/json')
-    not_unique = Item.objects.filter(name=name, inventoryID=current_item.inventoryID).exists()
+    not_unique = Item.objects.filter(name=name, inventory=current_item.inventory).exists()
     if (current_item.name != name) and not_unique:
         errors.append('items in inventory must have unique names')
         reponse = {
@@ -390,4 +392,66 @@ def edit_item(request):
 def edit_inventory(request):
     return edit_item(request)
 
+def getZip(address):
+    return address.split('\n')[4]
+
+# Basic version of search checks if item name contains
+def search_items(request):
+    assert request.method == 'GET', 'search requires a GET request'
+    errors = []
+    get = QueryDict('', mutable=True)
+    get.update(json.loads(request.body))
+    #get = request.GET
+    query = get.get('query', '')
+    if not query:
+        errors.append('query must be non-empty')
+    location = get.get('location', '')
+    if len(location.split('\n')) != 5:
+        errors.append('location incorrectly formatted')
+        address_zip = '!!!!!'
+    else:
+        address_zip = getZip(location)
+    if len(address_zip) != 5:
+        errors.append('zip code must be 5 characters')
+    if len(errors) > 0:
+        reponse = {
+                   'status': 400,
+                   'errors': errors,
+                  }
+        return HttpResponse(json.dumps(reponse), content_type='application/json')
+    items = Item.objects.filter(name__icontains=query, store__address_zip=address_zip)
+    if not items.exists():
+        errors.append('empty query')
+        reponse = {
+                   'status': 400,
+                   'errors': errors,
+                  }
+        return HttpResponse(json.dumps(reponse), content_type='application/json')
+    retrieve = ['store',
+                'inventory',
+                'name',
+                'description',
+                'price',
+                'picture',
+                # 'store__user',
+                # 'store__name',
+                # 'store__address_street',
+                # 'store__address_city',
+                # 'store__address_state',
+                # 'store__address_zip',
+                # 'store__phone_number',
+                # 'store__description',
+                # 'store__picture',
+                ]  
+    json_items = [i for i in items.values('store', 'inventory', 'name', 'description',
+                                        'price', 'picture', 'store__user', 'store__name',
+                                        'store__address_street','store__address_city',
+                                        'store__address_state',  'store__address_zip',
+                                        'store__phone_number',  'store__description',
+                                        'store__picture',)]
+    reponse = {
+               'status': 200,
+               'items': json_items,
+              }
+    return HttpResponse(json.dumps(reponse), content_type='application/json')
 
