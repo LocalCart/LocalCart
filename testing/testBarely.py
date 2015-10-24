@@ -77,9 +77,6 @@ class TestCarts(testLib.CartTestCase):
                                              'password' : '123456'
                                              })
         self.assertSuccessResponse(respLogin)
-        self.assertEquals("invalid username and password combination", respLogin['errors'][0], "")
-        ################################# this is not correct yet###########################
-
 
     def testLoginWrongPassword(self):
         respCreate = self.makeRequest("/api/user/create", method="POST",
@@ -93,7 +90,7 @@ class TestCarts(testLib.CartTestCase):
                                     data = { 'username' : 'Tom',
                                              'password' : '1234'
                                              })
-        self.assertSuccessResponse(respLogin)
+        self.assertFailResponse(respLogin)
         self.assertEquals("invalid username and password combination", respLogin['errors'][0], "")
 
 
