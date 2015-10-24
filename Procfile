@@ -1,1 +1,1 @@
-web: cd LocalCart; gunicorn LocalCart.wsgi --log-file -
+web: gunicorn LocalCartBack.wsgi --log-file -

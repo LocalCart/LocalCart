@@ -51,13 +51,13 @@ MIDDLEWARE_CLASSES = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
 
-ROOT_URLCONF = 'LocalCart.urls'
+ROOT_URLCONF = 'LocalCartBack.urls'
 
 SETTINGS_PATH = os.path.normpath(os.path.dirname(__file__))
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [os.path.join(SETTINGS_PATH, '../../staticpages'), SETTINGS_PATH],
+        'DIRS': [os.path.join(SETTINGS_PATH, 'static'), SETTINGS_PATH],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -70,7 +70,7 @@ TEMPLATES = [
     },
 ]
 
-WSGI_APPLICATION = 'LocalCart.wsgi.application'
+WSGI_APPLICATION = 'LocalCartBack.wsgi.application'
 
 
 # Database
@@ -130,10 +130,10 @@ USE_TZ = True
 import os
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 STATIC_ROOT = 'staticfiles'
-STATIC_URL = '../staticpages/'
+STATIC_URL = '/static/'
 
 STATICFILES_DIRS = (
-    os.path.join(BASE_DIR, '../static'),
+    os.path.join(BASE_DIR, 'static'),
 )
 
 
