@@ -83,11 +83,10 @@ def create_user(request):
                   }
         return HttpResponse(json.dumps(reponse), content_type='application/json')
     try:
-        new_user = User(username=username, password=password, email=email,
+        new_user = User.objects.create_user(username=username, password=password, email=email,
                         first_name = first_name, last_name = last_name)
         new_user.full_clean()
         new_user.save()
-        userID = new_user.id
         new_user_info = UserInfo(user=new_user, user_type=user_type, picture=picture)
         new_user_info.full_clean()
         new_user_info.save()
@@ -128,8 +127,14 @@ def log_in(request):
     current = authenticate(username=username, password=password)
     if current is not None:
         if current.is_active:
-            login(request, login)
-            return render(request, 'static/landing.html', context={})
+            login(request, current)
+            user_type = UserInfo.objects.get(user__username=username).user_type
+            reponse = {
+                       'status': 200,
+                       'username': username,
+                       'user_type': user_type,
+                      }
+            return HttpResponse(json.dumps(reponse), content_type='application/json')
         else:
             errors.append('user is not active')
             reponse = {
@@ -140,7 +145,7 @@ def log_in(request):
     else:
         errors.append('invalid username and password combination')
         reponse = {
-                   'status': 200,
+                   'status': 400,
                    'errors': errors,
                   }
         return HttpResponse(json.dumps(reponse), content_type='application/json')
