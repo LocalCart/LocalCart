@@ -38,6 +38,7 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'LocalCartBack',
+    'django_nose',
 ]
 
 MIDDLEWARE_CLASSES = [
@@ -147,3 +148,14 @@ STATIC_URL = '/static/'
 #     os.path.join(BASE_DIR, 'static'),
 # )
 
+
+# Use nose to run all tests
+TEST_RUNNER = 'django_nose.NoseTestSuiteRunner'
+
+
+# Tell nose to measure coverage on the apps
+NOSE_ARGS = [
+    '--with-coverage',
+    '--cover-html',
+    '--cover-package=LocalCartBack',
+]
