@@ -8,17 +8,33 @@
 
     <title>LocalCart</title>
 
-    <link href="style.css" rel="stylesheet">
     <link href="css/bootstrap.css" rel="stylesheet">
-    <link href="css/index.css" rel="stylesheet">
-    <script src="js/jquery.js"></script>
+    <link href="css/style.css" rel="stylesheet">
+    <!-- <link href="css/index.css" rel="stylesheet"> -->
+    <script src="js/jquery.min.js"></script>
     <script src="js/bootstrap.js"></script>
+    <script src="js/actions.js"></script>
+    <script type="text/javascript">
+        // This is a jQuery convention to say that once all the files
+        // load, the function Action.start() should run.
+        // This function is defined in the actions.js
+        $(function() {
+            Action.start();
+        });
+    </script>
+
   </head>
 
   <body>
+    <header>
+      <a href="register.html">
+        <button class="btn btn-sm btn-primary btn-block register" type="button">Register</button>
+      </a>
+
+    </header>
     <br>
 
-    <nav class="navbar navbar-inverse navbar-fixed-top" role="navigation">
+    <nav class="navbar navbar-fixed-top" role="navigation">
       <div class="container">
         <div class="navbar-header">
           <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-ex1-collapse">
@@ -27,7 +43,7 @@
             <span class="icon-bar"></span>
             <span class="icon-bar"></span>
           </button>
-          <a class="navbar-brand" href="#home">LocalCart: <em>Insert Catchy Phrase</em></a>   
+          <a class="navbar-brand" href="#home"><img src="images/logo.jpg"></a>
         </div>
 
         <div class="collapse navbar-collapse navbar-ex1-collapse">
@@ -36,6 +52,18 @@
             <li><a href="about.html"></a></li>
           </ul>
         </div><!-- /.navbar-collapse -->
+        <form method="get" action="search-results.html">
+            <label>Category</label>
+            <select class="search-category-input" name="search-category">
+                <option value="1">Electronics</option>
+                <option value="2">Clothing/shoes</option>
+                <option value="3">Cosmetics/fragrances</option>
+                <option value="4">Furniture</option>
+            </select>
+            <input type="text" placeholder="search for a product" class="search-input" name="search">
+            <a href="search-results.html" class="my-button search-button"><img src="images/search icon.jpg"></a>
+
+        </form>
       </div><!-- /.container -->
     </nav>
 
@@ -44,19 +72,11 @@
       <div class="container panel col-sm-offset-4 col-sm-4">
 
         <form class="form-signin">
-          <h2 class="form-signin-heading">Please Sign in</h2>
+          <h2 class="form-signin-heading">Sign in</h2>
           <label for="inputEmail" class="sr-only">Email address</label>
           <input type="email" id="inputEmail" class="form-control" placeholder="Email address" required autofocus>
           <label for="inputPassword" class="sr-only">Password</label>
           <input type="password" id="inputPassword" class="form-control" placeholder="Password" required>
-          <br>
-          <div class="row col-sm-offset-1"> 
-            <label> Type of Account: </label>
-            <div class="btn-group">
-              <a href="#" class="btn btn-default">Merchant</a>
-              <a href="#" class="btn btn-default">Customer</a>
-            </div>
-          </div>
           <br>
           <button class="btn btn-lg btn-primary btn-block" type="submit">Sign in</button>
         </form>

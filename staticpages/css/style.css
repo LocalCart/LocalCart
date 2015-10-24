@@ -1,0 +1,11 @@
+.navbar-brand {
+    position: fixed;
+    left: 30px;
+}
+
+.register {
+    width: 10%;
+    position: fixed;
+    right: 30px;
+    top: 30px;
+}
