@@ -155,9 +155,9 @@ def create_store(request):
     try:
         #userID = int(userID)
         user = User.objects.get(username=username)
-    except ValueError:
+    except DoesNotExist:
         username = None
-        #errors.append('userID must be an integer')
+        errors.append('userID must be non-empty')
     if not username:
         errors.append('userID must be non-empty')
     name = post.get('name', '')
@@ -168,10 +168,11 @@ def create_store(request):
 
     # If using the address format
     address = post.get('address', '').split('\n')
-    address_street = address[0]
-    address_city = address[1]
-    address_state = address[2]
-    address_zip = address[3]
+    if len(address) == 4:
+        address_street = address[0]
+        address_city = address[1]
+        address_state = address[2]
+        address_zip = address[3]
 
     phone_number = post.get('phone_number', '')
     description = post.get('description', 'Good Store') #default
@@ -279,7 +280,9 @@ def create_item(request):
     name = post.get('name', '')
     if not name:
         errors.append('name must be non-empty')
-    description = post.get('description', '')
+    description = post.get('description', 'Good item')
+    if not description:
+        errors.append('description must be non-empty')
     price = post.get('price', '')
     try:
         price = float(price)
@@ -288,7 +291,9 @@ def create_item(request):
         errors.append('price must be a number')
     if (price is not None) and price < 0.0:
         errors.append('price must be a positive number')
-    picture = post.get('picture', '')
+    picture = post.get('picture', 'pic')
+    if not picture:
+        errors.append('picture must be non-empty')
     if len(errors) > 0:
         reponse = {
                    'status': 400,
@@ -308,7 +313,7 @@ def create_item(request):
         new_item.full_clean()
         new_item.save()
     except ValidationError as e:
-        errors.append(e)
+        errors.append(str(e))
         reponse = {
                    'status': 400,
                    'errors': errors,
@@ -427,22 +432,7 @@ def search_items(request):
                    'errors': errors,
                   }
         return HttpResponse(json.dumps(reponse), content_type='application/json')
-    retrieve = ['store',
-                'inventory',
-                'name',
-                'description',
-                'price',
-                'picture',
-                # 'store__user',
-                # 'store__name',
-                # 'store__address_street',
-                # 'store__address_city',
-                # 'store__address_state',
-                # 'store__address_zip',
-                # 'store__phone_number',
-                # 'store__description',
-                # 'store__picture',
-                ]  
+
     json_items = [i for i in items.values('store', 'inventory', 'name', 'description',
                                         'price', 'picture', 'store__user', 'store__name',
                                         'store__address_street','store__address_city',

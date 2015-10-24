@@ -41,9 +41,9 @@ class Item(models.Model):
     store = models.ForeignKey(Store)
     inventory = models.ForeignKey(Inventory)
     name = models.CharField(max_length=64)
-    description = models.CharField(max_length=4096, null=True) # Allowed to be empty?
+    description = models.CharField(max_length=4096) # Allowed to be empty? NO
     price = models.FloatField(max_length=4096)
-    picture = models.CharField(max_length=128, null=True) # A url
+    picture = models.CharField(max_length=128) # A url
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
