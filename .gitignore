@@ -3,3 +3,4 @@ venv
 staticfiles
 cover
 db.sqlite3
+.coverage
