@@ -51,7 +51,7 @@ def check_empty(fields, post, errors):
 
 @csrf_exempt
 def home(request):
-    return render(request, 'LocalCartBack/static/index.html', context={})
+    return render(request, 'index.html', context={})
 
 @csrf_exempt
 def create_user(request):

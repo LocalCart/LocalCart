@@ -53,10 +53,11 @@ MIDDLEWARE_CLASSES = [
 
 ROOT_URLCONF = 'LocalCart.urls'
 
+SETTINGS_PATH = os.path.normpath(os.path.dirname(__file__))
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [],
+        'DIRS': [os.path.join(SETTINGS_PATH, '../../staticpages'), SETTINGS_PATH],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -126,7 +127,15 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/dev/howto/static-files/
 
-STATIC_URL = '/static/'
+import os
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+STATIC_ROOT = 'staticfiles'
+STATIC_URL = '../staticpages/'
+
+STATICFILES_DIRS = (
+    os.path.join(BASE_DIR, '../static'),
+)
+
 
 # # Parse database configuration from $DATABASE_URL
 # import dj_database_url
