@@ -141,3 +141,11 @@ class CartTestCase(RestTestCase):
         Check that the response is not an error response
         """
         self.assertEquals(200, respData['status'], msg)
+
+    def assertFailResponse(self,
+                              respData,
+                              msg=None):
+        self.assertEquals(400, respData['status'], msg)
+
+
+
