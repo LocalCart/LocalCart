@@ -1,5 +1,6 @@
 from django.shortcuts import render
 from django.http import HttpResponse, QueryDict
+from django.views.decorators.csrf import csrf_exempt
 import json
 from models import *
 import time
@@ -13,17 +14,46 @@ from django.core.exceptions import ValidationError
     # post = QueryDict('', mutable=True)
     # post.update(json.loads(request.body))
 
+@csrf_exempt
+def empty_db(request):
+    errors = []
+    try:
+        models = [User, 
+                  UserInfo, 
+                  Store, 
+                  Inventory, 
+                  Item, 
+                  Reviews,
+                  CartList,
+                  ListItem,
+                  ]
+        for m in models:
+            m.objects.all().delete()
+    except Exception as e:
+        errors.append(e)
+        reponse = {
+                   'status': 400,
+                   'errors': errors,
+                  }
+        return HttpResponse(json.dumps(reponse), content_type='application/json')
+    reponse = {
+               'status': 200,
+              }
+    return HttpResponse(json.dumps(reponse), content_type='application/json')
+
+
 def check_empty(fields, post, errors):
     for field in fields:
-        field = post.get('field', '')
+        field = post.get(field, '')
         if not field:
             errors.append('field must be non-empty')
     return errors
 
-
+@csrf_exempt
 def home(request):
-    return render(request, 'static/landing.html', context={})
+    return render(request, 'index.html', context={})
 
+@csrf_exempt
 def create_user(request):
     assert request.method == 'POST', 'api/user/create requires a POST request'
     errors = []
@@ -53,12 +83,11 @@ def create_user(request):
                   }
         return HttpResponse(json.dumps(reponse), content_type='application/json')
     try:
-        new_user = User(username=username, password=password, email=email,
+        new_user = User.objects.create_user(username=username, password=password, email=email,
                         first_name = first_name, last_name = last_name)
         new_user.full_clean()
         new_user.save()
-        userID = new_user.id
-        new_user_info = UserInfo(userID=userID, user_type=user_type, picture=picture)
+        new_user_info = UserInfo(user=new_user, user_type=user_type, picture=picture)
         new_user_info.full_clean()
         new_user_info.save()
     except ValidationError as e:
@@ -75,7 +104,7 @@ def create_user(request):
               }
     return HttpResponse(json.dumps(reponse), content_type='application/json')
 
-
+@csrf_exempt
 def log_in(request):
     # Log in should be a POST request because it requires sending a username and
     # and password through the body and not the url
@@ -97,9 +126,15 @@ def log_in(request):
         return HttpResponse(json.dumps(reponse), content_type='application/json')
     current = authenticate(username=username, password=password)
     if current is not None:
-        if user.is_active:
-            login(request, login)
-            return render(request, 'static/landing.html', context={})
+        if current.is_active:
+            login(request, current)
+            user_type = UserInfo.objects.get(user__username=username).user_type
+            reponse = {
+                       'status': 200,
+                       'username': username,
+                       'user_type': user_type,
+                      }
+            return HttpResponse(json.dumps(reponse), content_type='application/json')
         else:
             errors.append('user is not active')
             reponse = {
@@ -110,41 +145,54 @@ def log_in(request):
     else:
         errors.append('invalid username and password combination')
         reponse = {
-                   'status': 200,
+                   'status': 400,
+                   'errors': errors,
                   }
         return HttpResponse(json.dumps(reponse), content_type='application/json')
 
+@csrf_exempt
 def create_store(request):
-    assert request.method == 'POST', 'api/create/inventory requires a POST request'
+    assert request.method == 'POST', 'api/store/create requires a POST request'
     errors = []
     post = QueryDict('', mutable=True)
     post.update(json.loads(request.body))
-    name = post.get('userID', '')
+    username = post.get('username', '') ### changed to username since username is also unique
     try:
-        userID = int(userID)
-    except ValueError:
-        userID = None
-        errors.append('userID must be an integer')
-    if not userID:
+        #userID = int(userID)
+        user = User.objects.get(username=username)
+    except DoesNotExist:
+        username = None
+        errors.append('userID must be non-empty')
+    if not username:
         errors.append('userID must be non-empty')
     name = post.get('name', '')
-    address_street = post.get('address_street', '')
-    address_city = post.get('address_city', '')
-    address_state = post.get('address_state', '')
-    address_zip = post.get('address_zip', '')
+    # address_street = post.get('address_street', '')
+    # address_city = post.get('address_city', '')
+    # address_state = post.get('address_state', '')
+    # address_zip = post.get('address_zip', '')
+
+    # If using the address format
+    address = post.get('address', '').split('\n')
+    if len(address) == 4:
+        address_street = address[0]
+        address_city = address[1]
+        address_state = address[2]
+        address_zip = address[3]
+
     phone_number = post.get('phone_number', '')
-    description = post.get('description', '')
-    picture = post.get('picture', '')
+    description = post.get('description', 'Good Store') #default
+    picture = post.get('picture', 'images/default_user_image') #default
     fields = [
               'name',
-              'address_street',
-              'address_city',
-              'address_state',
-              'address_zip',
+              'address',
+              # 'address_street',
+              # 'address_city',
+              # 'address_state',
+              # 'address_zip',
               'phone_number',
               # 'description',
              ]
-    errors = check_empty(fields)
+    errors = check_empty(fields, post, errors)
     if len(errors) > 0:
         reponse = {
                    'status': 400,
@@ -152,7 +200,10 @@ def create_store(request):
                   }
         return HttpResponse(json.dumps(reponse), content_type='application/json')
     try:
-        new_store = Store(storeID=storeID)
+        new_store = Store(user = user, name=name, description=description, picture=picture,
+                          address_street=address_street, address_city=address_city,
+                          address_state = address_state, address_zip = address_zip,
+                          phone_number=phone_number)
         new_store.full_clean()
         new_store.save()
     except ValidationError as e:
@@ -164,9 +215,11 @@ def create_store(request):
         return HttpResponse(json.dumps(reponse), content_type='application/json')
     reponse = {
                'status': 200,
+               'storeID': new_store.id
               }
     return HttpResponse(json.dumps(reponse), content_type='application/json')
 
+@csrf_exempt
 def create_inventory(request):
     assert request.method == 'POST', 'api/create/inventory requires a POST request'
     errors = []
@@ -182,8 +235,10 @@ def create_inventory(request):
         errors.append('storeID must be non-empty')
     elif not Store.objects.filter(id=storeID).exists():
         errors.append('invalid storeID')
-    elif Inventory.objects.filter(storeID=storeID).exists():
+    elif Inventory.objects.filter(store_id=storeID).exists():
         errors.append('store already has an inventory')
+    else:
+        store = Store.objects.get(id=storeID)
     if len(errors) > 0:
         reponse = {
                    'status': 400,
@@ -191,7 +246,7 @@ def create_inventory(request):
                   }
         return HttpResponse(json.dumps(reponse), content_type='application/json')
     try:
-        new_inventory = Inventory(storeID=storeID)
+        new_inventory = Inventory(store=store)
         new_inventory.save()
     except ValidationError as e:
         errors.append(e)
@@ -202,10 +257,11 @@ def create_inventory(request):
         return HttpResponse(json.dumps(reponse), content_type='application/json')
     reponse = {
                'status': 200,
+               'inventoryID': new_inventory.id
               }
     return HttpResponse(json.dumps(reponse), content_type='application/json')
 
-
+@csrf_exempt
 def create_item(request):
     assert request.method == 'POST', 'api/create/inventory requires a POST request'
     errors = []
@@ -222,13 +278,16 @@ def create_item(request):
         storeID = ''
     elif not Inventory.objects.filter(id=inventoryID).exists():
         errors.append('invalid inventoryID')
-        storeID = ''
+        inventoryID = ''
     else:
-        storeID = Inventory.objects.filter(id=inventoryID)[0].storeID
+        inventory = Inventory.objects.filter(id=inventoryID)[0]
+        store = inventory.store
     name = post.get('name', '')
     if not name:
         errors.append('name must be non-empty')
-    description = post.get('description', '')
+    description = post.get('description', 'Good item')
+    if not description:
+        errors.append('description must be non-empty')
     price = post.get('price', '')
     try:
         price = float(price)
@@ -237,14 +296,16 @@ def create_item(request):
         errors.append('price must be a number')
     if (price is not None) and price < 0.0:
         errors.append('price must be a positive number')
-    picture = post.get('picture', '')
+    picture = post.get('picture', 'pic')
+    if not picture:
+        errors.append('picture must be non-empty')
     if len(errors) > 0:
         reponse = {
                    'status': 400,
                    'errors': errors,
                   }
         return HttpResponse(json.dumps(reponse), content_type='application/json')
-    if Item.objects.filter(name=name, inventoryID=inventoryID).exists():
+    if Item.objects.filter(name=name, inventory_id=inventoryID).exists():
         errors.append('items in inventory must have unique names')
         reponse = {
                    'status': 400,
@@ -252,12 +313,12 @@ def create_item(request):
                   }
         return HttpResponse(json.dumps(reponse), content_type='application/json')        
     try:
-        new_item = Item(storeID=storeID, inventoryID=inventoryID, name=name,
+        new_item = Item(store=store, inventory=inventory, name=name,
                         description=description, price=price, picture=picture)
         new_item.full_clean()
         new_item.save()
     except ValidationError as e:
-        errors.append(e)
+        errors.append(str(e))
         reponse = {
                    'status': 400,
                    'errors': errors,
@@ -265,18 +326,19 @@ def create_item(request):
         return HttpResponse(json.dumps(reponse), content_type='application/json')
     reponse = {
                'status': 200,
+               'itemID': new_item.id
               }
     return HttpResponse(json.dumps(reponse), content_type='application/json')
-
+@csrf_exempt
 def add_inventory(request):
     return create_item(request)
-
+@csrf_exempt
 def edit_item(request):
-    assert request.method == 'POST', 'api/create/inventory requires a POST request'
+    assert request.method == 'POST', ' requires a POST request'
     errors = []
     post = QueryDict('', mutable=True)
     post.update(json.loads(request.body))
-    itemID = post.get('inventoryID', '')
+    itemID = post.get('itemID', '')
     try:
         itemID = int(itemID)
     except ValueError:
@@ -306,7 +368,7 @@ def edit_item(request):
                    'errors': errors,
                   }
         return HttpResponse(json.dumps(reponse), content_type='application/json')
-    not_unique = Item.objects.filter(name=name, inventoryID=current_item.inventoryID).exists()
+    not_unique = Item.objects.filter(name=name, inventory=current_item.inventory).exists()
     if (current_item.name != name) and not_unique:
         errors.append('items in inventory must have unique names')
         reponse = {
@@ -336,6 +398,55 @@ def edit_item(request):
                'status': 200,
               }
     return HttpResponse(json.dumps(reponse), content_type='application/json')
-
+@csrf_exempt
 def edit_inventory(request):
     return edit_item(request)
+
+def getZip(address):
+    return address.split('\n')[4]
+
+# Basic version of search checks if item name contains
+def search_items(request):
+    assert request.method == 'GET', 'search requires a GET request'
+    errors = []
+    get = QueryDict('', mutable=True)
+    get.update(json.loads(request.body))
+    #get = request.GET
+    query = get.get('query', '')
+    if not query:
+        errors.append('query must be non-empty')
+    location = get.get('location', '')
+    if len(location.split('\n')) != 5:
+        errors.append('location incorrectly formatted')
+        address_zip = '!!!!!'
+    else:
+        address_zip = getZip(location)
+    if len(address_zip) != 5:
+        errors.append('zip code must be 5 characters')
+    if len(errors) > 0:
+        reponse = {
+                   'status': 400,
+                   'errors': errors,
+                  }
+        return HttpResponse(json.dumps(reponse), content_type='application/json')
+    items = Item.objects.filter(name__icontains=query, store__address_zip=address_zip)
+    if not items.exists():
+        errors.append('empty query')
+        reponse = {
+                   'status': 400,
+                   'errors': errors,
+                  }
+        return HttpResponse(json.dumps(reponse), content_type='application/json')
+
+    json_items = [i for i in items.values('store', 'inventory', 'name', 'description',
+                                        'price', 'picture', 'store__user', 'store__name',
+                                        'store__address_street','store__address_city',
+                                        'store__address_state',  'store__address_zip',
+                                        'store__phone_number',  'store__description',
+                                        'store__picture',)]
+    reponse = {
+               'status': 200,
+               'items': json_items,
+              }
+    return HttpResponse(json.dumps(reponse), content_type='application/json')
+
