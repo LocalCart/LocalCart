@@ -5,8 +5,25 @@ app.controller('IndexController', function( ){
   vm.searchResults = results
 });
 
+app.controller('MerchantController', function() {
+  var vm = this;
+  vm.editable = false;
+  vm.editInfo = function() {
+    vm.editable = !vm.editable
+  }
+  vm.storeInfo = {};
+  vm.storeInfo.storeName = "test store";
+})
+
+
 
 var results = [
+{ storeName: "GameStop", item: "Halo 5",  description: "A first person shooter video game", price: 80.00},
+{ storeName: "Target", item: "Shampoo",  description: "New shampoo for dry hair", price: 5.00},
+{ storeName: "Costco", item: "Deodorant",  description: "Use this to tackle body odor!", price: 7.00},
+{ storeName: "GameStop", item: "Halo 5",  description: "A first person shooter video game", price: 80.00},
+{ storeName: "Target", item: "Shampoo",  description: "New shampoo for dry hair", price: 5.00},
+{ storeName: "Costco", item: "Deodorant",  description: "Use this to tackle body odor!", price: 7.00},
 { storeName: "GameStop", item: "Halo 5",  description: "A first person shooter video game", price: 80.00},
 { storeName: "Target", item: "Shampoo",  description: "New shampoo for dry hair", price: 5.00},
 { storeName: "Costco", item: "Deodorant",  description: "Use this to tackle body odor!", price: 7.00},
