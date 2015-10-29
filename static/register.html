@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" ng-app="LocalCart" ng-controller="RegisterController as registerController">
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -7,13 +7,13 @@
     <meta name="author" content="">
 
     <title>LocalCart</title>
-
-    <link href="style.css" rel="stylesheet">
-    <link href="css/bootstrap.css" rel="stylesheet">
-    <link href="css/index.css" rel="stylesheet">
-    <link href="css/custom.css" rel="stylesheet">
-    <script src="js/jquery.js"></script>
-    <script src="js/bootstrap.js"></script>
+    <link href="static/css/bootstrap.css" rel="stylesheet">
+    <link href="static/css/custom.css" rel="stylesheet">
+    <script src="https://code.jquery.com/jquery-2.1.4.min.js"></script>
+    
+    <script src="static/js/bootstrap.js"></script>
+    <script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/angularjs/1.4.7/angular.min.js"></script>
+    <script type="text/javascript" src="static/controller.js"></script>
   </head>
 
   <body>
@@ -28,15 +28,15 @@
             <span class="icon-bar"></span>
             <span class="icon-bar"></span>
           </button>
-          <a class="navbar-brand" href="index.html">Local Cart</a>
+          <a class="navbar-brand" href="home">Local Cart</a>
         </div>
         <div id="navbar" class="navbar-collapse collapse">
           <form class="navbar-form navbar-right">
-            <div class="form-group">
-              <input type="text" placeholder="Search for item!" class="form-control">
-            </div>
-            <a href="signup.html"  class="btn btn-success">Sign in</a>
-            <a href="register.html"  class="btn btn-success">Register</a>
+            <input type="text" placeholder="Search for item!" class="form-control">
+            <a href="static/signup.html"  class="btn btn-primary">Search</a>
+            <a href="static/signup.html"  class="btn btn-success">Sign in</a>
+            <a href="register"  class="btn btn-success">Register</a>
+            <a href="merchant"  class="btn btn-success">Placeholder to merchant</a>
           </form>
         </div><!--/.navbar-collapse -->
       </div>
@@ -48,12 +48,14 @@
 
         <form class="form-signin">
           <h2 class="form-signin-heading">Register Your Account</h2>
+          <label for="inputUser" class="sr-only">Username</label>
+          <input ng-model="registerController.newUser.username" type="text" id="inputUser" class="form-control" placeholder="Username">
           <label for="inputEmail" class="sr-only">Email address</label>
-          <input type="email" id="inputEmail" class="form-control" placeholder="Email address" required autofocus>
+          <input ng-model="registerController.newUser.email" type="email" id="inputEmail" class="form-control" placeholder="Email address" required autofocus>
           <label for="inputPassword" class="sr-only">Password</label>
-          <input type="password" id="inputPassword" class="form-control" placeholder="Password" required>
+          <input ng-model="registerController.newUser.password" type="password" id="inputPassword" class="form-control" placeholder="Password" required>
           <label for="confirmPassword" class="sr-only">Password</label>
-          <input type="password" id="confirmPassword" class="form-control" placeholder="Confirm Password" required>
+          <input ng-model="registerController.confirmPassword" type="password" id="confirmPassword" class="form-control" placeholder="Confirm Password" required>
           <br>
           <div class="row col-sm-offset-1"> 
             <label> Type of Account: </label>
@@ -63,7 +65,7 @@
             </div>
           </div>
           <br>
-          <button class="btn btn-lg btn-primary btn-block" type="submit">Sign in</button>
+          <button class="btn btn-lg btn-primary btn-block" ng-click="registerController.createUser()" type="submit">Register</button>
         </form>
 
       </div> <!-- /container -->

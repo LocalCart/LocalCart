@@ -14,6 +14,21 @@ from django.core.exceptions import ValidationError
     # post = QueryDict('', mutable=True)
     # post.update(json.loads(request.body))
 
+
+@csrf_exempt
+def home(request):
+    return render(request, 'index.html', context={})
+
+
+@csrf_exempt
+def merchant_render(request):
+    return render(request, 'merchant.html', context={})
+
+@csrf_exempt
+def register_render(request):
+    return render(request, 'register.html', context={})
+
+
 @csrf_exempt
 def empty_db(request):
     errors = []
@@ -49,9 +64,6 @@ def check_empty(fields, post, errors):
             errors.append('field must be non-empty')
     return errors
 
-@csrf_exempt
-def home(request):
-    return render(request, 'index.html', context={})
 
 @csrf_exempt
 def create_user(request):
@@ -263,6 +275,7 @@ def create_inventory(request):
 
 @csrf_exempt
 def create_item(request):
+    # invetoryId, name, price, description, picture
     assert request.method == 'POST', 'api/create/inventory requires a POST request'
     errors = []
     post = QueryDict('', mutable=True)
@@ -416,6 +429,7 @@ def search_items(request):
     if not query:
         errors.append('query must be non-empty')
     location = get.get('location', '')
+    #Line1\nLine2\nCity\nState\n94704
     if len(location.split('\n')) != 5:
         errors.append('location incorrectly formatted')
         address_zip = '!!!!!'

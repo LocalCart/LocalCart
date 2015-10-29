@@ -7,13 +7,13 @@
     <meta name="author" content="">
 
     <title>LocalCart</title>
-
-    <link href="css/bootstrap.css" rel="stylesheet">
-    <link href="css/custom.css" rel="stylesheet">
+    <link href="static/css/bootstrap.css" rel="stylesheet">
+    <link href="static/css/custom.css" rel="stylesheet">
     <script src="https://code.jquery.com/jquery-2.1.4.min.js"></script>
-    <script src="js/bootstrap.js"></script>
+    
+    <script src="static/js/bootstrap.js"></script>
     <script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/angularjs/1.4.7/angular.min.js"></script>
-    <script type="text/javascript" src="controller.js"></script>
+    <script type="text/javascript" src="static/controller.js"></script>
   </head>
 
   <body>
@@ -28,15 +28,15 @@
             <span class="icon-bar"></span>
             <span class="icon-bar"></span>
           </button>
-          <a class="navbar-brand" href="index.html">Local Cart</a>
+          <a class="navbar-brand" href="home">Local Cart</a>
         </div>
         <div id="navbar" class="navbar-collapse collapse">
           <form class="navbar-form navbar-right">
-            <div class="form-group">
-              <input type="text" placeholder="Search for item!" class="form-control">
-            </div>
-            <a href="signup.html"  class="btn btn-success">Sign in</a>
-            <a href="register.html"  class="btn btn-success">Register</a>
+            <input type="text" placeholder="Search for item!" class="form-control">
+            <a href=""  class="btn btn-primary">Search</a>
+            <a href="static/signup.html"  class="btn btn-success">Sign in</a>
+            <a href="register"  class="btn btn-success">Register</a>
+            <a href="merchant"  class="btn btn-success">Placeholder to merchant</a>
           </form>
         </div><!--/.navbar-collapse -->
       </div>
@@ -53,19 +53,19 @@
           <p><strong>Ratings:</strong> <input type="text" ng-readonly="true" value="4.3" aria-label="Readonly field"/></p> 
           <p><strong>Traffic:</strong> <input type="text" ng-readonly="merchantController.editable" value="10 users/day" /> </p> -->
           <div ng-hide="merchantController.editable">
-            <h2>Welcome {{merchantController.storeInfo.storeName}}</h2>
+            <h2>Welcome [[merchantController.storeInfo.storeName]]</h2>
           </div>
           <div ng-show="merchantController.editable">
             <h2>Store Name<input ng-model="merchantController.storeInfo.storeName" ng-show="merchantController.editable"></h2>
           </div>         
           <div ng-hide="merchantController.editable">
-            <h4>Address: {{merchantController.storeInfo.storeAddress}}</h4>
+            <h4>Address: [[merchantController.storeInfo.storeAddress]]</h4>
           </div>
           <div ng-show="merchantController.editable">
             <h4>Address: <input ng-model="merchantController.storeInfo.storeAddress" ng-show="merchantController.editable"></h4>
           </div>
           <div ng-hide="merchantController.editable">
-            <h4>Description: {{merchantController.storeInfo.storeDescription}}</h4>
+            <h4>Description: [[merchantController.storeInfo.storeDescription]]</h4>
           </div>
           <div ng-show="merchantController.editable">
             <h4>Description: <input ng-model="merchantController.storeInfo.storeDescription" ng-show="merchantController.editable"></h4>
