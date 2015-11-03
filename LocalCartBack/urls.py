@@ -13,6 +13,9 @@ urlpatterns = [
     url(r'^api/item/create$', views.create_item),
     url(r'^api/item/edit$', views.edit_item),
     url(r'^api/search/items$', views.search_items),
+    url(r'^merchant$', views.merchant_render),
+    url(r'^home$', views.home),
+    url(r'^register$', views.register_render),
 ]
 
 
