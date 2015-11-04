@@ -139,7 +139,12 @@ STATICFILES_DIRS = (
 
 # # Parse database configuration from $DATABASE_URL
 import dj_database_url
-DATABASES['default'] =  dj_database_url.config()
+# ON_HEROKU = os.environ.get('ON_HEROKU')
+# if ON_HEROKU:
+#     DATABASE_URL = 'postgresql:///postgresql'
+# else:
+#     DATABASE_URL = 'sqlite://' + os.path.join(BASE_DIR, 'db.sqlite3')
+# DATABASES['default'] =  dj_database_url.config()
 
 # Honor the 'X-Forwarded-Proto' header for request.is_secure()
 SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
