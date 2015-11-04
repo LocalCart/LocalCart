@@ -95,7 +95,7 @@ def create_user(request):
                   }
         return HttpResponse(json.dumps(reponse), content_type='application/json')
     try:
-        new_user_info = models.create_new_user(username, password, email, first_name, last_name, user_type, picture)
+        new_user_info = create_new_user(username, password, email, first_name, last_name, user_type, picture)
     except ValidationError as e:
         errors.append(e)
         reponse = {
@@ -155,6 +155,15 @@ def log_in(request):
                    'errors': errors,
                   }
         return HttpResponse(json.dumps(reponse), content_type='application/json')
+
+@csrf_exempt
+def log_out(request):
+    assert request.method == 'POST', 'api/user/login requires a POST request'
+    logout(request)
+    reponse = {
+               'status': 200,
+              }
+    return HttpResponse(json.dumps(reponse), content_type='application/json')
 
 @csrf_exempt
 def create_store(request):
