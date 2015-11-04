@@ -95,13 +95,7 @@ def create_user(request):
                   }
         return HttpResponse(json.dumps(reponse), content_type='application/json')
     try:
-        new_user = User.objects.create_user(username=username, password=password, email=email,
-                        first_name = first_name, last_name = last_name)
-        new_user.full_clean()
-        new_user.save()
-        new_user_info = UserInfo(user=new_user, user_type=user_type, picture=picture)
-        new_user_info.full_clean()
-        new_user_info.save()
+        new_user_info = models.create_new_user(username, password, email, first_name, last_name, user_type, picture)
     except ValidationError as e:
         errors.append(e)
         reponse = {

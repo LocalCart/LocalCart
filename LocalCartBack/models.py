@@ -10,6 +10,7 @@ class UserInfo(models.Model):
 
 
 
+
 class Store(models.Model):
 
     # inventoryID = models.ForeignKey(Inventory)
@@ -73,3 +74,20 @@ class ListItem(models.Model):
     item = models.ForeignKey(Item, null=True)
     item_name = models.CharField(max_length=64)
     list_position = models.PositiveSmallIntegerField(unique=True)
+
+
+
+def create_new_user(username, password, email, first_name, last_name, user_type, picture):
+    """
+    Assume all info is correctly filled in and this user does not already exist.
+    Create a new user with given information.
+    First and last names are optional (can be empty).
+    """
+    new_user = User.objects.create_user(username=username, password=password, email=email, 
+        first_name = first_name, last_name = last_name)
+    new_user.full_clean()
+    new_user.save()
+    new_user_info = UserInfo(user=new_user, user_type=user_type, picture=picture)
+    new_user_info.full_clean()
+    new_user_info.save()
+    return new_user_info
