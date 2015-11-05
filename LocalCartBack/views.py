@@ -521,3 +521,55 @@ def search_items(request):
                'items': json_items,
               }
     return HttpResponse(json.dumps(reponse), content_type='application/json')
+
+@csrf_exempt
+def create_list(request):
+    assert request.method == 'POST', 'api/list/create requires a POST request'
+    errors = []
+    post = QueryDict('', mutable=True)
+    post.update(json.loads(request.body))
+    username = post.get('username', '')
+    if not username:
+        errors.append('username must be non-empty')
+    name = post.get('name', '')
+    if not name:
+        errors.append('name must be non-empty')
+    if not errors:
+        try:
+            new_list = CartList.create_new_list(username, name)
+        except ValidationError as e:
+            errors.append(e)
+        if not new_list:
+            errors.append('username does not exist')
+    reponse = {
+               'status': 200,
+               'errors': errors,
+              }
+    return HttpResponse(json.dumps(reponse), content_type='application/json')
+
+
+@csrf_exempt
+def delete_list(request):
+    assert request.method == 'POST', 'api/list/create requires a POST request'
+    errors = []
+    post = QueryDict('', mutable=True)
+    post.update(json.loads(request.body))
+    username = post.get('username', '')
+    if not username:
+        errors.append('username must be non-empty')
+    name = post.get('name', '')
+    if not name:
+        errors.append('name must be non-empty')
+    if not errors:
+        try:
+            new_list = CartList.delete_list(username, name)
+        except ValidationError as e:
+            errors.append(e)
+        if not new_list:
+            errors.append('no list of this name exists for this username')
+    reponse = {
+               'status': 200,
+               'errors': errors,
+              }
+    return HttpResponse(json.dumps(reponse), content_type='application/json')
+
