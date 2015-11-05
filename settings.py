@@ -39,6 +39,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'LocalCartBack',
     'django_nose',
+    'static',
 ]
 
 MIDDLEWARE_CLASSES = [
@@ -183,3 +184,4 @@ NOSE_ARGS = [
 # Simplified static file serving.
 # https://warehouse.python.org/project/whitenoise/
 STATICFILES_STORAGE = 'whitenoise.django.GzipManifestStaticFilesStorage'
+
