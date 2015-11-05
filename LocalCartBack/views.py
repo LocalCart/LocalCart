@@ -85,7 +85,7 @@ def create_user(request):
     email = post.get('email', '')
     if not email:
         errors.append('email must be non-empty')
-    picture = post.get('email', 'images/default_user_image') # Make this default
+    picture = post.get('picture', 'images/default_user_image') # Make this default
     first_name = post.get('first_name', '') # Optional
     last_name = post.get('last_name', '') # Optional
     if len(errors) > 0:
@@ -107,6 +107,69 @@ def create_user(request):
                'status': 200,
                'username': username,
                'user_type': user_type,
+              }
+    return HttpResponse(json.dumps(reponse), content_type='application/json')
+
+
+@csrf_exempt
+def edit_user(request):
+    assert request.method == 'POST', 'api/user/change requires a POST request'
+    errors = []
+    post = QueryDict('', mutable=True)
+    post.update(json.loads(request.body))
+    username = post.get('username', '')
+    if not username:
+        errors.append('username must be non-empty')
+    elif not User.objects.filter(username=username).exists():
+        errors.append('username does not exist')
+    email = post.get('email', None)
+    picture = post.get('picture', None) # Make this default
+    first_name = post.get('first_name', None) # Optional
+    last_name = post.get('last_name', None) # Optional
+    password = post.get('password', None)
+    if (first_name is not None) and not first_name:
+        errors.append('first_name must not be empty')
+    if (last_name is not None) and not last_name:
+        errors.append('last_name must not be empty')
+    if (email is not None) and not email:
+        errors.append('email must not be empty')
+    if (password is not None) and not password:
+        errors.append('password must not be empty')
+    if (picture is not None) and not picture:
+        picture = 'images/default_user_image'
+    if len(errors) > 0:
+        reponse = {
+                   'status': 200,
+                   'errors': errors,
+                  }
+        return HttpResponse(json.dumps(reponse), content_type='application/json')
+    try:
+        current_user = User.objects.get(username=username)
+        if first_name is not None:
+            current_user.first_name = first_name
+        if last_name is not None:
+            current_user.last_name = last_name
+        if email is not None:
+            current_user.email = email
+        if password is not None:
+            current_user.set_password(password)
+        current_user.save()
+        if picture is not None:
+            current_user_info = UserInfo.objects.get(user__username=username)
+            current_user_info.picture = picture
+            current_user_info.save()
+    except ValidationError as e:
+        errors.append(e)
+        reponse = {
+                   'status': 200,
+                   'errors': errors,
+                  }
+        return HttpResponse(json.dumps(reponse), content_type='application/json')
+    reponse = {
+               'status': 200,
+               'username': username,
+               'user_type': user_type,
+               'errors': errors,
               }
     return HttpResponse(json.dumps(reponse), content_type='application/json')
 
@@ -162,6 +225,7 @@ def log_out(request):
     logout(request)
     reponse = {
                'status': 200,
+               'errors': [],
               }
     return HttpResponse(json.dumps(reponse), content_type='application/json')
 
@@ -466,4 +530,3 @@ def search_items(request):
                'items': json_items,
               }
     return HttpResponse(json.dumps(reponse), content_type='application/json')
-
