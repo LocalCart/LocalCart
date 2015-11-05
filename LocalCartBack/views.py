@@ -74,8 +74,6 @@ def create_user(request):
     username = post.get('username', '')
     if not username:
         errors.append('username must be non-empty')
-    elif User.objects.filter(username=username).exists():
-        errors.append('username already exists')
     password = post.get('password', '')
     if not password:
         errors.append('password must be non-empty')
@@ -88,25 +86,18 @@ def create_user(request):
     picture = post.get('email', 'images/default_user_image') # Make this default
     first_name = post.get('first_name', '') # Optional
     last_name = post.get('last_name', '') # Optional
-    if len(errors) > 0:
-        reponse = {
-                   'status': 400,
-                   'errors': errors,
-                  }
-        return HttpResponse(json.dumps(reponse), content_type='application/json')
-    try:
-        new_user_info = models.create_new_user(username, password, email, first_name, last_name, user_type, picture)
-    except ValidationError as e:
-        errors.append(e)
-        reponse = {
-                   'status': 400,
-                   'errors': errors,
-                  }
-        return HttpResponse(json.dumps(reponse), content_type='application/json')
+    if not errors:
+        try:
+            new_user_info = create_new_user(username, password, email, first_name, last_name, user_type, picture)
+        except ValidationError as e:
+            errors.append(e)
+        if not new_user_info:
+            errors.append('username already exists')
     reponse = {
                'status': 200,
                'username': username,
                'user_type': user_type,
+               'errors': errors,
               }
     return HttpResponse(json.dumps(reponse), content_type='application/json')
 

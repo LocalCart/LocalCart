@@ -38,7 +38,7 @@ class TestCarts(testLib.CartTestCase):
                                              'email' : 'tommeng@berkeley.edu'
                                              })
 
-        self.assertFailResponse(respCreate)
+        self.assertSuccessResponse(respCreate)
         self.assertEquals("username must be non-empty", respCreate['errors'][0], "")
 
     def testCreateUserWithEmptyPassword(self):
@@ -49,7 +49,7 @@ class TestCarts(testLib.CartTestCase):
                                              'email' : 'tommeng@berkeley.edu'
                                              })
 
-        self.assertFailResponse(respCreate)
+        self.assertSuccessResponse(respCreate)
         self.assertEquals("password must be non-empty", respCreate['errors'][0], "")
 
     def testCreateUserWithInvalidUserType(self):
@@ -60,7 +60,7 @@ class TestCarts(testLib.CartTestCase):
                                              'email' : 'tommeng@berkeley.edu'
                                              })
 
-        self.assertFailResponse(respCreate)
+        self.assertSuccessResponse(respCreate)
         self.assertEquals("user_type must be either merchant or customer", respCreate['errors'][0], "") 
 
 

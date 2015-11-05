@@ -79,10 +79,12 @@ class ListItem(models.Model):
 
 def create_new_user(username, password, email, first_name, last_name, user_type, picture):
     """
-    Assume all info is correctly filled in and this user does not already exist.
+    Assume all necessary info is correctly filled in, but check to see if user already exists.
     Create a new user with given information.
     First and last names are optional (can be empty).
     """
+    if User.objects.filter(username=username).exists():
+        return None
     new_user = User.objects.create_user(username=username, password=password, email=email, 
         first_name = first_name, last_name = last_name)
     new_user.full_clean()

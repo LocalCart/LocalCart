@@ -1,7 +1,6 @@
 from django.test import TestCase
 from LocalCartBack import models
 
-
 """
 To test all tests: ./manage.py test
 To test specific file: ./manage.py test testing.file_name
