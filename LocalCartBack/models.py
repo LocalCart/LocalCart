@@ -51,6 +51,9 @@ class Item(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
+    class Meta:
+        unique_together = ('inventory', 'name')
+
 
 class Reviews(models.Model):
 
@@ -69,7 +72,35 @@ class CartList(models.Model):
     user = models.ForeignKey(User)
     name = models.CharField(max_length=64)
 
+    class Meta:
+        unique_together = ('user', 'name')
 
+
+    @staticmethod
+    def create_new_list(username, name):
+        if not User.objects.filter(username=username).exists():
+            return None
+        new_list = CartList(user=User.objects.get(username=username), name=name)
+        new_list.full_clean()
+        new_list.save()
+        return new_list
+
+    @staticmethod
+    def empty_list(username, name):
+        if not CartList.objects.filter(user__username=username, name=name).exists():
+            return None
+        current_list = CartList.objects.get(user__username=username, name=name)
+        ListItem.objects.filter(cartlist=current_list).delete()
+        return 'Success'
+
+    @staticmethod
+    def delete_list(username, name):
+        if CartList.empty_list(username, name) is not None:
+            CartList.objects.filter(user__username=username, name=name).delete()
+            return 'Success'
+        else:
+            return None
+        
 
 class ListItem(models.Model):
 
@@ -77,8 +108,6 @@ class ListItem(models.Model):
     item = models.ForeignKey(Item, null=True)
     item_name = models.CharField(max_length=64)
     list_position = models.PositiveSmallIntegerField(unique=True)
-
-
 
 def create_new_user(username, password, email, first_name, last_name, user_type, picture):
     """
