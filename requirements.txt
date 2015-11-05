@@ -12,4 +12,3 @@ virtualenv==1.11.4
 wsgiref==0.1.2
 coverage==4.0.1
 django-nose==1.4.2
-whitenoise==2.0.4
