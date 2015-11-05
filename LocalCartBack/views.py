@@ -32,7 +32,8 @@ def register_render(request):
 def empty_db(request):
     errors = []
     try:
-        models = [User, 
+        models = [
+                  User, 
                   UserInfo, 
                   Store, 
                   Inventory, 
