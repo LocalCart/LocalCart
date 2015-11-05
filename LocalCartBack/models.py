@@ -2,7 +2,7 @@ from django.db import models
 from django.contrib.auth.models import User
 
 class UserInfo(models.Model):
-    user = models.ForeignKey(User)
+    user = models.OneToOneField(User)
     user_type = models.CharField(max_length=16)
     picture = models.CharField(max_length=128, null=True) # A url
     created_at = models.DateTimeField(auto_now_add=True)

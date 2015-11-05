@@ -137,7 +137,7 @@ STATICFILES_DIRS = (
 )
 
 
-# Parse database configuration from $DATABASE_URL
+# # Parse database configuration from $DATABASE_URL
 import dj_database_url
 # ON_HEROKU = os.environ.get('ON_HEROKU')
 # if ON_HEROKU:
