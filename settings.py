@@ -84,6 +84,10 @@ DATABASES = {
 }
 import dj_database_url
 DATABASES['default'] =  dj_database_url.config()
+DATABASES['default']['ENGINE'] = 'django.db.backends.postgresql_psycopg2'
+DATABASES['default']['USER'] = 'django'
+DATABASES['default']['PASSWORD'] = '123456'
+
 
 
 # Password validation
@@ -131,7 +135,7 @@ USE_TZ = True
 
 import os
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-STATIC_ROOT = 'staticfiles'
+STATIC_ROOT = ''
 STATIC_URL = '/static/'
 
 STATICFILES_DIRS = (
