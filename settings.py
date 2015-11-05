@@ -39,7 +39,6 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'LocalCartBack',
     'django_nose',
-    'static',
 ]
 
 MIDDLEWARE_CLASSES = [
@@ -83,12 +82,6 @@ DATABASES = {
         'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
     }
 }
-import dj_database_url
-DATABASES['default'] =  dj_database_url.config()
-# DATABASES['default']['ENGINE'] = 'django.db.backends.postgresql_psycopg2'
-# DATABASES['default']['USER'] = 'django'
-# DATABASES['default']['PASSWORD'] = '123456'
-
 
 
 # Password validation
@@ -144,7 +137,7 @@ STATICFILES_DIRS = (
 )
 
 
-# # Parse database configuration from $DATABASE_URL
+# Parse database configuration from $DATABASE_URL
 import dj_database_url
 # ON_HEROKU = os.environ.get('ON_HEROKU')
 # if ON_HEROKU:
@@ -180,5 +173,3 @@ NOSE_ARGS = [
     '--cover-html',
     '--cover-package=LocalCartBack',
 ]
-
-
