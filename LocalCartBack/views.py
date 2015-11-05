@@ -88,7 +88,7 @@ def create_user(request):
     last_name = post.get('last_name', '') # Optional
     if len(errors) == 0:
         try:
-            new_user_info = create_new_user(username, password, email, first_name, last_name, user_type, picture)
+            new_user_info = UserInfo.create_new_user(username, password, email, first_name, last_name, user_type, picture)
         except ValidationError as e:
             errors.append(e)
         if not new_user_info:
@@ -106,6 +106,7 @@ def create_user(request):
 def edit_user(request):
     assert request.method == 'POST', 'api/user/change requires a POST request'
     errors = []
+    user_type = ''
     post = QueryDict('', mutable=True)
     post.update(json.loads(request.body))
     username = post.get('username', '')
@@ -128,7 +129,7 @@ def edit_user(request):
         picture = 'images/default_user_image'
     if len(errors) == 0:
         try:
-            current_user_info = edit_user_info(username=username, first_name=first_name, 
+            user_type = UserInfo.edit_user_info(username=username, first_name=first_name, 
               last_name=last_name, email=email, password=password, picture=picture)
         except ValidationError as e:
             errors.append(e)
