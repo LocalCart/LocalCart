@@ -118,6 +118,17 @@ class CartList(models.Model):
     class Meta:
         unique_together = ('user', 'name')
 
+    @staticmethod
+    def temporary_storage(user):
+        temp_name = 'temporary_storage'
+        while CartList.objects.filter(user=user, name=temp_name).exists():
+            temp_name += '@'
+            if len(temp_name) > 64:
+                import random
+                import string
+                temp_name = random.sample(string.letters)
+        temp = CartList(user=user, name=temp_name)
+        return temp
 
     @staticmethod
     def create_new_list(username, name):
@@ -127,6 +138,34 @@ class CartList(models.Model):
         new_list.full_clean()
         new_list.save()
         return new_list
+
+    @staticmethod
+    def refill_list(listID, contents):
+        if not CartList.objects.filter(id=listID).exists():
+            return None
+        current_list = CartList.objects.get(id=listID)
+        items = []
+        item_names = []
+        for content_item in contents:
+            if content_item['type'] == 'id':
+                item = Item.objects.get(id=content_item['name'])
+                items.append(item)
+                item_names.append(item.name)
+            else:
+                items.append(None)
+                item_names.append(content_item['name'])
+        temp = CartList.temporary_storage()
+        ListItem.objects.filter(cartlist=current_list).update(cartlist=temp)
+        try:
+            for i in range(0, len(contents)):
+                new_list_item = ListItem(cartlist=current_list, item=items[i], 
+                                         item_name=item_names[i], list_position=i)
+                new_list_item.save()
+        except ValidationError as e:
+            ListItem.objects.filter(cartlist=temp).update(cartlist=current_list)
+            return 'VE'
+        return 'Success'
+
 
     @staticmethod
     def empty_list(username, name):
