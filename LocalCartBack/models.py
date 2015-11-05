@@ -1,6 +1,5 @@
 from django.db import models
 from django.contrib.auth.models import User
-from django.contrib.auth import authenticate, login
 
 
 
@@ -10,6 +9,49 @@ class UserInfo(models.Model):
     picture = models.CharField(max_length=128, null=True) # A url
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
+
+    @staticmethod
+    def create_new_user(username, password, email, first_name, last_name, user_type, picture):
+        """
+        Assume all necessary info is correctly filled in, but check to see if user already exists.
+        Create a new user with given information.
+        First and last names are optional (can be empty).
+        """
+        if User.objects.filter(username=username).exists():
+            return None
+        new_user = User.objects.create_user(username=username, password=password, email=email, 
+            first_name = first_name, last_name = last_name)
+        new_user.full_clean()
+        new_user.save()
+        new_user_info = UserInfo(user=new_user, user_type=user_type, picture=picture)
+        new_user_info.full_clean()
+        new_user_info.save()
+        return new_user_info
+
+    @staticmethod
+    def edit_user_info(username, first_name=None, last_name=None, email=None, password=None, picture=None):
+        """
+        Assume all necessary info is correctly filled in, but check to see if username exists.
+        Edit user info with information given.
+        All inputs can be None except username.
+        """
+        if not User.objects.filter(username=username).exists():
+            return None
+        current_user = User.objects.get(username=username)
+        current_user_info = UserInfo.objects.get(user__username=username)
+        if first_name is not None:
+            current_user.first_name = first_name
+        if last_name is not None:
+            current_user.last_name = last_name
+        if email is not None:
+            current_user.email = email
+        if password is not None:
+            current_user.set_password(password)
+        current_user.save()
+        if picture is not None:
+            current_user_info.picture = picture
+            current_user_info.save()
+        return current_user_info.user_type
 
 
 
@@ -75,6 +117,17 @@ class CartList(models.Model):
     class Meta:
         unique_together = ('user', 'name')
 
+    @staticmethod
+    def temporary_storage(user):
+        temp_name = 'temporary_storage'
+        while CartList.objects.filter(user=user, name=temp_name).exists():
+            temp_name += '@'
+            if len(temp_name) > 64:
+                import random
+                import string
+                temp_name = random.sample(string.letters)
+        temp = CartList(user=user, name=temp_name)
+        return temp
 
     @staticmethod
     def create_new_list(username, name):
@@ -84,6 +137,34 @@ class CartList(models.Model):
         new_list.full_clean()
         new_list.save()
         return new_list
+
+    @staticmethod
+    def refill_list(listID, contents):
+        if not CartList.objects.filter(id=listID).exists():
+            return None
+        current_list = CartList.objects.get(id=listID)
+        items = []
+        item_names = []
+        for content_item in contents:
+            if content_item['type'] == 'id':
+                item = Item.objects.get(id=content_item['name'])
+                items.append(item)
+                item_names.append(item.name)
+            else:
+                items.append(None)
+                item_names.append(content_item['name'])
+        temp = CartList.temporary_storage()
+        ListItem.objects.filter(cartlist=current_list).update(cartlist=temp)
+        try:
+            for i in range(0, len(contents)):
+                new_list_item = ListItem(cartlist=current_list, item=items[i], 
+                                         item_name=item_names[i], list_position=i)
+                new_list_item.save()
+        except ValidationError as e:
+            ListItem.objects.filter(cartlist=temp).update(cartlist=current_list)
+            return 'VE'
+        return 'Success'
+
 
     @staticmethod
     def empty_list(username, name):
@@ -108,45 +189,4 @@ class ListItem(models.Model):
     item = models.ForeignKey(Item, null=True)
     item_name = models.CharField(max_length=64)
     list_position = models.PositiveSmallIntegerField(unique=True)
-
-def create_new_user(username, password, email, first_name, last_name, user_type, picture):
-    """
-    Assume all necessary info is correctly filled in, but check to see if user already exists.
-    Create a new user with given information.
-    First and last names are optional (can be empty).
-    """
-    if User.objects.filter(username=username).exists():
-        return None
-    new_user = User.objects.create_user(username=username, password=password, email=email, 
-        first_name = first_name, last_name = last_name)
-    new_user.full_clean()
-    new_user.save()
-    new_user_info = UserInfo(user=new_user, user_type=user_type, picture=picture)
-    new_user_info.full_clean()
-    new_user_info.save()
-    return new_user_info
-
-def edit_user_info(username, first_name, last_name, email, password, picture):
-    """
-    Assume all necessary info is correctly filled in, but check to see if username exists.
-    Edit user info with information given.
-    All inputs can be None except username.
-    """
-    if not User.objects.filter(username=username).exists():
-        return None
-    current_user = User.objects.get(username=username)
-    if first_name is not None:
-        current_user.first_name = first_name
-    if last_name is not None:
-        current_user.last_name = last_name
-    if email is not None:
-        current_user.email = email
-    if password is not None:
-        current_user.set_password(password)
-    current_user.save()
-    if picture is not None:
-        current_user_info = UserInfo.objects.get(user__username=username)
-        current_user_info.picture = picture
-        current_user_info.save()
-    return current_user_info
 

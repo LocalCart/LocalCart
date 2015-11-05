@@ -5,6 +5,7 @@ import json
 from models import *
 import time
 from django import forms
+from django.contrib.auth import authenticate, login
 from django.core.exceptions import ValidationError
 
     # Use this code if the POST request sends parameters
@@ -91,7 +92,7 @@ def create_user(request):
     last_name = post.get('last_name', '') # Optional
     if len(errors) == 0:
         try:
-            new_user_info = create_new_user(username, password, email, first_name, last_name, user_type, picture)
+            new_user_info = UserInfo.create_new_user(username, password, email, first_name, last_name, user_type, picture)
         except ValidationError as e:
             errors.append(e)
         if not new_user_info:
@@ -109,6 +110,7 @@ def create_user(request):
 def edit_user(request):
     assert request.method == 'POST', 'api/user/change requires a POST request'
     errors = []
+    user_type = ''
     post = QueryDict('', mutable=True)
     post.update(json.loads(request.body))
     username = post.get('username', '')
@@ -131,7 +133,7 @@ def edit_user(request):
         picture = 'images/default_user_image'
     if len(errors) == 0:
         try:
-            current_user_info = edit_user_info(username=username, first_name=first_name, 
+            user_type = UserInfo.edit_user_info(username=username, first_name=first_name, 
               last_name=last_name, email=email, password=password, picture=picture)
         except ValidationError as e:
             errors.append(e)
@@ -195,7 +197,7 @@ def create_store(request):
     post = QueryDict('', mutable=True)
     post.update(json.loads(request.body))
     username = post.get('username', '') ### changed to username since username is also unique
-    if not User.objects.get(username=username).exists():
+    if not User.objects.filter(username=username).exists():
         errors.append('username does not exist')
         user = None
     else:
@@ -439,10 +441,12 @@ def edit_item(request):
 def edit_inventory(request):
     return edit_item(request)
 
+
 def getZip(address):
     return address.split('\n')[4]
 
 # Basic version of search checks if item name contains
+@csrf_exempt
 def search_items(request):
     assert request.method == 'GET', 'search requires a GET request'
     errors = []
@@ -540,9 +544,54 @@ def delete_list(request):
     return HttpResponse(json.dumps(reponse), content_type='application/json')
 
 
-# @csrf_exempt
-# def edit_list(request):
-#     assert request.method == 'POST', 'api/list/edit requires a POST request'
-#     errors = []
-#     post_data = json.loads(request.body)
-#     post_data.
+@csrf_exempt
+def edit_list(request):
+    assert request.method == 'POST', 'api/list/edit requires a POST request'
+    errors = []
+    post_data = json.loads(request.body)
+    if 'listID' not in post_data.keys():
+        errors.append('listID must be non-empty')
+        listID = ''
+    else:
+        listID = post_data['listID']
+        try:
+            listID = int(listID)
+        except ValueError:
+            listID = None
+            errors.append('listID must be an integer')
+    contents = post_data['contents']
+    for content_item in contents:
+        if ('type' not in content_item.keys()) or ('name' not in content_item.keys()):
+            errors.append('item must have name and type')
+        else:
+            if content_item['type'] == 'id':
+                try:
+                    content_item['name'] = int(content_item['name'])
+                except ValueError:
+                    errors.append('itemID references must be integers')
+            elif content_item['type'] == 'name':
+                content_item['name'] = str(content_item['name'])
+            else:
+                errors.append('item reference reference type must be "id" or "name"')
+    if not errors:
+        try:
+            refill = CartList.refill_list(listID, contents)
+        except ValidationError as e:
+            errors.append(e)
+        except DoesNotExist as e:
+            refill = 1
+            errors.append('Invalid itemID')
+        except MultipleObjectsReturned as e:
+            refill = 1
+            errors.append('Invalid itemID')
+        if not refill:
+            errors.append('Invalid listID')
+        elif refill == 'VE':
+            errors.append('List could not be entered into the database, reverted to previous state')
+    reponse = {
+               'status': 200,
+               'errors': errors,
+              }
+    return HttpResponse(json.dumps(reponse), content_type='application/json')
+
+
