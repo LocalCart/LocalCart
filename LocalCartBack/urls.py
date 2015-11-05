@@ -16,7 +16,7 @@ urlpatterns = [
     url(r'^api/item/edit$', views.edit_item),
     url(r'^api/list/create$', views.create_list),
     url(r'^api/list/delete$', views.delete_list),
-    url(r'^api/edit/items$', views.delete_list),
+    url(r'^api/list/edit$', views.edit_list),
     url(r'^api/search/items$', views.search_items),
     url(r'^merchant$', views.merchant_render),
     url(r'^home$', views.home),
