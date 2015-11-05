@@ -1,7 +1,12 @@
 from django.test import TestCase
+<<<<<<< HEAD
 from LocalCartBack import models, views
 from django.http import QueryDict
 import json
+=======
+from LocalCartBack import models
+from django.contrib.auth import authenticate
+>>>>>>> be676bedb02981841a940591237d5d0ebbfb60e1
 
 """
 To test all tests: ./manage.py test
@@ -89,6 +94,7 @@ class UserInfoTestCase(TestCase):
 		self.assertEqual(new_user_info.user.last_name, '')
 		self.assertEqual(new_user_info.user_type, user_type)
 		self.assertEqual(new_user_info.picture, picture)
+		self.assertTrue(authenticate(username=username, password=password))
 
 
 	def test_create_two_same_users(self):
@@ -97,10 +103,10 @@ class UserInfoTestCase(TestCase):
 		original_user = customer.create_customer_user_Linda()
 		duplicate_user = customer.create_customer_user_Linda()
 		self.assertTrue(original_user)
-		self.assertTrue(duplicate_user is None)
+		self.assertEqual(duplicate_user, None)
 
 	def test_edit_user_info(self):
-		# Edit Linda's info
+		# Edit Linda's info.
 		customer = CustomerMocker()
 		user = customer.create_customer_user_Linda()
 		first_name = "Linda"
@@ -110,3 +116,16 @@ class UserInfoTestCase(TestCase):
 		picture = 'prettybirdies'
 		edited_user_type = models.UserInfo.edit_user_info(username=user.user.username)
 		self.assertEqual(edited_user_type, user.user_type)
+		edited_user_type = models.UserInfo.edit_user_info(username=user.user.username, first_name=first_name, last_name=last_name,
+			email=email, password=password, picture=picture)
+		self.assertEqual(edited_user_type, user.user_type)
+		user = models.UserInfo.objects.get(user__username=user.user.username)
+		self.assertEqual(user.user.first_name, first_name)
+		self.assertEqual(user.user.last_name, last_name)
+		self.assertEqual(user.picture, picture)
+		self.assertTrue(authenticate(username=user.user.username, password=password))
+
+	def test_edit_user_info_nonexistent(self):
+		# Try to edit non-existent user.
+		edited_user_type = models.UserInfo.edit_user_info(username="Leila")
+		self.assertEqual(edited_user_type, None)

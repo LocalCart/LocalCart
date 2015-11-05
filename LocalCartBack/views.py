@@ -5,6 +5,7 @@ import json
 from models import *
 import time
 from django import forms
+from django.contrib.auth import authenticate, login
 from django.core.exceptions import ValidationError
 
     # Use this code if the POST request sends parameters
@@ -26,6 +27,10 @@ def merchant_render(request):
 @csrf_exempt
 def register_render(request):
     return render(request, 'register.html', context={})
+
+@csrf_exempt
+def login_render(request):
+    return render(request, 'login.html', context={})
 
 
 @csrf_exempt
