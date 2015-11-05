@@ -22,7 +22,7 @@ urlpatterns = [
     url(r'^home$', views.home),
     url(r'^register$', views.register_render),
     url(r'^login$', views.login_render),
-
+    url(r'^search$', views.search_render),
 ]
 
 

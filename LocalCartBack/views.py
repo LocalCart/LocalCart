@@ -32,6 +32,10 @@ def register_render(request):
 def login_render(request):
     return render(request, 'login.html', context={})
 
+@csrf_exempt
+def search_render(request):
+    return render(request, 'search.html', context={})
+
 
 @csrf_exempt
 def empty_db(request):
