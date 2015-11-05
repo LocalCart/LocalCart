@@ -90,7 +90,7 @@ class TestCarts(testLib.CartTestCase):
                                     data = { 'username' : 'Tom',
                                              'password' : '1234'
                                              })
-        self.assertFailResponse(respLogin)
+        self.assertSuccessResponse(respLogin)
         self.assertEquals("invalid username and password combination", respLogin['errors'][0], "")
 
 

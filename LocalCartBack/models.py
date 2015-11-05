@@ -1,5 +1,8 @@
 from django.db import models
 from django.contrib.auth.models import User
+from django.contrib.auth import authenticate, login
+
+
 
 class UserInfo(models.Model):
     user = models.OneToOneField(User)
@@ -117,3 +120,4 @@ def edit_user_info(username, first_name, last_name, email, password, picture):
         current_user_info.picture = picture
         current_user_info.save()
     return current_user_info
+

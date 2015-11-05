@@ -4,7 +4,6 @@ from django.views.decorators.csrf import csrf_exempt
 import json
 from models import *
 import time
-from django.contrib.auth import authenticate, login
 from django import forms
 from django.core.exceptions import ValidationError
 
@@ -148,6 +147,7 @@ def log_in(request):
     # and password through the body and not the url
     assert request.method == 'POST', 'api/user/login requires a POST request'
     errors = []
+    user_type = ''
     post = QueryDict('', mutable=True)
     post.update(json.loads(request.body))
     username = post.get('username', '')
@@ -156,37 +156,23 @@ def log_in(request):
     password = post.get('password', '')
     if not password:
         errors.append('password must be non-empty')
-    if len(errors) > 0:
-        reponse = {
-                   'status': 400,
-                   'errors': errors,
-                  }
-        return HttpResponse(json.dumps(reponse), content_type='application/json')
-    current = authenticate(username=username, password=password)
-    if current is not None:
-        if current.is_active:
-            login(request, current)
-            user_type = UserInfo.objects.get(user__username=username).user_type
-            reponse = {
-                       'status': 200,
-                       'username': username,
-                       'user_type': user_type,
-                      }
-            return HttpResponse(json.dumps(reponse), content_type='application/json')
+    if len(errors) == 0:
+        current = authenticate(username=username, password=password)
+        if current is not None:
+            if current.is_active:
+                login(request, current)
+                user_type = UserInfo.objects.get(user__username=username).user_type
+            else:
+                errors.append('user is not active')
         else:
-            errors.append('user is not active')
-            reponse = {
-                       'status': 400,
-                       'errors': errors,
-                      }
-            return HttpResponse(json.dumps(reponse), content_type='application/json')
-    else:
-        errors.append('invalid username and password combination')
-        reponse = {
-                   'status': 400,
-                   'errors': errors,
-                  }
-        return HttpResponse(json.dumps(reponse), content_type='application/json')
+            errors.append('invalid username and password combination')
+    reponse = {
+               'status': 200,
+               'username': username,
+               'user_type': user_type,
+               'errors': errors
+              }
+    return HttpResponse(json.dumps(reponse), content_type='application/json')
 
 @csrf_exempt
 def log_out(request):
