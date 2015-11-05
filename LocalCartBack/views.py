@@ -27,6 +27,10 @@ def merchant_render(request):
 def register_render(request):
     return render(request, 'register.html', context={})
 
+@csrf_exempt
+def login_render(request):
+    return render(request, 'login.html', context={})
+
 
 @csrf_exempt
 def empty_db(request):
