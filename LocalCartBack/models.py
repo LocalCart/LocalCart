@@ -83,13 +83,21 @@ class CartList(models.Model):
         return new_list
 
     @staticmethod
-    def delete_list(username, name):
+    def empty_list(username, name):
         if not CartList.objects.filter(user__username=username, name=name).exists():
             return None
         current_list = CartList.objects.get(user__username=username, name=name)
         ListItem.objects.filter(cartlist=current_list).delete()
-        CartList.objects.filter(user__username=username, name=name).delete()
         return 'Success'
+
+    @staticmethod
+    def delete_list(username, name):
+        if CartList.empty_list(username, name) is not None:
+            CartList.objects.filter(user__username=username, name=name).delete()
+            return 'Success'
+        else:
+            return None
+        
 
 class ListItem(models.Model):
 

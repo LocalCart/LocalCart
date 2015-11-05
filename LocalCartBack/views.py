@@ -227,14 +227,12 @@ def create_store(request):
     post = QueryDict('', mutable=True)
     post.update(json.loads(request.body))
     username = post.get('username', '') ### changed to username since username is also unique
-    try:
-        #userID = int(userID)
+    if not User.objects.get(username=username).exists():
+        errors.append('username does not exist')
+        user = None
+    else:
         user = User.objects.get(username=username)
-    except DoesNotExist:
-        username = None
-        errors.append('userID must be non-empty')
-    if not username:
-        errors.append('userID must be non-empty')
+    
     name = post.get('name', '')
     # address_street = post.get('address_street', '')
     # address_city = post.get('address_city', '')
@@ -270,7 +268,7 @@ def create_store(request):
                   }
         return HttpResponse(json.dumps(reponse), content_type='application/json')
     try:
-        new_store = Store(user = user, name=name, description=description, picture=picture,
+        new_store = Store(user=user, name=name, description=description, picture=picture,
                           address_street=address_street, address_city=address_city,
                           address_state = address_state, address_zip = address_zip,
                           phone_number=phone_number)
@@ -550,7 +548,7 @@ def create_list(request):
 
 @csrf_exempt
 def delete_list(request):
-    assert request.method == 'POST', 'api/list/create requires a POST request'
+    assert request.method == 'POST', 'api/list/delete requires a POST request'
     errors = []
     post = QueryDict('', mutable=True)
     post.update(json.loads(request.body))
@@ -573,3 +571,10 @@ def delete_list(request):
               }
     return HttpResponse(json.dumps(reponse), content_type='application/json')
 
+
+# @csrf_exempt
+# def edit_list(request):
+#     assert request.method == 'POST', 'api/list/edit requires a POST request'
+#     errors = []
+#     post_data = json.loads(request.body)
+#     post_data.
