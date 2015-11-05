@@ -1,12 +1,8 @@
 from django.test import TestCase
-<<<<<<< HEAD
 from LocalCartBack import models, views
 from django.http import QueryDict
 import json
-=======
-from LocalCartBack import models
 from django.contrib.auth import authenticate
->>>>>>> be676bedb02981841a940591237d5d0ebbfb60e1
 
 """
 To test all tests: ./manage.py test
