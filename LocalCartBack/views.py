@@ -86,7 +86,7 @@ def create_user(request):
     picture = post.get('picture', 'images/default_user_image') # Make this default
     first_name = post.get('first_name', '') # Optional
     last_name = post.get('last_name', '') # Optional
-    if not errors:
+    if len(errors) == 0:
         try:
             new_user_info = create_new_user(username, password, email, first_name, last_name, user_type, picture)
         except ValidationError as e:
@@ -111,8 +111,6 @@ def edit_user(request):
     username = post.get('username', '')
     if not username:
         errors.append('username must be non-empty')
-    elif not User.objects.filter(username=username).exists():
-        errors.append('username does not exist')
     email = post.get('email', None)
     picture = post.get('picture', None) # Make this default
     first_name = post.get('first_name', None) # Optional
@@ -128,34 +126,14 @@ def edit_user(request):
         errors.append('password must not be empty')
     if (picture is not None) and not picture:
         picture = 'images/default_user_image'
-    if len(errors) > 0:
-        reponse = {
-                   'status': 200,
-                   'errors': errors,
-                  }
-        return HttpResponse(json.dumps(reponse), content_type='application/json')
-    try:
-        current_user = User.objects.get(username=username)
-        if first_name is not None:
-            current_user.first_name = first_name
-        if last_name is not None:
-            current_user.last_name = last_name
-        if email is not None:
-            current_user.email = email
-        if password is not None:
-            current_user.set_password(password)
-        current_user.save()
-        if picture is not None:
-            current_user_info = UserInfo.objects.get(user__username=username)
-            current_user_info.picture = picture
-            current_user_info.save()
-    except ValidationError as e:
-        errors.append(e)
-        reponse = {
-                   'status': 200,
-                   'errors': errors,
-                  }
-        return HttpResponse(json.dumps(reponse), content_type='application/json')
+    if len(errors) == 0:
+        try:
+            current_user_info = edit_user_info(username=username, first_name=first_name, 
+              last_name=last_name, email=email, password=password, picture=picture)
+        except ValidationError as e:
+            errors.append(e)
+        if not current_user_info:
+            errors.append('username does not exist')
     reponse = {
                'status': 200,
                'username': username,

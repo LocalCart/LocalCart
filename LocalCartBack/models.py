@@ -93,3 +93,27 @@ def create_new_user(username, password, email, first_name, last_name, user_type,
     new_user_info.full_clean()
     new_user_info.save()
     return new_user_info
+
+def edit_user_info(username, first_name, last_name, email, password, picture):
+    """
+    Assume all necessary info is correctly filled in, but check to see if username exists.
+    Edit user info with information given.
+    All inputs can be None except username.
+    """
+    if not User.objects.filter(username=username).exists():
+        return None
+    current_user = User.objects.get(username=username)
+    if first_name is not None:
+        current_user.first_name = first_name
+    if last_name is not None:
+        current_user.last_name = last_name
+    if email is not None:
+        current_user.email = email
+    if password is not None:
+        current_user.set_password(password)
+    current_user.save()
+    if picture is not None:
+        current_user_info = UserInfo.objects.get(user__username=username)
+        current_user_info.picture = picture
+        current_user_info.save()
+    return current_user_info
