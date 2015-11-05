@@ -59,9 +59,9 @@ def empty_db(request):
 
 def check_empty(fields, post, errors):
     for field in fields:
-        field = post.get(field, '')
-        if not field:
-            errors.append('field must be non-empty')
+        f = post.get(field, '')
+        if not f:
+            errors.append(field + ' must be non-empty')
     return errors
 
 
@@ -72,18 +72,19 @@ def create_user(request):
     post = QueryDict('', mutable=True)
     post.update(json.loads(request.body))
     username = post.get('username', '')
-    if not username:
-        errors.append('username must be non-empty')
     password = post.get('password', '')
-    if not password:
-        errors.append('password must be non-empty')
     user_type = post.get('user_type', '')
     if user_type not in ['merchant', 'customer']:
         errors.append('user_type must be either merchant or customer')
     email = post.get('email', '')
-    if not email:
-        errors.append('email must be non-empty')
     picture = post.get('picture', 'images/default_user_image') # Make this default
+    fields = [
+              'username',
+              'password',
+              'user_type',
+              'email',
+             ]
+    errors = check_empty(fields, post, errors)
     first_name = post.get('first_name', '') # Optional
     last_name = post.get('last_name', '') # Optional
     if len(errors) == 0:
@@ -361,7 +362,8 @@ def create_item(request):
         return HttpResponse(json.dumps(reponse), content_type='application/json')
     reponse = {
                'status': 200,
-               'itemID': new_item.id
+               'itemID': new_item.id,
+                'errors': errors,
               }
     return HttpResponse(json.dumps(reponse), content_type='application/json')
 @csrf_exempt
@@ -369,7 +371,7 @@ def add_inventory(request):
     return create_item(request)
 @csrf_exempt
 def edit_item(request):
-    assert request.method == 'POST', ' requires a POST request'
+    assert request.method == 'POST', 'api/item/create requires a POST request'
     errors = []
     post = QueryDict('', mutable=True)
     post.update(json.loads(request.body))
@@ -384,7 +386,7 @@ def edit_item(request):
     elif not Item.objects.filter(id=itemID).exists():
         errors.append('invalid itemID')
     else:
-        current_item = Item.objects.filter(id=itemID)[0]
+        current_item = Item.objects.get(id=itemID)
     name = post.get('name', '')
     description = post.get('description', '')
     price = post.get('price', '')
@@ -431,12 +433,36 @@ def edit_item(request):
         return HttpResponse(json.dumps(reponse), content_type='application/json')
     reponse = {
                'status': 200,
+               'errors': errors,
               }
     return HttpResponse(json.dumps(reponse), content_type='application/json')
 @csrf_exempt
 def edit_inventory(request):
     return edit_item(request)
 
+@csrf_exempt
+def delete_item(request):
+    assert request.method == 'POST', 'api/item/delete requires a POST request'
+    errors = []
+    post = QueryDict('', mutable=True)
+    post.update(json.loads(request.body))
+    itemID = post.get('itemID', '')
+    try:
+        itemID = int(itemID)
+    except ValueError:
+        itemID = None
+        errors.append('itemID must be an integer')
+    if not itemID:
+        errors.append('itemID must be non-empty')
+    elif not Item.objects.filter(id=itemID).exists():
+        errors.append('invalid itemID')
+    else:
+        Item.objects.filter(id=itemID).delete()
+    reponse = {
+               'status': 200,
+               'errors': errors,
+              }
+    return HttpResponse(json.dumps(reponse), content_type='application/json')
 
 def getZip(address):
     return address.split('\n')[4]
