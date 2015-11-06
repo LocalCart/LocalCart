@@ -1,6 +1,8 @@
 from django.db import models
 from django.contrib.auth.models import User
-
+import json
+import urllib
+from time import sleep
 
 
 class UserInfo(models.Model):
@@ -51,7 +53,7 @@ class UserInfo(models.Model):
         if picture is not None:
             current_user_info.picture = picture
             current_user_info.save()
-        return current_user_info.user_type
+        return current_user_info
 
 
 
@@ -72,6 +74,21 @@ class Store(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
     # Add hours
 
+    @staticmethod
+    def create_new_store(user, name, description, picture, address_street, address_city,
+                          address_state , address_zip ,phone_number):
+        """
+        Assume all necessary info is correctly filled in.
+        Create a new store with given information.
+        description and picture are optional (can be empty).
+        """
+        new_store = Store(user=user, name=name, description=description, picture=picture,
+                          address_street=address_street, address_city=address_city,
+                          address_state = address_state, address_zip = address_zip,
+                          phone_number=phone_number)
+        new_store.full_clean()
+        new_store.save()
+        return new_store
 
 
 class Inventory(models.Model):
@@ -95,6 +112,19 @@ class Item(models.Model):
 
     class Meta:
         unique_together = ('inventory', 'name')
+
+
+    def edit_item(self, name, description, picture, price):
+        if name:
+            self.name = name
+        if description:
+            self.description = description
+        if picture:
+            self.picture = picture
+        if price:
+            self.price = price
+        self.full_clean()
+        self.save()
 
 
 class Reviews(models.Model):
@@ -133,6 +163,9 @@ class CartList(models.Model):
     def create_new_list(username, name):
         if not User.objects.filter(username=username).exists():
             return None
+        user = User.objects.get(username=username)
+        if UserInfo.objects.get(user=user).user_type != "customer":
+            return None
         new_list = CartList(user=User.objects.get(username=username), name=name)
         new_list.full_clean()
         new_list.save()
@@ -153,7 +186,7 @@ class CartList(models.Model):
             else:
                 items.append(None)
                 item_names.append(content_item['name'])
-        temp = CartList.temporary_storage()
+        temp = CartList.temporary_storage(current_list.user)
         ListItem.objects.filter(cartlist=current_list).update(cartlist=temp)
         try:
             for i in range(0, len(contents)):
@@ -181,12 +214,67 @@ class CartList(models.Model):
             return 'Success'
         else:
             return None
+
+    def map_list(self):
+        map_dict = dict()
+        items = ListItem.objects.filter(cartlist=self).order_by('list_position')
+        counter = 0 # Google Maps API limits 10 geocodes per second
+        for li in items:
+            if counter % 10:
+                sleep(1)
+            if li.item:
+                counter += 1
+                store = li.item.store
+                if store.name in map_dict.keys():
+                    map_dict[store.name]['positions'].append(li.list_position)
+                else:
+                    address_list = [
+                                    store.address_street,
+                                    store.address_city,
+                                    store.address_state,
+                                    store.address_zip,
+                                   ]
+                    address = ' '.join(address_list)
+                    coord = lat_lon(address)
+                    curr_entry = dict()
+                    curr_entry['location'] = coord
+                    curr_entry['positions'] = [li.list_position]
+                    map_dict[store.name] = curr_entry
+        map_markers = []
+        for store_name in map_dict.keys():
+            store_dict = map_dict[store_name]
+            if store_dict['location']:
+                pin = store_name + ' (' + ', '.join(store_dict[positions]) + ')'
+                map_markers.append({
+                                    'pin_name': pin,
+                                    'latitude': store_dict['location'][0],
+                                    'longitude': store_dict['location'][1],
+                                   })
+        return map_markers
+
+
+
+
+
         
 
 class ListItem(models.Model):
 
     cartlist = models.ForeignKey(CartList)
-    item = models.ForeignKey(Item, null=True)
+    item = models.ForeignKey(Item, null=True, default=None)
     item_name = models.CharField(max_length=64)
     list_position = models.PositiveSmallIntegerField(unique=True)
+
+
+
+def lat_lon(address):
+    gm_url = 'http://maps.googleapis.com/maps/api/geocode/json?'
+    full_url = gm_url + urllib.urlencode({'address': address})
+    resp = json.loads(urllib.urlopen(full_url).read())
+    if resp['results']:
+        loc = resp['results'][0]['geometry']['location']
+        return loc['lat'], loc['lng']
+    else:
+        return None
+
 

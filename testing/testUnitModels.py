@@ -110,11 +110,11 @@ class UserInfoTestCase(TestCase):
 		email = "r.linda.zhang@gmail.com"
 		password = "987"
 		picture = 'prettybirdies'
-		edited_user_type = models.UserInfo.edit_user_info(username=user.user.username)
-		self.assertEqual(edited_user_type, user.user_type)
+		edited_user_info = models.UserInfo.edit_user_info(username=user.user.username)
+		self.assertEqual(edited_user_info.user_type, user.user_type)
 		edited_user_type = models.UserInfo.edit_user_info(username=user.user.username, first_name=first_name, last_name=last_name,
 			email=email, password=password, picture=picture)
-		self.assertEqual(edited_user_type, user.user_type)
+		self.assertEqual(edited_user_info.user_type, user.user_type)
 		user = models.UserInfo.objects.get(user__username=user.user.username)
 		self.assertEqual(user.user.first_name, first_name)
 		self.assertEqual(user.user.last_name, last_name)

@@ -59,9 +59,13 @@
           <br>
           <div class="row col-sm-offset-1"> 
             <label> Type of Account: </label>
-            <div class="btn-group">
-              <a href="#" class="btn btn-default">Merchant</a>
-              <a href="#" class="btn btn-default">Customer</a>
+            <div class="btn-group" data-toggle="buttons">
+              <label class="btn btn-default " ng-click="registerController.newUser.user_type='merchant'">
+                <input type="radio"  name="options" checked> Merchant
+              </label>
+              <label class="btn btn-default" ng-click="registerController.newUser.user_type='customer'">
+                <input type="radio" name="options"> Customer
+              </label>            
             </div>
           </div>
           <br>
