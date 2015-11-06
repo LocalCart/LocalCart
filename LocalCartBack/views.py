@@ -455,9 +455,9 @@ def getZip(address):
 def search_items(request):
     assert request.method == 'GET', 'search requires a GET request'
     errors = []
-    get = QueryDict('', mutable=True)
-    get.update(json.loads(request.body))
-    #get = request.GET
+    # get = QueryDict('', mutable=True)
+    # get.update(json.loads(request.body))
+    get = request.GET
     query = get.get('query', '')
     if not query:
         errors.append('query must be non-empty')

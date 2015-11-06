@@ -157,6 +157,7 @@ class CartList(models.Model):
                 import string
                 temp_name = random.sample(string.letters)
         temp = CartList(user=user, name=temp_name)
+        temp.save()
         return temp
 
     @staticmethod
@@ -195,7 +196,9 @@ class CartList(models.Model):
                 new_list_item.save()
         except ValidationError as e:
             ListItem.objects.filter(cartlist=temp).update(cartlist=current_list)
+            temp.delete()
             return 'VE'
+        temp.delete()
         return 'Success'
 
 

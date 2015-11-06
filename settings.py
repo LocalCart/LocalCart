@@ -145,8 +145,7 @@ STATICFILES_DIRS = (
 )
 
 
-# Parse database configuration from $DATABASE_URL
-import dj_database_url
+# # Parse database configuration from $DATABASE_URL
 # ON_HEROKU = os.environ.get('ON_HEROKU')
 # if ON_HEROKU:
 #     DATABASE_URL = 'postgresql:///postgresql'
