@@ -202,6 +202,7 @@ def create_store(request):
     errors = []
     post = QueryDict('', mutable=True)
     post.update(json.loads(request.body))
+    import pdb; pdb.set_trace()
     username = post.get('username', '') ### changed to username since username is also unique
     if not User.objects.filter(username=username).exists():
         errors.append('username does not exist')
@@ -217,11 +218,13 @@ def create_store(request):
 
     # If using the address format
     address = post.get('address', '').split('\n')
-    if len(address) == 4:
+    if len(address) == 5:
         address_street = address[0]
-        address_city = address[1]
-        address_state = address[2]
-        address_zip = address[3]
+        address_city = address[2]
+        address_state = address[3]
+        address_zip = address[4]
+    else:
+        errors.append('address not correctly formatted')
 
     phone_number = post.get('phone_number', '')
     description = post.get('description', 'Good Store') #default
@@ -237,29 +240,24 @@ def create_store(request):
               # 'description',
              ]
     errors = check_empty(fields, post, errors)
-    if len(errors) > 0:
-        reponse = {
-                   'status': 400,
-                   'errors': errors,
-                  }
-        return HttpResponse(json.dumps(reponse), content_type='application/json')
-    try:
-        new_store = Store(user=user, name=name, description=description, picture=picture,
-                          address_street=address_street, address_city=address_city,
-                          address_state = address_state, address_zip = address_zip,
-                          phone_number=phone_number)
-        new_store.full_clean()
-        new_store.save()
-    except ValidationError as e:
-        errors.append(e)
-        reponse = {
-                   'status': 400,
-                   'errors': errors,
-                  }
-        return HttpResponse(json.dumps(reponse), content_type='application/json')
+    if len(errors) == 0:
+        try:
+            new_store = Store(user=user, name=name, description=description, picture=picture,
+                              address_street=address_street, address_city=address_city,
+                              address_state=address_state, address_zip=address_zip,
+                              phone_number=phone_number)
+            new_store.full_clean()
+            new_store.save()
+        except ValidationError as e:
+            errors.append(e)
+    if len(errors) == 0:
+        storeID = new_store.id
+    else:
+        storeID = 0
     reponse = {
                'status': 200,
-               'storeID': new_store.id
+               'storeID': storeID,
+               'errors': errors,
               }
     return HttpResponse(json.dumps(reponse), content_type='application/json')
 
