@@ -22,19 +22,19 @@ def home(request):
 
 @csrf_exempt
 def merchant_render(request):
-    return render(request, 'merchant.html', context={})
+    return render(request, 'static/merchant.html', context={})
 
 @csrf_exempt
 def register_render(request):
-    return render(request, 'register.html', context={})
+    return render(request, 'static/register.html', context={})
 
 @csrf_exempt
 def login_render(request):
-    return render(request, 'login.html', context={})
+    return render(request, 'static/login.html', context={})
 
 @csrf_exempt
 def search_render(request):
-    return render(request, 'search.html', context={})
+    return render(request, 'static/search.html', context={})
 
 
 @csrf_exempt
