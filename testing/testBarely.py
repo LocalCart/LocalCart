@@ -224,6 +224,36 @@ class TestCarts(testLib.CartTestCase):
                                              })
         self.assertFailResponse(respCreateStore)
 
+    def testCreateStoreDuplicateAddress(self):
+        respCreate = self.makeRequest("/api/user/create", method="POST",
+                                    data = { 'username' : 'Tom',
+                                             'password' : '123456',
+                                             'user_type' : 'customer',
+                                             'email' : 'tommeng@berkeley.edu'
+                                             })
+
+        self.assertSuccessResponse(respCreate)
+
+        respCreateStore = self.makeRequest("/api/store/create", method="POST",
+                                    data = { 'username' : 'Tom',
+                                             'name' : 'Tom store',
+                                             'address' : '1234 12th st.\n\nBerkeley\nCA\n94704',
+                                             'phone_number' : '(510)642-6000',
+                                             #'picture' : 'pic',
+                                             #'description' : 'This is a very good store'
+                                             })
+        self.assertSuccessResponse(respCreateStore)
+
+        respCreateStore = self.makeRequest("/api/store/create", method="POST",
+                                    data = { 'username' : 'Tom',
+                                             'name' : 'Tom store',
+                                             'address' : '1234 12th st.\n\nBerkeley\nCA\n94704',
+                                             'phone_number' : '(510)642-6000',
+                                             #'picture' : 'pic',
+                                             #'description' : 'This is a very good store'
+                                             })
+        self.assertFailResponse(respCreateStore)
+        self.assertEquals(respCreateStore['errors'][0], 'store already exists at this address')
 
 #################################################################################################
         

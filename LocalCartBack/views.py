@@ -249,6 +249,9 @@ def create_store(request):
         address_city = address[2]
         address_state = address[3]
         address_zip = address[4]
+        if Store.objects.filter(address_street=address_street, address_city=address_city,
+                              address_state = address_state, address_zip = address_zip).exists():
+            errors.append('store already exists at this address')
     else:
         errors.append('address not correctly formatted')
 
