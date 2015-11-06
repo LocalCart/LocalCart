@@ -878,5 +878,3 @@ class TestUnitViewsCarts(TestCase):
 
 
 
-
-
