@@ -7,7 +7,7 @@ from django.test import RequestFactory
 from LocalCartBack import views
 from LocalCartBack import models
 import json
-
+import urllib
 import os
 #import testLib
 
@@ -608,7 +608,7 @@ class TestUnitViewsCarts(TestCase):
 
 #### This one is failing because don't know how to send a fake get request with json
     def testSearchItem(self):
-        request = self.factory.get("/api/user/create", json.dumps({ 'username' : 'Tom',
+        request = self.factory.post("/api/user/create", json.dumps({ 'username' : 'Tom',
                                              'password' : '123456',
                                              'user_type' : 'customer',
                                              'email' : 'tommeng@berkeley.edu',
@@ -636,8 +636,8 @@ class TestUnitViewsCarts(TestCase):
                                              'price': '2.00'
                                              }), content_type='application/json')
         response = views.create_item(request)
-
-        request = self.factory.post("/api/search/items", json.dumps({ 'query' : 'apple','location' : '1234 12th st.\n \nBerkeley\nCA\n94704'}), content_type='application/json')
+        query = { 'query' : 'apple','location' : '1234 12th st.\n\nBerkeley\nCA\n94704'}
+        request = self.factory.get("/api/search/items?" + urllib.urlencode(query), content_type='application/json')
         response = views.search_items(request)
         respSearchItem = self.getDataFromResponse(response)
 
