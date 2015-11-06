@@ -17,7 +17,7 @@ from django.core.exceptions import ValidationError
 
 @csrf_exempt
 def home(request):
-    return render(request, 'index.html', context={})
+    return render(request, 'static/index.html', context={})
 
 
 @csrf_exempt
