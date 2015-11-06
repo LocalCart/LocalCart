@@ -835,6 +835,107 @@ class TestUnitViewsCarts(TestCase):
         respEditList = self.getDataFromResponse(response)
         self.assertEquals(0, len(respEditList['errors']))  
 
+    def testMapList(self):
+        request = self.factory.post("/api/user/create", json.dumps({ 'username' : 'Tom',
+                                             'password' : '123456',
+                                             'user_type' : 'customer',
+                                             'email' : 'tommeng@berkeley.edu',
+                                             }), content_type='application/json')
+        response = views.create_user(request);
+
+        request = self.factory.post("/api/list/create", json.dumps({
+                                             'username': 'Tom',
+                                             'name': "Tom's shopping list"
+                                             }), content_type='application/json')
+        response = views.create_list(request)
+        respList = self.getDataFromResponse(response)
+
+        request = self.factory.post("/api/list/edit", json.dumps({
+                                             'listID': respList['listID'],
+                                             'contents': [
+                                                            {'name': 'chair', 'type': 'name'},
+                                                            {'name': 'apple', 'type': 'name'}
+                                                         ]
+                                             }), content_type='application/json')
+        response = views.edit_list(request)
+        respEditList = self.getDataFromResponse(response)
+        self.assertEquals(0, len(respEditList['errors']))  
+
+        request = self.factory.post("/api/list/map", json.dumps({
+                                             'listID': respList['listID'],
+                                             }), content_type='application/json')
+        response = views.map_list(request)
+        respMapList = self.getDataFromResponse(response)
+        self.assertEquals(0, len(respMapList['errors']))
+
+    def testMapListListIDNotInteger(self):
+        request = self.factory.post("/api/user/create", json.dumps({ 'username' : 'Tom',
+                                             'password' : '123456',
+                                             'user_type' : 'customer',
+                                             'email' : 'tommeng@berkeley.edu',
+                                             }), content_type='application/json')
+        response = views.create_user(request);
+
+        request = self.factory.post("/api/list/create", json.dumps({
+                                             'username': 'Tom',
+                                             'name': "Tom's shopping list"
+                                             }), content_type='application/json')
+        response = views.create_list(request)
+        respList = self.getDataFromResponse(response)
+
+        request = self.factory.post("/api/list/edit", json.dumps({
+                                             'listID': respList['listID'],
+                                             'contents': [
+                                                            {'name': 'chair', 'type': 'name'},
+                                                            {'name': 'apple', 'type': 'name'}
+                                                         ]
+                                             }), content_type='application/json')
+        response = views.edit_list(request)
+        respEditList = self.getDataFromResponse(response)
+        self.assertEquals(0, len(respEditList['errors']))  
+
+        request = self.factory.post("/api/list/map", json.dumps({
+                                             'listID': 'hello',
+                                             }), content_type='application/json')
+        response = views.map_list(request)
+        respMapList = self.getDataFromResponse(response)
+        self.assertEquals('listID must be an integer', respMapList['errors'][0])
+
+    def testMapListListIDNotValid(self):
+        request = self.factory.post("/api/user/create", json.dumps({ 'username' : 'Tom',
+                                             'password' : '123456',
+                                             'user_type' : 'customer',
+                                             'email' : 'tommeng@berkeley.edu',
+                                             }), content_type='application/json')
+        response = views.create_user(request);
+
+        request = self.factory.post("/api/list/create", json.dumps({
+                                             'username': 'Tom',
+                                             'name': "Tom's shopping list"
+                                             }), content_type='application/json')
+        response = views.create_list(request)
+        respList = self.getDataFromResponse(response)
+
+        request = self.factory.post("/api/list/edit", json.dumps({
+                                             'listID': respList['listID'],
+                                             'contents': [
+                                                            {'name': 'chair', 'type': 'name'},
+                                                            {'name': 'apple', 'type': 'name'}
+                                                         ]
+                                             }), content_type='application/json')
+        response = views.edit_list(request)
+        respEditList = self.getDataFromResponse(response)
+        self.assertEquals(0, len(respEditList['errors']))  
+
+        request = self.factory.post("/api/list/map", json.dumps({
+                                             'listID': respList['listID']+1,
+                                             }), content_type='application/json')
+        response = views.map_list(request)
+        respMapList = self.getDataFromResponse(response)
+        self.assertEquals('listID is not valid', respMapList['errors'][0])
+
+
+
     # def testLogin(self):
     #     request = self.factory.post("/api/user/login", json.dumps({ 'username' : 'Tom',
     #                                          'password' : '123456',
