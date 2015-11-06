@@ -3,7 +3,7 @@ from django.contrib import admin
 from . import views
 
 urlpatterns = [
-    url(r'^$', 'LocalCartBack.views.home'),
+    url(r'^$', views.home),
     url(r'^api/user/create$', views.create_user),
     url(r'^api/user/edit$', views.edit_user),
     url(r'^api/user/destroy$', views.empty_db),
