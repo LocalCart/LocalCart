@@ -36,6 +36,9 @@ def login_render(request):
 def search_render(request):
     return render(request, 'search.html', context={})
 
+@csrf_exempt
+def inventory_render(request):
+    return render(request, 'inventory.html', context={})
 
 @csrf_exempt
 def empty_db(request):
