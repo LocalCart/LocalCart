@@ -202,7 +202,6 @@ def create_store(request):
     errors = []
     post = QueryDict('', mutable=True)
     post.update(json.loads(request.body))
-    import pdb; pdb.set_trace()
     username = post.get('username', '') ### changed to username since username is also unique
     if not User.objects.filter(username=username).exists():
         errors.append('username does not exist')
