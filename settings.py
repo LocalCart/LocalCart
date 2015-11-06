@@ -39,6 +39,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'LocalCartBack',
     'django_nose',
+    'static',
 ]
 
 MIDDLEWARE_CLASSES = [
@@ -179,3 +180,5 @@ NOSE_ARGS = [
     '--cover-html',
     '--cover-package=LocalCartBack',
 ]
+
+
