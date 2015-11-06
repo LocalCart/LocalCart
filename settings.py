@@ -85,7 +85,7 @@ DATABASES = {
     }
 }
 import dj_database_url
-# DATABASES['default'] =  dj_database_url.config()
+DATABASES['default'] =  dj_database_url.config()
 # DATABASES['default']['ENGINE'] = 'django.db.backends.postgresql_psycopg2'
 # DATABASES['default']['USER'] = 'django'
 # DATABASES['default']['PASSWORD'] = '123456'
@@ -146,7 +146,6 @@ STATICFILES_DIRS = (
 
 
 # # Parse database configuration from $DATABASE_URL
-import dj_database_url
 # ON_HEROKU = os.environ.get('ON_HEROKU')
 # if ON_HEROKU:
 #     DATABASE_URL = 'postgresql:///postgresql'
