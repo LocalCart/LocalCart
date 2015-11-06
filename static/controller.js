@@ -7,7 +7,7 @@ app.config(function($interpolateProvider) {
 
 app.controller('IndexController', function($http){
   var vm = this;
-  vm.searchResults = results
+  vm.searchResults = results;
   // vm.addItem = function(itemToAdd) {
   //   var item = {};
   //   item.inventory = "1"
@@ -34,10 +34,11 @@ app.controller('RegisterController', function($http) {
   var vm = this;
   vm.newUser = {}
   vm.newUser.username = "testaccount";
-  vm.user_type = "customer"
+  vm.newUser.user_type = "merchant"
   vm.createUser = function() {
     if (vm.newUser.password == vm.confirmPassword) {
       $http.post("/api/user/create", vm.newUser);
+      console.log("hello");
     } else {
       console.log("incorrect");
     }
