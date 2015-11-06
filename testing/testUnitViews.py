@@ -169,7 +169,7 @@ class TestUnitViewsCarts(TestCase):
 
         request = self.factory.post("/api/store/create", json.dumps({ 'username' : 'Tom',
                                              'name' : 'Tom store',
-                                             'address' : '1234 12th st.\nBerkeley\nCA\n94704',
+                                             'address' : '1234 12th st.\n \nBerkeley\nCA\n94704',
                                              'phone_number' : '(510)642-6000',
                                              #'picture' : 'pic',
                                              #'description' : 'This is a very good store'
@@ -189,7 +189,7 @@ class TestUnitViewsCarts(TestCase):
 
         request = self.factory.post("/api/store/create", json.dumps({ 'username' : 'NotExist',
                                              'name' : 'Tom store',
-                                             'address' : '1234 12th st.\nBerkeley\nCA\n94704',
+                                             'address' : '1234 12th st.\n \nBerkeley\nCA\n94704',
                                              'phone_number' : '(510)642-6000',
                                              #'picture' : 'pic',
                                              #'description' : 'This is a very good store'
@@ -210,14 +210,14 @@ class TestUnitViewsCarts(TestCase):
 
         request = self.factory.post("/api/store/create", json.dumps({ 'username' : 'Tom',
                                              'name' : '',
-                                             'address' : '1234 12th st.\nBerkeley\nCA',
+                                             'address' : '1234 12th st.\n \nBerkeley\nCA',
                                              }), content_type='application/json')
         response = views.create_store(request)
         respCreateStore = self.getDataFromResponse(response)
         self.assertSuccessResponse(respCreateStore)
-        self.assertEquals("Invalid address", respCreateStore['errors'][0])
-        self.assertEquals("field must be non-empty", respCreateStore['errors'][1])
-        self.assertEquals("field must be non-empty", respCreateStore['errors'][2])
+        self.assertEquals("address not correctly formatted", respCreateStore['errors'][0])
+        self.assertEquals("name must be non-empty", respCreateStore['errors'][1])
+        self.assertEquals("phone_number must be non-empty", respCreateStore['errors'][2])
 
 
 
@@ -234,7 +234,7 @@ class TestUnitViewsCarts(TestCase):
 
         request = self.factory.post("/api/store/create", json.dumps({ 'username' : 'Tom',
                                              'name' : 'Tom store',
-                                             'address' : '1234 12th st.\nBerkeley\nCA\n94704',
+                                             'address' : '1234 12th st.\n \nBerkeley\nCA\n94704',
                                              'phone_number' : '(510)642-6000',
                                              #'picture' : 'pic',
                                              #'description' : 'This is a very good store'
@@ -259,7 +259,7 @@ class TestUnitViewsCarts(TestCase):
 
         request = self.factory.post("/api/store/create", json.dumps({ 'username' : 'Tom',
                                              'name' : 'Tom store',
-                                             'address' : '1234 12th st.\nBerkeley\nCA\n94704',
+                                             'address' : '1234 12th st.\n \nBerkeley\nCA\n94704',
                                              'phone_number' : '(510)642-6000',
                                              #'picture' : 'pic',
                                              #'description' : 'This is a very good store'
@@ -284,7 +284,7 @@ class TestUnitViewsCarts(TestCase):
 
         request = self.factory.post("/api/store/create", json.dumps({ 'username' : 'Tom',
                                              'name' : 'Tom store',
-                                             'address' : '1234 12th st.\nBerkeley\nCA\n94704',
+                                             'address' : '1234 12th st.\n \nBerkeley\nCA\n94704',
                                              'phone_number' : '(510)642-6000',
                                              #'picture' : 'pic',
                                              #'description' : 'This is a very good store'
@@ -309,7 +309,7 @@ class TestUnitViewsCarts(TestCase):
 
         request = self.factory.post("/api/store/create", json.dumps({ 'username' : 'Tom',
                                              'name' : 'Tom store',
-                                             'address' : '1234 12th st.\nBerkeley\nCA\n94704',
+                                             'address' : '1234 12th st.\n \nBerkeley\nCA\n94704',
                                              'phone_number' : '(510)642-6000',
                                              #'picture' : 'pic',
                                              #'description' : 'This is a very good store'
@@ -338,7 +338,7 @@ class TestUnitViewsCarts(TestCase):
 
         request = self.factory.post("/api/store/create", json.dumps({ 'username' : 'Tom',
                                              'name' : 'Tom store',
-                                             'address' : '1234 12th st.\nBerkeley\nCA\n94704',
+                                             'address' : '1234 12th st.\n \nBerkeley\nCA\n94704',
                                              'phone_number' : '(510)642-6000',
                                              #'picture' : 'pic',
                                              #'description' : 'This is a very good store'
@@ -374,7 +374,7 @@ class TestUnitViewsCarts(TestCase):
 
         request = self.factory.post("/api/store/create", json.dumps({ 'username' : 'Tom',
                                              'name' : 'Tom store',
-                                             'address' : '1234 12th st.\nBerkeley\nCA\n94704',
+                                             'address' : '1234 12th st.\n \nBerkeley\nCA\n94704',
                                              'phone_number' : '(510)642-6000',
                                              #'picture' : 'pic',
                                              #'description' : 'This is a very good store'
@@ -409,7 +409,7 @@ class TestUnitViewsCarts(TestCase):
 
         request = self.factory.post("/api/store/create", json.dumps({ 'username' : 'Tom',
                                              'name' : 'Tom store',
-                                             'address' : '1234 12th st.\nBerkeley\nCA\n94704',
+                                             'address' : '1234 12th st.\n \nBerkeley\nCA\n94704',
                                              'phone_number' : '(510)642-6000',
                                              #'picture' : 'pic',
                                              #'description' : 'This is a very good store'
@@ -444,7 +444,7 @@ class TestUnitViewsCarts(TestCase):
 
         request = self.factory.post("/api/store/create", json.dumps({ 'username' : 'Tom',
                                              'name' : 'Tom store',
-                                             'address' : '1234 12th st.\nBerkeley\nCA\n94704',
+                                             'address' : '1234 12th st.\n \nBerkeley\nCA\n94704',
                                              'phone_number' : '(510)642-6000',
                                              }), content_type='application/json')
         response = views.create_store(request)
@@ -482,7 +482,7 @@ class TestUnitViewsCarts(TestCase):
 
         request = self.factory.post("/api/store/create", json.dumps({ 'username' : 'Tom',
                                              'name' : 'Tom store',
-                                             'address' : '1234 12th st.\nBerkeley\nCA\n94704',
+                                             'address' : '1234 12th st.\n \nBerkeley\nCA\n94704',
                                              'phone_number' : '(510)642-6000',
                                              }), content_type='application/json')
         response = views.create_store(request)
@@ -526,7 +526,7 @@ class TestUnitViewsCarts(TestCase):
 
         request = self.factory.post("/api/store/create", json.dumps({ 'username' : 'Tom',
                                              'name' : 'Tom store',
-                                             'address' : '1234 12th st.\nBerkeley\nCA\n94704',
+                                             'address' : '1234 12th st.\n \nBerkeley\nCA\n94704',
                                              'phone_number' : '(510)642-6000',
                                              }), content_type='application/json')
         response = views.create_store(request)
@@ -569,7 +569,7 @@ class TestUnitViewsCarts(TestCase):
 
         request = self.factory.post("/api/store/create", json.dumps({ 'username' : 'Tom',
                                              'name' : 'Tom store',
-                                             'address' : '1234 12th st.\nBerkeley\nCA\n94704',
+                                             'address' : '1234 12th st.\n \nBerkeley\nCA\n94704',
                                              'phone_number' : '(510)642-6000',
                                              }), content_type='application/json')
         response = views.create_store(request)
@@ -617,7 +617,7 @@ class TestUnitViewsCarts(TestCase):
 
         request = self.factory.post("/api/store/create", json.dumps({ 'username' : 'Tom',
                                              'name' : 'Tom store',
-                                             'address' : '1234 12th st.\nBerkeley\nCA\n94704',
+                                             'address' : '1234 12th st.\n \nBerkeley\nCA\n94704',
                                              'phone_number' : '(510)642-6000',
                                              }), content_type='application/json')
         response = views.create_store(request)

@@ -112,10 +112,6 @@ class CartTestCase(RestTestCase):
 
     def tearDown(self):
         self.conn.close ()
-<<<<<<< HEAD
-
-=======
->>>>>>> ccc9c8944a928a6369c0e862296318a43cd1d968
 
     def assertSuccessResponse(self,
                               respData,

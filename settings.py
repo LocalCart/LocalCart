@@ -37,9 +37,9 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'corsheaders',
+    #'corsheaders',
     'LocalCartBack',
-    'django_nose',
+    #'django_nose',
     # 'static',
 ]
 
