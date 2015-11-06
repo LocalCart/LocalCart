@@ -112,7 +112,10 @@ class CartTestCase(RestTestCase):
 
     def tearDown(self):
         self.conn.close ()
+<<<<<<< HEAD
 
+=======
+>>>>>>> ccc9c8944a928a6369c0e862296318a43cd1d968
 
     def assertSuccessResponse(self,
                               respData,
@@ -121,11 +124,15 @@ class CartTestCase(RestTestCase):
         Check that the response is not an error response
         """
         self.assertEquals(200, respData['status'], msg)
+        if len(respData['errors']) > 0:
+            self.assertEquals(0, respData['errors'])
+        self.assertEquals(0, len(respData['errors']), msg)
 
     def assertFailResponse(self,
                               respData,
                               msg=None):
-        self.assertEquals(400, respData['status'], msg)
+        self.assertEquals(200, respData['status'], msg)
+        self.assertTrue(0 < len(respData['errors']), msg)
 
 
 

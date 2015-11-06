@@ -17,23 +17,32 @@ from django.core.exceptions import ValidationError, ObjectDoesNotExist, Multiple
 
 @csrf_exempt
 def home(request):
-    return render(request, 'index.html', context={})
+    return render(request, 'static/index.html', context={})
 
 
 @csrf_exempt
 def merchant_render(request):
-    return render(request, 'merchant.html', context={})
+    return render(request, 'static/merchant.html', context={})
 
 @csrf_exempt
 def register_render(request):
-    return render(request, 'register.html', context={})
+    return render(request, 'static/register.html', context={})
+
+@csrf_exempt
+def login_render(request):
+    return render(request, 'static/login.html', context={})
+
+@csrf_exempt
+def search_render(request):
+    return render(request, 'static/search.html', context={})
 
 
 @csrf_exempt
 def empty_db(request):
     errors = []
     try:
-        models = [User, 
+        models = [
+                  User, 
                   UserInfo, 
                   Store, 
                   Inventory, 
@@ -46,22 +55,18 @@ def empty_db(request):
             m.objects.all().delete()
     except Exception as e:
         errors.append(e)
-        reponse = {
-                   'status': 400,
-                   'errors': errors,
-                  }
-        return HttpResponse(json.dumps(reponse), content_type='application/json')
     reponse = {
                'status': 200,
+               'errors': errors,
               }
     return HttpResponse(json.dumps(reponse), content_type='application/json')
 
 
 def check_empty(fields, post, errors):
     for field in fields:
-        field = post.get(field, '')
-        if not field:
-            errors.append('field must be non-empty')
+        f = post.get(field, '')
+        if not f:
+            errors.append(field + ' must be non-empty')
     return errors
 
 def return_error(errors):
@@ -72,24 +77,48 @@ def return_error(errors):
     return HttpResponse(json.dumps(response), content_type='application/json')
 
 @csrf_exempt
+def return_user(request):
+    assert request.method == 'GET', 'api/user/get requires a GET request'
+    errors = []
+    user = request.user
+    if not user.is_authenticated():
+        errors.append('Not logged in')
+        user_id = -1
+        username = ''
+    else:
+        user_id = user.id
+        username = user.username
+    reponse = {
+               'status': 200,
+               'id': user_id,
+               'username': username,
+               'errors': errors,
+              }
+    return HttpResponse(json.dumps(reponse), content_type='application/json')
+
+
+
+
+@csrf_exempt
 def create_user(request):
     assert request.method == 'POST', 'api/user/create requires a POST request'
     errors = []
     post = QueryDict('', mutable=True)
     post.update(json.loads(request.body))
     username = post.get('username', '')
-    if not username:
-        errors.append('username must be non-empty')
     password = post.get('password', '')
-    if not password:
-        errors.append('password must be non-empty')
     user_type = post.get('user_type', '')
     if user_type not in ['merchant', 'customer']:
         errors.append('user_type must be either merchant or customer')
     email = post.get('email', '')
-    if not email:
-        errors.append('email must be non-empty')
     picture = post.get('picture', 'images/default_user_image') # Make this default
+    fields = [
+              'username',
+              'password',
+              'user_type',
+              'email',
+             ]
+    errors = check_empty(fields, post, errors)
     first_name = post.get('first_name', '') # Optional
     last_name = post.get('last_name', '') # Optional
     if len(errors) == 0:
@@ -212,13 +241,13 @@ def create_store(request):
 
     # If using the address format
     address = post.get('address', '').split('\n')
-    if len(address) == 4:
+    if len(address) == 5:
         address_street = address[0]
-        address_city = address[1]
-        address_state = address[2]
-        address_zip = address[3]
+        address_city = address[2]
+        address_state = address[3]
+        address_zip = address[4]
     else:
-      errors.append('Invalid address')
+        errors.append('address not correctly formatted')
 
     phone_number = post.get('phone_number', '')
     description = post.get('description', 'Good Store') #default
@@ -242,6 +271,7 @@ def create_store(request):
                'status': 200,
                'storeID': new_store.id,
                'errors': errors
+
               }
     return HttpResponse(json.dumps(reponse), content_type='application/json')
 
@@ -266,6 +296,7 @@ def create_inventory(request):
         errors.append('store already has an inventory')
     else:
         store = Store.objects.get(id=storeID)
+
     if len(errors) > 0:
         return return_error(errors)
     try:
@@ -344,7 +375,7 @@ def add_inventory(request):
     return create_item(request)
 @csrf_exempt
 def edit_item(request):
-    assert request.method == 'POST', ' requires a POST request'
+    assert request.method == 'POST', 'api/item/create requires a POST request'
     errors = []
     post = QueryDict('', mutable=True)
     post.update(json.loads(request.body))
@@ -359,7 +390,7 @@ def edit_item(request):
     elif not Item.objects.filter(id=itemID).exists():
         errors.append('invalid itemID')
     else:
-        current_item = Item.objects.filter(id=itemID)[0]
+        current_item = Item.objects.get(id=itemID)
     name = post.get('name', '')
     description = post.get('description', '')
     price = post.get('price', '')
@@ -383,16 +414,35 @@ def edit_item(request):
         current_item.edit_item(name, description, picture, price)
     except ValidationError as e:
         errors.append(e)
-        return return_error(errors)
-    reponse = {
-               'status': 200,
-               'errors': errors
-              }
-    return HttpResponse(json.dumps(reponse), content_type='application/json')
+    return return_error(errors)
+
 @csrf_exempt
 def edit_inventory(request):
     return edit_item(request)
 
+@csrf_exempt
+def delete_item(request):
+    assert request.method == 'POST', 'api/item/delete requires a POST request'
+    errors = []
+    post = QueryDict('', mutable=True)
+    post.update(json.loads(request.body))
+    itemID = post.get('itemID', '')
+    try:
+        itemID = int(itemID)
+    except ValueError:
+        itemID = None
+        errors.append('itemID must be an integer')
+    if not itemID:
+        errors.append('itemID must be non-empty')
+    elif not Item.objects.filter(id=itemID).exists():
+        errors.append('invalid itemID')
+    else:
+        Item.objects.filter(id=itemID).delete()
+    reponse = {
+               'status': 200,
+               'errors': errors,
+              }
+    return HttpResponse(json.dumps(reponse), content_type='application/json')
 
 def getZip(address):
     return address.split('\n')[4]
