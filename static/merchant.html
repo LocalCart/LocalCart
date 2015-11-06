@@ -46,41 +46,35 @@
     <div class="col-sm-12">
       <div class="container panel col-sm-offset-2 col-sm-8">
         <div class="jumbotron">
-<!--           <h1>Welcome Store1</h1>
-          <p><strong>Name:</strong> <input type="text" ng-readonly="merchantController.editable" value="LocalCart"/></p>
-          <p><strong>Address:</strong> <input type="text" ng-readonly="merchantController.editable" value="1234 Disney Avenue"/></p>
-          <p><strong>Description:</strong> <input type="text" ng-readonly="merchantController.editable" value="We are localcart" /></p>
-          <p><strong>Ratings:</strong> <input type="text" ng-readonly="true" value="4.3" aria-label="Readonly field"/></p> 
-          <p><strong>Traffic:</strong> <input type="text" ng-readonly="merchantController.editable" value="10 users/day" /> </p> -->
           <div ng-hide="merchantController.editable">
             <h2>Welcome [[merchantController.storeInfo.storeName]]</h2>
           </div>
           <div ng-show="merchantController.editable">
-            <h2>Store Name<input ng-model="merchantController.storeInfo.storeName" ng-show="merchantController.editable"></h2>
+            <h2>Store Name<input ng-model="merchantController.tempStoreInfo.storeName" ng-show="merchantController.editable"></h2>
           </div>         
           <div ng-hide="merchantController.editable">
             <h4>Address: [[merchantController.storeInfo.storeAddress]]</h4>
           </div>
           <div ng-show="merchantController.editable">
-            <h4>Address: <input ng-model="merchantController.storeInfo.storeAddress" ng-show="merchantController.editable"></h4>
+            <h4>Address: <input ng-model="merchantController.tempStoreInfo.storeAddress" ng-show="merchantController.editable"></h4>
           </div>
           <div ng-hide="merchantController.editable">
             <h4>Description: [[merchantController.storeInfo.storeDescription]]</h4>
           </div>
           <div ng-show="merchantController.editable">
-            <h4>Description: <input ng-model="merchantController.storeInfo.storeDescription" ng-show="merchantController.editable"></h4>
+            <h4>Description: <input ng-model="merchantController.tempStoreInfo.storeDescription" ng-show="merchantController.editable"></h4>
           </div>
           <br>
           <div ng-show="merchantController.editable">
             <p>
-              <a class="btn btn-lg btn-success" href="#" ng-click="merchantController.editInfo()" role="button">Save</a>
-              <a class="btn btn-lg btn-success" href="#" ng-click="merchantController.editInfo()" role="button">Cancel</a>
+              <a class="btn btn-lg btn-success" href="#" ng-click="merchantController.saveInfo()" role="button">Save</a>
+              <a class="btn btn-lg btn-success" href="#" ng-click="merchantController.cancel()" role="button">Cancel</a>
             </p>
           </div> 
           <div ng-hide="merchantController.editable">
             <p><a class="btn btn-lg btn-success" href="#" ng-click="merchantController.editInfo()" role="button">Edit Info</a></p>    
           </div>
-          <p><a class="btn btn-lg btn-success" href="#" role="button">View Inventory</a></p>
+          <p><a class="btn btn-lg btn-success" href="inventory" role="button">View Store</a></p>
         </div>
 
       </div> <!-- /container -->
