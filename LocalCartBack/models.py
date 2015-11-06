@@ -51,7 +51,7 @@ class UserInfo(models.Model):
         if picture is not None:
             current_user_info.picture = picture
             current_user_info.save()
-        return current_user_info.user_type
+        return current_user_info
 
 
 
@@ -72,6 +72,21 @@ class Store(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
     # Add hours
 
+    @staticmethod
+    def create_new_store(user, name, description, picture, address_street, address_city,
+                          address_state , address_zip ,phone_number):
+        """
+        Assume all necessary info is correctly filled in.
+        Create a new store with given information.
+        description and picture are optional (can be empty).
+        """
+        new_store = Store(user=user, name=name, description=description, picture=picture,
+                          address_street=address_street, address_city=address_city,
+                          address_state = address_state, address_zip = address_zip,
+                          phone_number=phone_number)
+        new_store.full_clean()
+        new_store.save()
+        return new_store
 
 
 class Inventory(models.Model):
@@ -95,6 +110,19 @@ class Item(models.Model):
 
     class Meta:
         unique_together = ('inventory', 'name')
+
+
+    def edit_item(self, name, description, picture, price):
+        if name:
+            self.name = name
+        if description:
+            self.description = description
+        if picture:
+            self.picture = picture
+        if price:
+            self.price = price
+        self.full_clean()
+        self.save()
 
 
 class Reviews(models.Model):
@@ -133,6 +161,9 @@ class CartList(models.Model):
     def create_new_list(username, name):
         if not User.objects.filter(username=username).exists():
             return None
+        user = User.objects.get(username=username)
+        if UserInfo.objects.get(user=user).user_type != "customer":
+            return None
         new_list = CartList(user=User.objects.get(username=username), name=name)
         new_list.full_clean()
         new_list.save()
@@ -153,7 +184,7 @@ class CartList(models.Model):
             else:
                 items.append(None)
                 item_names.append(content_item['name'])
-        temp = CartList.temporary_storage()
+        temp = CartList.temporary_storage(current_list.user)
         ListItem.objects.filter(cartlist=current_list).update(cartlist=temp)
         try:
             for i in range(0, len(contents)):

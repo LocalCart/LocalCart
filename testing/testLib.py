@@ -112,27 +112,7 @@ class CartTestCase(RestTestCase):
 
     def tearDown(self):
         self.conn.close ()
-    # def getSmiles(self,
-    #               count=None,
-    #               order_by=None):
-    #     """
-    #     Helper function to get some smiles
-    #     """
-    #     url = '/api/smiles?space='+self.smileSpace
-    #     if count is not None:
-    #         url += '&count='+str(count)
-    #     if order_by is not None:
-    #         url += '&order_by='+order_by
 
-    #     respData = self.makeRequest(url, method='GET')
-    #     return respData
-
-    # def emptySmileSpace(self):
-    #     """
-    #     Helper function to delete a smile space
-    #     """
-    #     url = '/api/smiles?space='+self.smileSpace
-    #     self.makeRequest(url, method='DELETE')
 
     def assertSuccessResponse(self,
                               respData,
