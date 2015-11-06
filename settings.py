@@ -40,7 +40,7 @@ INSTALLED_APPS = [
     'corsheaders',
     'LocalCartBack',
     'django_nose',
-    'static',
+    # 'static',
 ]
 
 MIDDLEWARE_CLASSES = [
