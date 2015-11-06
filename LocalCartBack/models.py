@@ -1,6 +1,8 @@
 from django.db import models
 from django.contrib.auth.models import User
-
+import json
+import urllib
+from time import sleep
 
 
 class UserInfo(models.Model):
@@ -212,12 +214,67 @@ class CartList(models.Model):
             return 'Success'
         else:
             return None
+
+    def map_list(self):
+        map_dict = dict()
+        items = ListItem.objects.filter(cartlist=self).order_by('list_position')
+        counter = 0 # Google Maps API limits 10 geocodes per second
+        for li in items:
+            if counter % 10:
+                sleep(1)
+            if li.item:
+                counter += 1
+                store = li.item.store
+                if store.name in map_dict.keys():
+                    map_dict[store.name]['positions'].append(li.list_position)
+                else:
+                    address_list = [
+                                    store.address_street,
+                                    store.address_city,
+                                    store.address_state,
+                                    store.address_zip,
+                                   ]
+                    address = ' '.join(address_list)
+                    coord = lat_lon(address)
+                    curr_entry = dict()
+                    curr_entry['location'] = coord
+                    curr_entry['positions'] = [li.list_position]
+                    map_dict[store.name] = curr_entry
+        map_markers = []
+        for store_name in map_dict.keys():
+            store_dict = map_dict[store_name]
+            if store_dict['location']:
+                pin = store_name + ' (' + ', '.join(store_dict[positions]) + ')'
+                map_markers.append({
+                                    'pin_name': pin,
+                                    'latitude': store_dict['location'][0],
+                                    'longitude': store_dict['location'][1],
+                                   })
+        return map_markers
+
+
+
+
+
         
 
 class ListItem(models.Model):
 
     cartlist = models.ForeignKey(CartList)
-    item = models.ForeignKey(Item, null=True)
+    item = models.ForeignKey(Item, null=True, default=None)
     item_name = models.CharField(max_length=64)
     list_position = models.PositiveSmallIntegerField(unique=True)
+
+
+
+def lat_lon(address):
+    gm_url = 'http://maps.googleapis.com/maps/api/geocode/json?'
+    full_url = gm_url + urllib.urlencode({'address': address})
+    resp = json.loads(urllib.urlopen(full_url).read())
+    if resp['results']:
+        loc = resp['results'][0]['geometry']['location']
+        return loc['lat'], loc['lng']
+    else:
+        return None
+
 

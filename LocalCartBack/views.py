@@ -502,7 +502,7 @@ def create_list(request):
     name = post.get('name', '')
     if not name:
         errors.append('name must be non-empty')
-    if not errors:
+    if len(errors) == 0:
         try:
             new_list = CartList.create_new_list(username, name)
         except ValidationError as e:
@@ -532,7 +532,7 @@ def delete_list(request):
     name = post.get('name', '')
     if not name:
         errors.append('name must be non-empty')
-    if not errors:
+    if len(errors) == 0:
         try:
             new_list = CartList.delete_list(username, name)
         except ValidationError as e:
@@ -571,7 +571,7 @@ def edit_list(request):
                 content_item['name'] = str(content_item['name'])
             else:
                 errors.append('item reference reference type must be "id" or "name"')
-    if not errors:
+    if len(errors) == 0:
         try:
             refill = CartList.refill_list(listID, contents)
         except ValidationError as e:
@@ -589,3 +589,28 @@ def edit_list(request):
     return return_error(errors)
 
 
+@csrf_exempt
+def map_list(request):
+    assert request.method == 'POST', 'api/list/map requires a POST request'
+    errors = []
+    post = QueryDict('', mutable=True)
+    post.update(json.loads(request.body))
+    listID = post.get('listID', '')
+    try:
+        listID = int(listID)
+    except ValueError:
+        listID = None
+        errors.append('listID must be an integer')
+    map_markers = []
+    if len(errors) == 0:
+        if not CartList.objects.filter(id=listID).exists():
+            errors.append('listID is not valid')
+            map_markers = []
+        else:
+            map_markers = CartList.objects.get(id=listID).map_list()
+    reponse = {
+               'status': 200,
+               'map_markers': map_markers,
+               'errors': errors,
+              }
+    return HttpResponse(json.dumps(reponse), content_type='application/json')
