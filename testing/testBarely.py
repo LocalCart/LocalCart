@@ -8,6 +8,15 @@ import testLib
 
 class TestCarts(testLib.CartTestCase):
 
+
+    def setUp(self):
+        # Run first the setUp from the superclass
+        testLib.CartTestCase.setUp(self)
+        respDestroy = self.makeRequest("/api/user/destroy", method="POST",
+                                    data = {})
+        self.assertSuccessResponse(respDestroy)
+
+
     def tearDown(self):
         respDestroy = self.makeRequest("/api/user/destroy", method="POST",
                                     data = {})
@@ -16,9 +25,6 @@ class TestCarts(testLib.CartTestCase):
     ### THESE ARE THE ACTUAL TESTS
     ###
     def testCreate1User(self):
-        """
-        Test adding one smile
-        """
         respCreate = self.makeRequest("/api/user/create", method="POST",
                                     data = { 'username' : 'Tom',
                                              'password' : '123456',
@@ -38,7 +44,7 @@ class TestCarts(testLib.CartTestCase):
                                              'email' : 'tommeng@berkeley.edu'
                                              })
 
-        self.assertSuccessResponse(respCreate)
+        self.assertFailResponse(respCreate)
         self.assertEquals("username must be non-empty", respCreate['errors'][0], "")
 
     def testCreateUserWithEmptyPassword(self):
@@ -49,7 +55,7 @@ class TestCarts(testLib.CartTestCase):
                                              'email' : 'tommeng@berkeley.edu'
                                              })
 
-        self.assertSuccessResponse(respCreate)
+        self.assertFailResponse(respCreate)
         self.assertEquals("password must be non-empty", respCreate['errors'][0], "")
 
     def testCreateUserWithInvalidUserType(self):
@@ -60,7 +66,7 @@ class TestCarts(testLib.CartTestCase):
                                              'email' : 'tommeng@berkeley.edu'
                                              })
 
-        self.assertSuccessResponse(respCreate)
+        self.assertFailResponse(respCreate)
         self.assertEquals("user_type must be either merchant or customer", respCreate['errors'][0], "") 
 
 
@@ -90,7 +96,7 @@ class TestCarts(testLib.CartTestCase):
                                     data = { 'username' : 'Tom',
                                              'password' : '1234'
                                              })
-        self.assertSuccessResponse(respLogin)
+        self.assertFailResponse(respLogin)
         self.assertEquals("invalid username and password combination", respLogin['errors'][0], "")
 
 
@@ -107,52 +113,52 @@ class TestCarts(testLib.CartTestCase):
         respCreateStore = self.makeRequest("/api/store/create", method="POST",
                                     data = { 'username' : 'Tom',
                                              'name' : 'Tom store',
-                                             'address' : '1234 12th st.\nBerkeley\nCA\n94704',
+                                             'address' : '1234 12th st.\n\nBerkeley\nCA\n94704',
                                              'phone_number' : '(510)642-6000',
                                              #'picture' : 'pic',
                                              #'description' : 'This is a very good store'
                                              })
         self.assertSuccessResponse(respCreateStore)
 
-    # def testCreateStoreNoUserName(self):
-    #     respCreate = self.makeRequest("/api/user/create", method="POST",
-    #                                 data = { 'username' : 'Tom',
-    #                                          'password' : '123456',
-    #                                          'user_type' : 'customer',
-    #                                          'email' : 'tommeng@berkeley.edu'
-    #                                          })
+    def testCreateStoreNoUserName(self):
+        respCreate = self.makeRequest("/api/user/create", method="POST",
+                                    data = { 'username' : 'Tom',
+                                             'password' : '123456',
+                                             'user_type' : 'customer',
+                                             'email' : 'tommeng@berkeley.edu'
+                                             })
 
-    #     self.assertSuccessResponse(respCreate)
+        self.assertSuccessResponse(respCreate)
 
-    #     respCreateStore = self.makeRequest("/api/store/create", method="POST",
-    #                                 data = { 'username' : '',
-    #                                          'name' : 'Tom Store',
-    #                                          'address' : '1234 12th st.\nBerkeley\nCA\n94704',
-    #                                          'phone_number' : '(510)642-6000',
-    #                                          #'picture' : 'pic',
-    #                                          #'description' : 'This is a very good store'
-    #                                          })
-    #     self.assertFailResponse(respCreateStore)
+        respCreateStore = self.makeRequest("/api/store/create", method="POST",
+                                    data = { 'username' : '',
+                                             'name' : 'Tom Store',
+                                             'address' : '1234 12th st.\n\nBerkeley\nCA\n94704',
+                                             'phone_number' : '(510)642-6000',
+                                             #'picture' : 'pic',
+                                             #'description' : 'This is a very good store'
+                                             })
+        self.assertFailResponse(respCreateStore)
 
-    # def testCreateStoreUserNameNotExist(self):
-    #     respCreate = self.makeRequest("/api/user/create", method="POST",
-    #                                 data = { 'username' : 'Tom',
-    #                                          'password' : '123456',
-    #                                          'user_type' : 'customer',
-    #                                          'email' : 'tommeng@berkeley.edu'
-    #                                          })
+    def testCreateStoreUserNameNotExist(self):
+        respCreate = self.makeRequest("/api/user/create", method="POST",
+                                    data = { 'username' : 'Tom',
+                                             'password' : '123456',
+                                             'user_type' : 'customer',
+                                             'email' : 'tommeng@berkeley.edu'
+                                             })
 
-    #     self.assertSuccessResponse(respCreate)
+        self.assertSuccessResponse(respCreate)
 
-    #     respCreateStore = self.makeRequest("/api/store/create", method="POST",
-    #                                 data = { 'username' : 'T',
-    #                                          'name' : 'Tom Store',
-    #                                          'address' : '1234 12th st.\nBerkeley\nCA\n94704',
-    #                                          'phone_number' : '(510)642-6000',
-    #                                          #'picture' : 'pic',
-    #                                          #'description' : 'This is a very good store'
-    #                                          })
-    #     self.assertFailResponse(respCreateStore)
+        respCreateStore = self.makeRequest("/api/store/create", method="POST",
+                                    data = { 'username' : 'T',
+                                             'name' : 'Tom Store',
+                                             'address' : '1234 12th st.\n\nBerkeley\nCA\n94704',
+                                             'phone_number' : '(510)642-6000',
+                                             #'picture' : 'pic',
+                                             #'description' : 'This is a very good store'
+                                             })
+        self.assertFailResponse(respCreateStore)
 
 
     def testCreateStoreNoName(self):
@@ -168,7 +174,7 @@ class TestCarts(testLib.CartTestCase):
         respCreateStore = self.makeRequest("/api/store/create", method="POST",
                                     data = { 'username' : 'Tom',
                                              'name' : '',
-                                             'address' : '1234 12th st.\nBerkeley\nCA\n94704',
+                                             'address' : '1234 12th st.\n\nBerkeley\nCA\n94704',
                                              'phone_number' : '(510)642-6000',
                                              #'picture' : 'pic',
                                              #'description' : 'This is a very good store'
@@ -210,7 +216,7 @@ class TestCarts(testLib.CartTestCase):
         respCreateStore = self.makeRequest("/api/store/create", method="POST",
                                     data = { 'username' : 'Tom',
                                              'name' : '',
-                                             'address' : '1234 12th st.\nBerkeley\nCA\n94704',
+                                             'address' : '1234 12th st.\n\nBerkeley\nCA\n94704',
                                              'phone_number' : '',
                                              #'picture' : 'pic',
                                              #'description' : 'This is a very good store'
@@ -234,7 +240,7 @@ class TestCarts(testLib.CartTestCase):
         respCreateStore = self.makeRequest("/api/store/create", method="POST",
                                     data = { 'username' : 'Tom',
                                              'name' : 'Tom store',
-                                             'address' : '1234 12th st.\nBerkeley\nCA\n94704',
+                                             'address' : '1234 12th st.\n\nBerkeley\nCA\n94704',
                                              'phone_number' : '(510)642-6000'
                                              })
         self.assertSuccessResponse(respCreateStore)
@@ -257,7 +263,7 @@ class TestCarts(testLib.CartTestCase):
         respCreateStore = self.makeRequest("/api/store/create", method="POST",
                                     data = { 'username' : 'Tom',
                                              'name' : 'Tom store',
-                                             'address' : '1234 12th st.\nBerkeley\nCA\n94704',
+                                             'address' : '1234 12th st.\n\nBerkeley\nCA\n94704',
                                              'phone_number' : '(510)642-6000'
                                              })
         self.assertSuccessResponse(respCreateStore)
@@ -279,7 +285,7 @@ class TestCarts(testLib.CartTestCase):
         respCreateStore = self.makeRequest("/api/store/create", method="POST",
                                     data = { 'username' : 'Tom',
                                              'name' : 'Tom store',
-                                             'address' : '1234 12th st.\nBerkeley\nCA\n94704',
+                                             'address' : '1234 12th st.\n\nBerkeley\nCA\n94704',
                                              'phone_number' : '(510)642-6000'
                                              })
         self.assertSuccessResponse(respCreateStore)
@@ -303,7 +309,7 @@ class TestCarts(testLib.CartTestCase):
         respCreateStore = self.makeRequest("/api/store/create", method="POST",
                                     data = { 'username' : 'Tom',
                                              'name' : 'Tom store',
-                                             'address' : '1234 12th st.\nBerkeley\nCA\n94704',
+                                             'address' : '1234 12th st.\n\nBerkeley\nCA\n94704',
                                              'phone_number' : '(510)642-6000'
                                              })
         self.assertSuccessResponse(respCreateStore)
@@ -336,7 +342,7 @@ class TestCarts(testLib.CartTestCase):
         respCreateStore = self.makeRequest("/api/store/create", method="POST",
                                     data = { 'username' : 'Tom',
                                              'name' : 'Tom store',
-                                             'address' : '1234 12th st.\nBerkeley\nCA\n94704',
+                                             'address' : '1234 12th st.\n\nBerkeley\nCA\n94704',
                                              'phone_number' : '(510)642-6000'
                                              })
         self.assertSuccessResponse(respCreateStore)
@@ -368,7 +374,7 @@ class TestCarts(testLib.CartTestCase):
         respCreateStore = self.makeRequest("/api/store/create", method="POST",
                                     data = { 'username' : 'Tom',
                                              'name' : 'Tom store',
-                                             'address' : '1234 12th st.\nBerkeley\nCA\n94704',
+                                             'address' : '1234 12th st.\n\nBerkeley\nCA\n94704',
                                              'phone_number' : '(510)642-6000'
                                              })
         self.assertSuccessResponse(respCreateStore)
@@ -400,7 +406,7 @@ class TestCarts(testLib.CartTestCase):
         respCreateStore = self.makeRequest("/api/store/create", method="POST",
                                     data = { 'username' : 'Tom',
                                              'name' : 'Tom store',
-                                             'address' : '1234 12th st.\nBerkeley\nCA\n94704',
+                                             'address' : '1234 12th st.\n\nBerkeley\nCA\n94704',
                                              'phone_number' : '(510)642-6000'
                                              })
         self.assertSuccessResponse(respCreateStore)
@@ -432,7 +438,7 @@ class TestCarts(testLib.CartTestCase):
         respCreateStore = self.makeRequest("/api/store/create", method="POST",
                                     data = { 'username' : 'Tom',
                                              'name' : 'Tom store',
-                                             'address' : '1234 12th st.\nBerkeley\nCA\n94704',
+                                             'address' : '1234 12th st.\n\nBerkeley\nCA\n94704',
                                              'phone_number' : '(510)642-6000'
                                              })
         self.assertSuccessResponse(respCreateStore)
@@ -464,7 +470,7 @@ class TestCarts(testLib.CartTestCase):
         respCreateStore = self.makeRequest("/api/store/create", method="POST",
                                     data = { 'username' : 'Tom',
                                              'name' : 'Tom store',
-                                             'address' : '1234 12th st.\nBerkeley\nCA\n94704',
+                                             'address' : '1234 12th st.\n\nBerkeley\nCA\n94704',
                                              'phone_number' : '(510)642-6000'
                                              })
         self.assertSuccessResponse(respCreateStore)
@@ -496,7 +502,7 @@ class TestCarts(testLib.CartTestCase):
         respCreateStore = self.makeRequest("/api/store/create", method="POST",
                                     data = { 'username' : 'Tom',
                                              'name' : 'Tom store',
-                                             'address' : '1234 12th st.\nBerkeley\nCA\n94704',
+                                             'address' : '1234 12th st.\n\nBerkeley\nCA\n94704',
                                              'phone_number' : '(510)642-6000'
                                              })
         self.assertSuccessResponse(respCreateStore)
@@ -531,7 +537,7 @@ class TestCarts(testLib.CartTestCase):
         respCreateStore = self.makeRequest("/api/store/create", method="POST",
                                     data = { 'username' : 'Tom',
                                              'name' : 'Tom store',
-                                             'address' : '1234 12th st.\nBerkeley\nCA\n94704',
+                                             'address' : '1234 12th st.\n\nBerkeley\nCA\n94704',
                                              'phone_number' : '(510)642-6000'
                                              })
         self.assertSuccessResponse(respCreateStore)
@@ -572,7 +578,7 @@ class TestCarts(testLib.CartTestCase):
         respCreateStore = self.makeRequest("/api/store/create", method="POST",
                                     data = { 'username' : 'Tom',
                                              'name' : 'Tom store',
-                                             'address' : '1234 12th st.\nBerkeley\nCA\n94704',
+                                             'address' : '1234 12th st.\n\nBerkeley\nCA\n94704',
                                              'phone_number' : '(510)642-6000'
                                              })
         self.assertSuccessResponse(respCreateStore)
@@ -613,7 +619,7 @@ class TestCarts(testLib.CartTestCase):
         respCreateStore = self.makeRequest("/api/store/create", method="POST",
                                     data = { 'username' : 'Tom',
                                              'name' : 'Tom store',
-                                             'address' : '1234 12th st.\nBerkeley\nCA\n94704',
+                                             'address' : '1234 12th st.\n\nBerkeley\nCA\n94704',
                                              'phone_number' : '(510)642-6000'
                                              })
         self.assertSuccessResponse(respCreateStore)
@@ -655,7 +661,7 @@ class TestCarts(testLib.CartTestCase):
         respCreateStore = self.makeRequest("/api/store/create", method="POST",
                                     data = { 'username' : 'Tom',
                                              'name' : 'Tom store',
-                                             'address' : '1234 12th st.\nBerkeley\nCA\n94704',
+                                             'address' : '1234 12th st.\n\nBerkeley\nCA\n94704',
                                              'phone_number' : '(510)642-6000'
                                              })
         self.assertSuccessResponse(respCreateStore)
@@ -696,7 +702,7 @@ class TestCarts(testLib.CartTestCase):
         respCreateStore = self.makeRequest("/api/store/create", method="POST",
                                     data = { 'username' : 'Tom',
                                              'name' : 'Tom store',
-                                             'address' : '1234 12th st.\nBerkeley\nCA\n94704',
+                                             'address' : '1234 12th st.\n\nBerkeley\nCA\n94704',
                                              'phone_number' : '(510)642-6000'
                                              })
         self.assertSuccessResponse(respCreateStore)
@@ -737,7 +743,7 @@ class TestCarts(testLib.CartTestCase):
         respCreateStore = self.makeRequest("/api/store/create", method="POST",
                                     data = { 'username' : 'Tom',
                                              'name' : 'Tom store',
-                                             'address' : '1234 12th st.\nBerkeley\nCA\n94704',
+                                             'address' : '1234 12th st.\n\nBerkeley\nCA\n94704',
                                              'phone_number' : '(510)642-6000'
                                              })
         self.assertSuccessResponse(respCreateStore)
@@ -778,7 +784,7 @@ class TestCarts(testLib.CartTestCase):
         respCreateStore = self.makeRequest("/api/store/create", method="POST",
                                     data = { 'username' : 'Tom',
                                              'name' : 'Tom store',
-                                             'address' : '1234 12th st.\nBerkeley\nCA\n94704',
+                                             'address' : '1234 12th st.\n\nBerkeley\nCA\n94704',
                                              'phone_number' : '(510)642-6000'
                                              })
         self.assertSuccessResponse(respCreateStore)
@@ -822,7 +828,7 @@ class TestCarts(testLib.CartTestCase):
         respCreateStore = self.makeRequest("/api/store/create", method="POST",
                                     data = { 'username' : 'Tom',
                                              'name' : 'Tom store',
-                                             'address' : '1234 12th st.\nBerkeley\nCA\n94704',
+                                             'address' : '1234 12th st.\n\nBerkeley\nCA\n94704',
                                              'phone_number' : '(510)642-6000'
                                              })
         self.assertSuccessResponse(respCreateStore)
@@ -843,7 +849,7 @@ class TestCarts(testLib.CartTestCase):
 
         respSearchItem = self.makeRequest("/api/search/items", method="GET",
                                     data = { 'query' : 'apple',
-                                             'location' : 'a\n1234 12th st.\nBerkeley\nCA\n94704',
+                                             'location' : '\n\n\n\n94704',
                                              })    
 
         self.assertSuccessResponse(respSearchItem)                                      
