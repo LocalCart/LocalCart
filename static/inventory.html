@@ -45,8 +45,13 @@
     <hr>
     <div class="col-sm-12">
       <div class="container">
-        <h2>Your Store!</h2>          
-        <table class="table table-hover">
+        <h2>Your Store!</h2>  
+        <input ng-model="inventoryController.tempItem.name" placeholder="Enter Name">
+        <input ng-model="inventoryController.tempItem.description" placeholder="Enter Description">
+        <input ng-model="inventoryController.tempItem.price" placeholder="Enter Price">
+        <input ng-model="inventoryController.tempItem.picture" placeholder="Enter Picture">
+        <a ng-click="inventoryController.addItem()" class="btn btn-primary">Add Item</a>          
+        <table class="table table-hover scrolly">
           <thead>
             <tr>
               <th>Item #</th>
@@ -65,19 +70,12 @@
               <td>[[row.description]]</td>
               <td>[[row.price]]</td>
               <td><img class="media-object" src="data:image/svg+xml;base64,PD94bWwgdmVyc2lvbj0iMS4wIiBlbmNvZGluZz0iVVRGLTgiIHN0YW5kYWxvbmU9InllcyI/PjxzdmcgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIiB3aWR0aD0iNjQiIGhlaWdodD0iNjQiIHZpZXdCb3g9IjAgMCA2NCA2NCIgcHJlc2VydmVBc3BlY3RSYXRpbz0ibm9uZSI+PGRlZnMvPjxyZWN0IHdpZHRoPSI2NCIgaGVpZ2h0PSI2NCIgZmlsbD0iI0VFRUVFRSIvPjxnPjx0ZXh0IHg9IjEzLjQ2MDkzNzUiIHk9IjMyIiBzdHlsZT0iZmlsbDojQUFBQUFBO2ZvbnQtd2VpZ2h0OmJvbGQ7Zm9udC1mYW1pbHk6QXJpYWwsIEhlbHZldGljYSwgT3BlbiBTYW5zLCBzYW5zLXNlcmlmLCBtb25vc3BhY2U7Zm9udC1zaXplOjEwcHQ7ZG9taW5hbnQtYmFzZWxpbmU6Y2VudHJhbCI+NjR4NjQ8L3RleHQ+PC9nPjwvc3ZnPg==" alt="..."></td>
-              <td><a ng-click="inventoryController.remove([[row.itemID]])"  class="btn btn-danger">X</a></td>
+              <td><a ng-click="inventoryController.remove([[$index]])"  class="btn btn-danger">X</a></td>
               <td><a ng-click="inventoryController.edit([[row]])" class="btn btn-warning">Edit</a></td>
             </tr>
           </tbody>
         </table>
         <hr>
-        <br>
-        <br>
-        <input ng-model="inventoryController.tempItem.name" placeholder="Enter Name">
-        <input ng-model="inventoryController.tempItem.description" placeholder="Enter Description">
-        <input ng-model="inventoryController.tempItem.price" placeholder="Enter Price">
-        <input ng-model="inventoryController.tempItem.picture" placeholder="Enter Picture">
-        <a ng-click="inventoryController.addItem()" class="btn btn-primary">Add Item</a>  
       </div>
     </div>
     

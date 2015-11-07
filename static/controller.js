@@ -8,6 +8,11 @@ app.config(function($interpolateProvider) {
 app.controller('IndexController', function($http){
   var vm = this;
   vm.searchResults = results;
+  vm.shoppingList = inventory
+  vm.remove = function(index) {
+    console.log("wtf");
+    vm.shoppingList.splice(index, 1);
+  }
   // vm.addItem = function(itemToAdd) {
   //   var item = {};
   //   item.inventory = "1"
@@ -69,15 +74,9 @@ app.controller('InventoryController', function($http) {
   var vm = this;
   vm.inventory = inventory;
   vm.tempItem = {}
-  vm.remove = function(itemID) {
-    console.log(vm.inventory.length);
-    for (var i =0; i < vm.inventory.length; i++) {
-      console.log(vm.inventory[i]);
-      if (vm.inventory[i].itemID == itemID) {
-        console.log("wtf");
-        vm.inventory.splice(i, 1);
-      }
-    }
+  vm.remove = function(index) {
+    console.log("wtf");
+    vm.inventory.splice(index, 1);
   }
   count = 4
   vm.addItem = function() {
@@ -101,6 +100,10 @@ var results = [
   ];  
 
 var inventory = [
+{ itemID: "1", name: "Halo 5",  description: "A first person shooter video game", price: "80.00"},
+{ itemID: "2", name: "Shampoo",  description: "New shampoo for dry hair", price: "5.50"},
+{ itemID: "3", name: "Deodorant",  description: "Use this to tackle body odor!", price: "7.00"},
+{ itemID: "1", name: "Halo 5",  description: "A first person shooter video game", price: "80.00"},
 { itemID: "1", name: "Halo 5",  description: "A first person shooter video game", price: "80.00"},
 { itemID: "2", name: "Shampoo",  description: "New shampoo for dry hair", price: "5.50"},
 { itemID: "3", name: "Deodorant",  description: "Use this to tackle body odor!", price: "7.00"},
