@@ -63,11 +63,24 @@ class CustomerMocker:
 		return new_user_info
 
 	def create_customer_user_Ruth(self):
-		# Creates customer Linda.
+		# Creates customer Ruth.
 		username = "Ruth"
 		password = "123"
 		email = "rlzhang@berkeley.edu"
 		user_type = "customer"
+		picture = 'images/default_user_image'
+		new_user_info = models.UserInfo.create_new_user(username=username, password=password, email=email, 
+			first_name='', last_name='', user_type=user_type, picture=picture)
+		return new_user_info
+
+class MerchantMocker:
+
+	def create_merchant_user_Leila(self):
+		# Create merchant Leila.
+		username = "Leila"
+		password = "123"
+		email = "leilaiscool@gmail.com"
+		user_type = "merchant"
 		picture = 'images/default_user_image'
 		new_user_info = models.UserInfo.create_new_user(username=username, password=password, email=email, 
 			first_name='', last_name='', user_type=user_type, picture=picture)
@@ -110,11 +123,11 @@ class UserInfoTestCase(TestCase):
 		email = "r.linda.zhang@gmail.com"
 		password = "987"
 		picture = 'prettybirdies'
-		edited_user_type = models.UserInfo.edit_user_info(username=user.user.username)
-		self.assertEqual(edited_user_type, user.user_type)
+		edited_user_info = models.UserInfo.edit_user_info(username=user.user.username)
+		self.assertEqual(edited_user_info.user_type, user.user_type)
 		edited_user_type = models.UserInfo.edit_user_info(username=user.user.username, first_name=first_name, last_name=last_name,
 			email=email, password=password, picture=picture)
-		self.assertEqual(edited_user_type, user.user_type)
+		self.assertEqual(edited_user_info.user_type, user.user_type)
 		user = models.UserInfo.objects.get(user__username=user.user.username)
 		self.assertEqual(user.user.first_name, first_name)
 		self.assertEqual(user.user.last_name, last_name)
@@ -125,3 +138,32 @@ class UserInfoTestCase(TestCase):
 		# Try to edit non-existent user.
 		edited_user_type = models.UserInfo.edit_user_info(username="Leila")
 		self.assertEqual(edited_user_type, None)
+
+class StoreTestCase(TestCase):
+
+	def test_create_new_store(self):
+		# Create new store with all correct info.
+		merchant = MerchantMocker()
+		user = merchant.create_merchant_user_Leila()
+		name = "Unique Unicorns"
+		description = "A place where only the magical ponies can play."
+		picture = 'ofcourseofunicorns'
+		address_street = '777 Rainbow Road'
+		address_city = 'Unicorn City'
+		address_state = 'Clouds'
+		address_zip = '12345'
+		phone_number = '1234567890'
+		new_store = models.Store.create_new_store(user=user.user, name=name, description=description, picture=picture,
+                          address_street=address_street, address_city=address_city,
+                          address_state = address_state, address_zip = address_zip,
+                          phone_number=phone_number)
+		self.assertEqual(new_store.user, user.user)
+		self.assertEqual(new_store.name, name)
+		self.assertEqual(new_store.description, description)
+		self.assertEqual(new_store.picture, picture)
+		self.assertEqual(new_store.address_street, address_street)
+		self.assertEqual(new_store.address_city, address_city)
+		self.assertEqual(new_store.address_state, address_state)
+		self.assertEqual(new_store.address_zip, address_zip)
+		self.assertEqual(new_store.phone_number, phone_number)
+

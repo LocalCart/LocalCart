@@ -23,7 +23,7 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 SECRET_KEY = 'hp%$k4a%u6ghr*7k943#mo64m&y&lx3lo8^r*^heoe$hree$cl'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = False
 
 ALLOWED_HOSTS = []
 
@@ -37,10 +37,10 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'corsheaders',
+    #'corsheaders',
     'LocalCartBack',
-    'django_nose',
-    'static',
+    #'django_nose',
+    # 'static',
 ]
 
 MIDDLEWARE_CLASSES = [
@@ -146,7 +146,6 @@ STATICFILES_DIRS = (
 
 
 # # Parse database configuration from $DATABASE_URL
-import dj_database_url
 # ON_HEROKU = os.environ.get('ON_HEROKU')
 # if ON_HEROKU:
 #     DATABASE_URL = 'postgresql:///postgresql'
@@ -181,5 +180,3 @@ NOSE_ARGS = [
     '--cover-html',
     '--cover-package=LocalCartBack',
 ]
-
-

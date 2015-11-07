@@ -112,27 +112,6 @@ class CartTestCase(RestTestCase):
 
     def tearDown(self):
         self.conn.close ()
-    # def getSmiles(self,
-    #               count=None,
-    #               order_by=None):
-    #     """
-    #     Helper function to get some smiles
-    #     """
-    #     url = '/api/smiles?space='+self.smileSpace
-    #     if count is not None:
-    #         url += '&count='+str(count)
-    #     if order_by is not None:
-    #         url += '&order_by='+order_by
-
-    #     respData = self.makeRequest(url, method='GET')
-    #     return respData
-
-    # def emptySmileSpace(self):
-    #     """
-    #     Helper function to delete a smile space
-    #     """
-    #     url = '/api/smiles?space='+self.smileSpace
-    #     self.makeRequest(url, method='DELETE')
 
     def assertSuccessResponse(self,
                               respData,
@@ -141,11 +120,15 @@ class CartTestCase(RestTestCase):
         Check that the response is not an error response
         """
         self.assertEquals(200, respData['status'], msg)
+        if len(respData['errors']) > 0:
+            self.assertEquals(0, respData['errors'])
+        self.assertEquals(0, len(respData['errors']), msg)
 
     def assertFailResponse(self,
                               respData,
                               msg=None):
-        self.assertEquals(400, respData['status'], msg)
+        self.assertEquals(200, respData['status'], msg)
+        self.assertTrue(0 < len(respData['errors']), msg)
 
 
 
