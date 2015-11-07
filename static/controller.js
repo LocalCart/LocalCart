@@ -13,6 +13,9 @@ app.controller('IndexController', function($http){
     console.log("wtf");
     vm.shoppingList.splice(index, 1);
   }
+  vm.addItem = function(index) {
+    vm.shoppingList.push(vm.searchResults[index]);
+  }
   // vm.addItem = function(itemToAdd) {
   //   var item = {};
   //   item.inventory = "1"
@@ -88,24 +91,20 @@ app.controller('InventoryController', function($http) {
 });
 
 var results = [
-{ storeName: "GameStop", item: "Halo 5",  description: "A first person shooter video game", price: "80.00"},
-{ storeName: "Target", item: "Shampoo",  description: "New shampoo for dry hair", price: "5.00"},
-{ storeName: "Costco", item: "Deodorant",  description: "Use this to tackle body odor!", price: "7.00"},
-{ storeName: "GameStop", item: "Halo 5",  description: "A first person shooter video game", price: "80.00"},
-{ storeName: "Target", item: "Shampoo",  description: "New shampoo for dry hair", price: "5.00"},
-{ storeName: "Costco", item: "Deodorant",  description: "Use this to tackle body odor!", price: "7.00"},
-{ storeName: "GameStop", item: "Halo 5",  description: "A first person shooter video game", price: "80.00"},
-{ storeName: "Target", item: "Shampoo",  description: "New shampoo for dry hair", price: "5.00"},
-{ storeName: "Costco", item: "Deodorant",  description: "Use this to tackle body odor!", price: "7.00"},
+{ storeName: "GameStop", name: "Halo 5",  description: "A first person shooter video game", price: "80.00"},
+{ storeName: "Target", name: "Shampoo",  description: "New shampoo for dry hair", price: "5.00"},
+{ storeName: "Costco", name: "Deodorant",  description: "Use this to tackle body odor!", price: "7.00"},
+{ storeName: "GameStop", name: "Halo 5",  description: "A first person shooter video game", price: "80.00"},
+{ storeName: "Target", name: "Shampoo",  description: "New shampoo for dry hair", price: "5.00"},
+{ storeName: "Costco", name: "Deodorant",  description: "Use this to tackle body odor!", price: "7.00"},
+{ storeName: "GameStop", name: "Halo 5",  description: "A first person shooter video game", price: "80.00"},
+{ storeName: "Target", name: "Shampoo",  description: "New shampoo for dry hair", price: "5.00"},
+{ storeName: "Costco", name: "Deodorant",  description: "Use this to tackle body odor!", price: "7.00"},
   ];  
 
 var inventory = [
-{ itemID: "1", name: "Halo 5",  description: "A first person shooter video game", price: "80.00"},
-{ itemID: "2", name: "Shampoo",  description: "New shampoo for dry hair", price: "5.50"},
-{ itemID: "3", name: "Deodorant",  description: "Use this to tackle body odor!", price: "7.00"},
-{ itemID: "1", name: "Halo 5",  description: "A first person shooter video game", price: "80.00"},
-{ itemID: "1", name: "Halo 5",  description: "A first person shooter video game", price: "80.00"},
-{ itemID: "2", name: "Shampoo",  description: "New shampoo for dry hair", price: "5.50"},
-{ itemID: "3", name: "Deodorant",  description: "Use this to tackle body odor!", price: "7.00"},
+{ storeName: "GameStop", itemID: "1", name: "Halo 5",  description: "A first person shooter video game", price: "80.00"},
+{ storeName: "GameStop", itemID: "2", name: "Shampoo",  description: "New shampoo for dry hair", price: "5.50"},
+{ storeName: "GameStop", itemID: "3", name: "Deodorant",  description: "Use this to tackle body odor!", price: "7.00"},
   ];  
 
