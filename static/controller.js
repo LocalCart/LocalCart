@@ -79,6 +79,7 @@ app.controller('RegisterController', function($http, $window) {
       // testing
       // console.log("incorrect");
       // console.log(vm.newUser.user_type);
+      alert('Passwords must match')
     }
   }
 });

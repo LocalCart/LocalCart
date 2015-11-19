@@ -91,10 +91,12 @@ def return_user(request):
     else:
         user_id = user.id
         username = user.username
+        user_type = UserInfo.get(user=user).user_type
     reponse = {
                'status': 200,
                'id': user_id,
                'username': username,
+               'user_type': user_type,
                'errors': errors,
               }
     return HttpResponse(json.dumps(reponse), content_type='application/json')
