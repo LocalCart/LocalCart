@@ -75,6 +75,24 @@ class Store(models.Model):
     # Add hours
 
     @staticmethod
+    def get_store(store_id):
+        if not Store.objects.filter(id=store_id).exists():
+            return True, {}
+        store = Store.objects.get(id=store_id)
+        store_in_dic = {
+        #"user": store.user,
+        "name": store.name,
+        "address_street": store.address_street,
+        "address_city": store.address_city,
+        "address_state": store.address_state,
+        "address_zip": store.address_zip,
+        "phone_number": store.phone_number,
+        "description": store.description,
+        "picture": store.picture
+        }
+        return False, store_in_dic
+
+    @staticmethod
     def create_new_store(user, name, description, picture, address_street, address_city,
                           address_state , address_zip ,phone_number):
         """
@@ -97,6 +115,17 @@ class Inventory(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
+    @staticmethod
+    def get_inventory(inventory_id):
+        if not Inventory.objects.filter(id=inventory_id).exists():
+            return True, []
+        inventory = Inventory.objects.get(id=inventory_id)
+        items = Item.objects.filter(inventory=inventory)
+        items_in_array = []
+        for item in items:
+            status, item_in_dic = Item.get_item(item.id)
+            items_in_array.append(item_in_dic)
+        return False, items_in_array
 
 
 class Item(models.Model):
@@ -113,6 +142,20 @@ class Item(models.Model):
     class Meta:
         unique_together = ('inventory', 'name')
 
+    @staticmethod
+    def get_item(item_id):
+        if not Item.objects.filter(id=item_id).exists():
+            return True, {}
+        item = Item.objects.get(id=item_id)
+        item_in_dic = {
+        #"store": item.store,
+        #"inventory": item.inventory,
+        "name": item.name,
+        "description": item.description,
+        "price": item.price,
+        "picture": item.picture
+        }
+        return False, item_in_dic
 
     def edit_item(self, name, description, picture, price):
         if name:
@@ -137,6 +180,16 @@ class Reviews(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
+    @staticmethod
+    def get_review(review_id):
+        if not Reviews.objects.filter(id=review_id).exists():
+            return True, {}
+        review = Reviews.objects.get(id=review_id)
+        review_in_dic = {
+        "rating": review.rating,
+        "text": review.text
+        }
+        return False, review_in_dic
 
 
 class CartList(models.Model):
@@ -257,7 +310,17 @@ class CartList(models.Model):
 
 
 
-
+    @staticmethod
+    def get_cartlist(cartlist_id):
+        if not CartList.objects.filter(id=cartlist_id).exists():
+            return True, []
+        cartlist = CartLIst.objects.get(id=cartlist_id)
+        list_items = ListItem.objects.filter(cartlist=cartlist)
+        list_items_in_array = []
+        for item in list_items:
+            status, list_item_in_dic = Item.get_list_item(item.id)
+            list_items_in_array.append(list_item_in_dic)
+        return False, list_items_in_array
 
         
 
@@ -268,7 +331,21 @@ class ListItem(models.Model):
     item_name = models.CharField(max_length=64)
     list_position = models.PositiveSmallIntegerField(unique=True)
 
-
+    @staticmethod
+    def get_list_item(list_item_id):
+        if not ListItem.objects.filter(id=list_item_id).exists():
+            return True, {}
+        list_item = ListItem.objects.get(id=list_item_id)
+        item_in_dic = {
+        #"store": item.store,
+        #"inventory": item.inventory,
+        "name": list_item.name,
+        "list_position": list_item.list_position
+        # "description": item.description,
+        # "price": item.price,
+        # "picture": item.picture
+        }
+        return False, item_in_dic
 
 def lat_lon(address):
     gm_url = 'http://maps.googleapis.com/maps/api/geocode/json?'
