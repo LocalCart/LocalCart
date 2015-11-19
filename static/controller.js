@@ -5,16 +5,84 @@ app.config(function($interpolateProvider) {
   $interpolateProvider.endSymbol(']]');
 });
 
-app.controller('IndexController', function($http){
+app.controller('IndexController', function($http, $window){
   var vm = this;
+  vm.User = {};
+  vm.searchQuery = "";
+  vm.query = "";
+
+
+
+  // add link get request
   vm.searchResults = results;
-  vm.shoppingList = inventory
+  vm.shoppingList = inventory;
+
+
+
+  vm.current_user = "";
+  $http.get("api/user/get").then(
+       function successCallBack(response) {
+         var data = response.data;
+         if (data.errors.length == 0) {
+           // if (vm.newUser.user_type == 'merchant'){
+           //   $window.location.href = 'merchant';
+           // } else {
+           //   $window.location.href = 'home';
+           // }
+           // hide login, register buttons
+           vm.current_user = data.username;
+           console.log(data.username);
+           if (data.user_type == "merchant") {
+            $window.location.href("merchant");
+           }
+         } else {
+           // for (var i = 0; i < data.errors.length; i++) {
+             // alert(e);
+             // $window.alert(data.errors[i]);
+             // console.error(e);
+           // }
+         }
+       }, function errorCallBack(response) {
+         alert('An error has occured');
+       })
+
+  vm.search = function() {
+    vm.query = vm.searchQuery;
+  }
   vm.remove = function(index) {
     console.log("wtf");
     vm.shoppingList.splice(index, 1);
   }
   vm.addItem = function(index) {
     vm.shoppingList.push(vm.searchResults[index]);
+    // put post call here
+  }
+  vm.loginAttempt = function() {
+    $http.post("/api/user/login", vm.User).then(
+       function successCallBack(response) {
+         var data = response.data;
+         if (data.errors.length == 0) {
+           if (data.user_type == 'merchant'){
+             $window.location.href = 'merchant';
+           } else {
+             $window.location.href = 'home';
+           }
+         } else {
+           for (var i = 0; i < data.errors.length; i++) {
+             // alert(e);
+             $window.alert(data.errors[i]);
+             // console.error(e);
+           }
+         }
+       }, function errorCallBack(response) {
+         alert('An error has occured');
+       })
+    // $http.post("api/user/login", vm.User);
+    // console.log("yolo");
+  }
+  vm.logout = function() {
+    $http.post("api/user/logout");
+    $window.location.href = "home";
   }
   // vm.addItem = function(itemToAdd) {
   //   var item = {};
@@ -48,29 +116,52 @@ app.controller('MerchantController', function() {
 });
 
 
-app.controller('RegisterController', function($http) {
+app.controller('RegisterController', function($http, $window) {
   var vm = this;
   vm.newUser = {}
   vm.newUser.username = "testaccount";
   vm.newUser.user_type = "";
+
   vm.createUser = function() {
     if (vm.newUser.password == vm.confirmPassword) {
-      $http.post("/api/user/create", vm.newUser);
-      console.log(vm.newUser.user_type);
+      $http.post("/api/user/create", vm.newUser).then(
+       function successCallBack(response) {
+         var data = response.data;
+         if (data.errors.length == 0) {
+
+           if (vm.newUser.user_type == 'merchant'){
+             $window.location.href = 'merchant';
+           } else {
+             $window.location.href = 'home';
+           }
+         } else {
+           for (var i = 0; i < data.errors.length; i++) {
+             // alert(e);
+             $window.alert(data.errors[i]);
+             // console.error(e);
+           }
+         }
+       }, function errorCallBack(response) {
+         alert('An error has occured');
+       })
     } else {
-      console.log("incorrect");
-      console.log(vm.newUser.user_type);
+      // testing
+      // console.log("incorrect");
+      // console.log(vm.newUser.user_type);
     }
   }
 });
 
 
-app.controller('LoginController', function($http) {
+app.controller('LoginController', function($http, $window) {
   var vm = this;
-  vm.isCustomer = true;
-  vm.User = {}
-  vm.user_type = ""
-  vm.User.username = "testaccount";
+  // vm.isCustomer = true;
+
+
+  vm.doGreeting = function(greeting) {
+    // if get requset
+    $window.alert(greeting);
+  };
 });
 
 app.controller('InventoryController', function($http) {

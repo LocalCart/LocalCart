@@ -5,7 +5,7 @@ import json
 from models import *
 import time
 from django import forms
-from django.contrib.auth import authenticate, login
+from django.contrib.auth import authenticate, login, logout
 from django.core.exceptions import ValidationError, ObjectDoesNotExist, MultipleObjectsReturned
 
     # Use this code if the POST request sends parameters
