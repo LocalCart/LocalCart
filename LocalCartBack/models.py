@@ -90,6 +90,27 @@ class Store(models.Model):
         new_store.save()
         return new_store
 
+    def edit_store(name, address_street, address_city, address_state, address_zip,
+                   phone_number, description):
+        if name:
+            self.name = name
+        if address_street:
+            self.address_street = address_street
+        if address_city:
+            self.address_city = address_city
+        if address_state:
+            self.address_state = address_state
+        if address_zip:
+            self.address_zip = address_zip
+        if phone_number:
+            self.phone_number = phone_number
+        if description:
+            self.description = description
+        self.full_clean()
+        self.save()
+        
+
+
 
 class Inventory(models.Model):
 

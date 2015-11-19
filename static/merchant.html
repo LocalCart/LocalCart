@@ -53,10 +53,34 @@
             <h2>Store Name<input ng-model="merchantController.tempStoreInfo.storeName" ng-show="merchantController.editable"></h2>
           </div>         
           <div ng-hide="merchantController.editable">
-            <h4>Address: [[merchantController.storeInfo.storeAddress]]</h4>
+            <h4>Address: [[merchantController.storeInfo.storeAddressLine1]]</h4>
           </div>
           <div ng-show="merchantController.editable">
-            <h4>Address: <input ng-model="merchantController.tempStoreInfo.storeAddress" ng-show="merchantController.editable"></h4>
+            <h4>Address: <input ng-model="merchantController.tempStoreInfo.storeAddressLine1" ng-show="merchantController.editable"></h4>
+          </div>         
+          <div ng-hide="merchantController.editable">
+            <h4>City: [[merchantController.storeInfo.storeCity]]</h4>
+          </div>
+          <div ng-show="merchantController.editable">
+            <h4>City: <input ng-model="merchantController.tempStoreInfo.storeCity" ng-show="merchantController.editable"></h4>
+          </div>
+          <div ng-hide="merchantController.editable">
+            <h4>State: [[merchantController.storeInfo.storeState]]</h4>
+          </div>
+          <div ng-show="merchantController.editable">
+            <h4>State: <input ng-model="merchantController.tempStoreInfo.storeState" ng-show="merchantController.editable"></h4>
+          </div>
+          <div ng-hide="merchantController.editable">
+            <h4>Zip Code: [[merchantController.storeInfo.storeZip]]</h4>
+          </div>
+          <div ng-show="merchantController.editable">
+            <h4>Zip Code: <input ng-model="merchantController.tempStoreInfo.storeZip" ng-show="merchantController.editable"></h4>
+          </div>
+          <div ng-hide="merchantController.editable">
+            <h4>Phone Number: [[merchantController.storeInfo.storePhone]]</h4>
+          </div>
+          <div ng-show="merchantController.editable">
+            <h4>Phone Number: <input ng-model="merchantController.tempStoreInfo.storePhone" ng-show="merchantController.editable"></h4>
           </div>
           <div ng-hide="merchantController.editable">
             <h4>Description: [[merchantController.storeInfo.storeDescription]]</h4>

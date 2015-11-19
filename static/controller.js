@@ -8,9 +8,8 @@ app.config(function($interpolateProvider) {
 app.controller('IndexController', function($http){
   var vm = this;
   vm.searchResults = results;
-  vm.shoppingList = inventory
+  vm.shoppingList = inventory;
   vm.remove = function(index) {
-    console.log("wtf");
     vm.shoppingList.splice(index, 1);
   }
   vm.addItem = function(index) {
@@ -35,7 +34,7 @@ app.controller('MerchantController', function() {
     vm.editable = !vm.editable
   }
   vm.storeInfo = {};
-  vm.storeInfo.storeName = "test store";
+  vm.storeInfo.storeName = "";
   vm.tempStoreInfo = angular.copy(vm.storeInfo);
   vm.saveInfo = function() {
     vm.storeInfo = angular.copy(vm.tempStoreInfo);

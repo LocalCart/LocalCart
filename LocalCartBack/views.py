@@ -5,7 +5,7 @@ import json
 from models import *
 import time
 from django import forms
-from django.contrib.auth import authenticate, login
+from django.contrib.auth import authenticate, login, logout
 from django.core.exceptions import ValidationError, ObjectDoesNotExist, MultipleObjectsReturned
 
     # Use this code if the POST request sends parameters
@@ -280,6 +280,58 @@ def create_store(request):
                'storeID': new_store.id,
                'errors': errors
 
+              }
+    return HttpResponse(json.dumps(reponse), content_type='application/json')
+
+@csrf_exempt
+def edit_store(request):
+    assert request.method == 'POST', 'api/store/edit requires a POST request'
+    errors = []
+    post = QueryDict('', mutable=True)
+    post.update(json.loads(request.body))
+    storeID = post.get('storeID', '')
+    try:
+        storeID = int(storeID)
+        store = Store.objects.get(id=storeID)
+    except ValueError:
+        store = None
+        errors.append('storeID must be an integer')
+    except DoesNotExist:
+        store = None
+        errors.append('Store does not exist')
+
+    name = post.get('name', '')
+    address_street = post.get('address_street', '')
+    address_city = post.get('address_city', '')
+    address_state = post.get('address_state', '')
+    address_zip = post.get('address_zip', '')
+    address = [address_street, address_city, address_state, address_zip]
+    address_change = any(address)
+    if (store is not None) and address_change:
+        if not address_street:
+            address_street = store.address_street
+        if not address_city:
+            address_city = store.address_city
+        if not address_state:
+            address_state = store.address_state
+        if not address_zip:
+            address_zip = store.address_zip
+        if Store.objects.filter(address_street=address_street, address_city=address_city,
+                              address_state=address_state, address_zip=address_zip).exists():
+            errors.append('store already exists at this address')
+    phone_number = post.get('phone_number', '')
+    description = post.get('description', '')
+    if len(errors) > 0:
+        return return_error(errors)
+    try:
+        store.edit_store(name=name, description=description, phone_number=phone_number,
+                         address_street=address_street, address_city=address_city,
+                         address_state = address_state, address_zip = address_zip)
+    except ValidationError as e:
+        return return_error(errors)
+    reponse = {
+               'status': 200,
+               'errors': errors
               }
     return HttpResponse(json.dumps(reponse), content_type='application/json')
 
