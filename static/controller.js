@@ -49,16 +49,17 @@ app.controller('IndexController', function($http, $window){
   }
   vm.remove = function(index) {
     vm.shoppingList.splice(index, 1);
-    var editData = {};
-    editData.listID = 120391023901284091823904130948;//CURRENT LIST ID
-    editData.contents = vm.shoppingList; // REPLACE WITH CURRENT SHOPPING LIST
-    $http.post("api/list/edit", editData).then(successListError, errorCallBackGeneral);
+    // var editData = {};
+    // editData.listID = 120391023901284091823904130948;//CURRENT LIST ID
+    // editData.contents = vm.shoppingList; // REPLACE WITH CURRENT SHOPPING LIST
+    // $http.post("api/list/edit", editData).then(successListError, errorCallBackGeneral);
   }
   vm.addItem = function(index) {
     vm.shoppingList.push(vm.searchResults[index]);
-    editData.listID = 120391023901284091823904130948;//CURRENT LIST ID
-    editData.contents = vm.shoppingList; // REPLACE WITH CURRENT SHOPPING LIST
-    $http.post("api/list/edit", editData).then(successListError, errorCallBackGeneral);
+    // var editData = {};
+    // editData.listID = 120391023901284091823904130948;//CURRENT LIST ID
+    // editData.contents = vm.shoppingList; // REPLACE WITH CURRENT SHOPPING LIST
+    // $http.post("api/list/edit", editData).then(successListError, errorCallBackGeneral);
   }
   vm.loginAttempt = function() {
     $http.post("/api/user/login", vm.User).then(
