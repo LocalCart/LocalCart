@@ -88,10 +88,11 @@ def return_user(request):
         errors.append('Not logged in')
         user_id = -1
         username = ''
+        user_type = 'customer'
     else:
         user_id = user.id
         username = user.username
-        user_type = UserInfo.get(user=user).user_type
+        user_type = UserInfo.objects.get(user=user).user_type
     reponse = {
                'status': 200,
                'id': user_id,
