@@ -336,6 +336,27 @@ def edit_store(request):
               }
     return HttpResponse(json.dumps(reponse), content_type='application/json')
 
+
+@csrf_exempt
+def get_store(request):
+    hasError = False
+    retData = { 
+                "status": 200,
+                "errors": []
+                }
+
+    store_id = request.GET.get('store_id', '')    
+    if store_id == "":
+        retData["errors"].append("store_id must be non-empty")
+        hasError = True
+    if not hasError:
+        hasError, store = Store.get_store(store_id)
+        if hasError:
+            retData["errors"].append("Can't get store from store_id")
+        retData["store"] = store
+    return HttpResponse(json.dumps(retData), content_type='application/json', status=200)
+
+
 @csrf_exempt
 def create_inventory(request):
     assert request.method == 'POST', 'api/create/inventory requires a POST request'
@@ -372,6 +393,25 @@ def create_inventory(request):
                'errors': errors
               }
     return HttpResponse(json.dumps(response), content_type='application/json')
+
+@csrf_exempt
+def get_inventory(request):
+    hasError = False
+    retData = { 
+                "status": 200,
+                "errors": []
+                }
+
+    inventory_id = request.GET.get('inventory_id', '')    
+    if inventory_id == "":
+        retData["errors"].append("inventory_id must be non-empty")
+        hasError = True
+    if not hasError:
+        hasError, inventory = Inventory.get_inventory(inventory_id)
+        if hasError:
+            retData["errors"].append("Can't get inventory from inventory_id")
+        retData["inventory"] = inventory
+    return HttpResponse(json.dumps(retData), content_type='application/json', status=200)
 
 @csrf_exempt
 def create_item(request):
@@ -431,6 +471,26 @@ def create_item(request):
                'errors': errors
               }
     return HttpResponse(json.dumps(reponse), content_type='application/json')
+
+@csrf_exempt
+def get_item(request):
+    hasError = False
+    retData = { 
+                "status": 200,
+                "errors": []
+                }
+
+    item_id = request.GET.get('item_id', '')    
+    if item_id == "":
+        retData["errors"].append("item_id must be non-empty")
+        hasError = True
+    if not hasError:
+        hasError, item = Item.get_item(item_id)
+        if hasError:
+            retData["errors"].append("Can't get inventory from inventory_id")
+        retData["item"] = item
+    return HttpResponse(json.dumps(retData), content_type='application/json', status=200)
+
 @csrf_exempt
 def add_inventory(request):
     return create_item(request)
@@ -576,6 +636,25 @@ def create_list(request):
                'errors': errors,
                 }
       return HttpResponse(json.dumps(response), content_type='application/json')
+
+@csrf_exempt
+def get_list(request):
+    hasError = False
+    retData = { 
+                "status": 200,
+                "errors": []
+                }
+
+    list_id = request.GET.get('list_id', '')    
+    if list_id == "":
+        retData["errors"].append("list_id must be non-empty")
+        hasError = True
+    if not hasError:
+        hasError, cartlist = Inventory.get_list(list_id)
+        if hasError:
+            retData["errors"].append("Can't get list from list_id")
+        retData["list"] = cartlist
+    return HttpResponse(json.dumps(retData), content_type='application/json', status=200)
 
 
 @csrf_exempt
