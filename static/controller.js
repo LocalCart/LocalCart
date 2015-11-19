@@ -48,29 +48,75 @@ app.controller('MerchantController', function() {
 });
 
 
-app.controller('RegisterController', function($http) {
+app.controller('RegisterController', function($http, $window) {
   var vm = this;
   vm.newUser = {}
   vm.newUser.username = "testaccount";
   vm.newUser.user_type = "";
+
   vm.createUser = function() {
     if (vm.newUser.password == vm.confirmPassword) {
-      $http.post("/api/user/create", vm.newUser);
-      console.log(vm.newUser.user_type);
+      $http.post("/api/user/create", vm.newUser).then(
+       function successCallBack(response) {
+         var data = response.data;
+         if (data.errors.length == 0) {
+           if (vm.newUser.user_type == 'merchant'){
+             $window.location.href = 'merchant';
+           } else {
+             $window.location.href = 'home';
+           }
+         } else {
+           for (var i = 0; i < data.errors.length; i++) {
+             // alert(e);
+             $window.alert(data.errors[i]);
+             // console.error(e);
+           }
+         }
+       }, function errorCallBack(response) {
+         alert('An error has occured');
+       })
     } else {
-      console.log("incorrect");
-      console.log(vm.newUser.user_type);
+      // testing
+      // console.log("incorrect");
+      // console.log(vm.newUser.user_type);
     }
   }
 });
 
 
-app.controller('LoginController', function($http) {
+app.controller('LoginController', function($http, $window) {
   var vm = this;
-  vm.isCustomer = true;
-  vm.User = {}
-  vm.user_type = ""
-  vm.User.username = "testaccount";
+  // vm.isCustomer = true;
+  vm.User = {};
+
+  vm.loginAttempt = function() {
+    $http.post("/api/user/login", vm.User).then(
+       function successCallBack(response) {
+         var data = response.data;
+         if (data.errors.length == 0) {
+           if (data.user_type == 'merchant'){
+             $window.location.href = 'merchant';
+           } else {
+             $window.location.href = 'home';
+           }
+         } else {
+           for (var i = 0; i < data.errors.length; i++) {
+             // alert(e);
+             $window.alert(data.errors[i]);
+             // console.error(e);
+           }
+         }
+       }, function errorCallBack(response) {
+         alert('An error has occured');
+       })
+    // $http.post("api/user/login", vm.User);
+    // console.log("yolo");
+  }
+
+  vm.doGreeting = function(greeting) {
+    // if get requset
+    $window.alert(greeting);
+  };
 });
 
 app.controller('InventoryController', function($http) {
