@@ -32,12 +32,18 @@
         </div>
         <div id="navbar" class="navbar-collapse collapse">
           <form class="navbar-form navbar-right">
-            <a href="" class="btn btn-info" data-toggle="modal" data-target="#myModal">View Shopping List</a>
-            <input type="text" placeholder="Search for item!" class="form-control">
-            <a href="search"  class="btn btn-primary">Search</a>
-            <a href="login"  class="btn btn-success">Login</a>
-            <a href="register"  class="btn btn-success">Register</a>
-            <a href="merchant"  class="btn btn-success">Placeholder to merchant</a>
+            <div ng-show="indexController.current_user != ''">
+              <a href="" class="btn btn-info">Welcome [[indexController.current_user]]!</a>
+              <a href="" class="btn btn-info" data-toggle="modal" data-target="#myModal">View Shopping List</a>
+              <a ng-click="indexController.logout()"  class="btn btn-success">Logout</a>
+            </div>         
+            <div ng-hide="indexController.current_user != ''">
+              <input ng-model="indexController.User.username" class="form-control" placeholder="Username" required autofocus>
+              <input ng-model="indexController.User.password" type="password" id="inputPassword" class="form-control" placeholder="Password" required>
+              <a ng-click="indexController.loginAttempt()"  class="btn btn-success">Login</a>
+              <a href="register"  class="btn btn-success">Register</a>
+            </div>
+
           </form>
         </div><!--/.navbar-collapse -->
       </div>
@@ -45,38 +51,50 @@
 
     <hr>
     <div class="col-sm-12">
-      <br>
-      
-      <div class="container col-sm-5">
-      <h2>Search Results for "current"</h2>
-        <br>
-        <div class="table scrolly">
-            <div ng-repeat="result in indexController.searchResults" class="media">
-              <div class="col-sm-9">
-                <div class="media-left">
-                  <a href="#">
-                    <img class="media-object" src="data:image/svg+xml;base64,PD94bWwgdmVyc2lvbj0iMS4wIiBlbmNvZGluZz0iVVRGLTgiIHN0YW5kYWxvbmU9InllcyI/PjxzdmcgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIiB3aWR0aD0iNjQiIGhlaWdodD0iNjQiIHZpZXdCb3g9IjAgMCA2NCA2NCIgcHJlc2VydmVBc3BlY3RSYXRpbz0ibm9uZSI+PGRlZnMvPjxyZWN0IHdpZHRoPSI2NCIgaGVpZ2h0PSI2NCIgZmlsbD0iI0VFRUVFRSIvPjxnPjx0ZXh0IHg9IjEzLjQ2MDkzNzUiIHk9IjMyIiBzdHlsZT0iZmlsbDojQUFBQUFBO2ZvbnQtd2VpZ2h0OmJvbGQ7Zm9udC1mYW1pbHk6QXJpYWwsIEhlbHZldGljYSwgT3BlbiBTYW5zLCBzYW5zLXNlcmlmLCBtb25vc3BhY2U7Zm9udC1zaXplOjEwcHQ7ZG9taW5hbnQtYmFzZWxpbmU6Y2VudHJhbCI+NjR4NjQ8L3RleHQ+PC9nPjwvc3ZnPg==" alt="...">
-                  </a>
-                </div>
-                <div class="media-body">
-                  <h3 class="media-heading">[[result.name]]</h3>
-                  <h5>Store: [[result.storeName]]</h5>
-
-                  [[result.description]]
-                  <hr>
-                </div>
-              </div> 
-              <div class="col-sm-2">
-                <button ng-click="indexController.addItem([[$index]])" type="button" class="btn btn-default" data-dismiss="modal">Add to cart</button>
-              </div>
-            </div> 
+      <div class="row">
+        <div class="container col-sm-offset-3 col-sm-5">
+          <input ng-model="indexController.searchQuery" type="text" placeholder="Search for item!" class="form-control">
+        </div>
+        <div class="container col-sm-4">
+          <a href="" ng-click="indexController.search()" class="btn btn-primary">Search</a>
         </div>
       </div>
+      <br>
+      <div ng-hide="indexController.query != ''">
+        <h2>Welcome Back [[indexController.current_user]]. Enter a search query to continue!</h2>
+      </div>
+      <div ng-show="indexController.query != ''">
+        <div class="container col-sm-5">
+        <h2>Search Results for [[indexController.query]]</h2>
+          <br>
+          <div class="table scrolly">
+              <div ng-repeat="result in indexController.searchResults" class="media">
+                <div class="col-sm-9">
+                  <div class="media-left">
+                    <a href="#">
+                      <img class="media-object" src="data:image/svg+xml;base64,PD94bWwgdmVyc2lvbj0iMS4wIiBlbmNvZGluZz0iVVRGLTgiIHN0YW5kYWxvbmU9InllcyI/PjxzdmcgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIiB3aWR0aD0iNjQiIGhlaWdodD0iNjQiIHZpZXdCb3g9IjAgMCA2NCA2NCIgcHJlc2VydmVBc3BlY3RSYXRpbz0ibm9uZSI+PGRlZnMvPjxyZWN0IHdpZHRoPSI2NCIgaGVpZ2h0PSI2NCIgZmlsbD0iI0VFRUVFRSIvPjxnPjx0ZXh0IHg9IjEzLjQ2MDkzNzUiIHk9IjMyIiBzdHlsZT0iZmlsbDojQUFBQUFBO2ZvbnQtd2VpZ2h0OmJvbGQ7Zm9udC1mYW1pbHk6QXJpYWwsIEhlbHZldGljYSwgT3BlbiBTYW5zLCBzYW5zLXNlcmlmLCBtb25vc3BhY2U7Zm9udC1zaXplOjEwcHQ7ZG9taW5hbnQtYmFzZWxpbmU6Y2VudHJhbCI+NjR4NjQ8L3RleHQ+PC9nPjwvc3ZnPg==" alt="...">
+                    </a>
+                  </div>
+                  <div class="media-body">
+                    <h3 class="media-heading">[[result.name]]</h3>
+                    <h5>Store: [[result.storeName]]</h5>
 
-      <div class="container panel col-sm-4">
-        <iframe width="600" height="450" frameborder="0" style="border:0" src="https://www.google.com/maps/embed/v1/search?q=2609EllsworthStreet&zoom=12&center=37.8716,-122.2727&key=AIzaSyBkTNmmKUDXA82v1479nIbcjPuYfS58098" allowfullscreen></iframe>
+                    [[result.description]]
+                    <hr>
+                  </div>
+                </div> 
+                <div class="col-sm-2">
+                  <button ng-click="indexController.addItem([[$index]])" type="button" class="btn btn-default" data-dismiss="modal">Add to cart</button>
+                </div>
+              </div> 
+          </div>
+        </div>
 
-      </div> <!-- /container -->
+        <div class="container panel col-sm-4">
+          <iframe width="600" height="450" frameborder="0" style="border:0" src="https://www.google.com/maps/embed/v1/search?q=2609EllsworthStreet&zoom=12&center=37.8716,-122.2727&key=AIzaSyBkTNmmKUDXA82v1479nIbcjPuYfS58098" allowfullscreen></iframe>
+
+        </div> <!-- /container -->
+      </div>
     </div>
     <!-- Modal -->
     <div id="myModal" class="modal fade" role="dialog">
