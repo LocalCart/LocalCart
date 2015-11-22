@@ -110,8 +110,6 @@ def create_user(request):
     assert request.method == 'POST', 'api/user/create requires a POST request'
     post = request.POST
     files = request.FILES
-    # post = QueryDict('', mutable=True)
-    # post.update(json.loads(request.body))
     form = NewUserForm(post, files)
     if form.is_valid():
         username = post.get('username', '')
@@ -124,63 +122,42 @@ def create_user(request):
 
         new_user_info = UserInfo.create_new_user(username, password, email, first_name, last_name, user_type, picture)
         if new_user_info:
-            return HttpResponseRedirect('home') # TODO: redirect to "successfully registered" page
+            return HttpResponseRedirect('home') # TODO: redirect to "successfully registered" page??? re-render page???
         else:
-            form.errors['username'] = ['Username already exists.']
+            form.errors['username'] = [u'Username already exists.']
     response = {
                'status': 200,
                'errors': form.errors,
               }
     return HttpResponse(json.dumps(response), content_type='application/json')
 
-
-
 @csrf_exempt
 def edit_user(request):
     assert request.method == 'POST', 'api/user/change requires a POST request'
-    errors = []
-    user_type = ''
-    post = QueryDict('', mutable=True)
-    post.update(json.loads(request.body))
-    username = post.get('username', '')
-    if not username:
-        errors.append('username must be non-empty')
-    email = post.get('email', None)
-    picture = post.get('picture', None) # Make this default
-    first_name = post.get('first_name', None) # Optional
-    last_name = post.get('last_name', None) # Optional
-    password = post.get('password', None)
-    if (first_name is not None) and not first_name:
-        errors.append('first_name must not be empty')
-    if (last_name is not None) and not last_name:
-        errors.append('last_name must not be empty')
-    if (email is not None) and not email:
-        errors.append('email must not be empty')
-    if (password is not None) and not password:
-        errors.append('password must not be empty')
-    if (picture is not None) and not picture:
-        picture = 'images/default_user_image'
-    if len(errors) == 0:
-        try:
-            current_user_info = UserInfo.edit_user_info(username=username, first_name=first_name, 
-              last_name=last_name, email=email, password=password, picture=picture)
-        except ValidationError as e:
-            errors.append(e)
-        if not current_user_info:
-            errors.append('username does not exist')
-    if len(errors) == 0:
-      response = {
+    post = request.POST
+    files = request.FILES
+    form = EditUserForm(post, files)
+    if form.is_valid():
+        username = post.get('username', '')
+        password = post.get('password', '')
+        email = post.get('email', '')
+        if files:
+            picture = files['picture']
+        else:
+            picture = ''
+        first_name = post.get('first_name', '') # Optional
+        last_name = post.get('last_name', '') # Optional
+
+        current_user_info = UserInfo.edit_user_info(username=username, first_name=first_name, last_name=last_name, email=email, password=password, picture=picture)
+        if current_user_info:
+            return HttpResponseRedirect('home') # TODO: redirect to "user profile" page??? re-render page???
+        else:
+            form.errors['username'] = [u'Username does not exist.']
+    response = {
                'status': 200,
-               'username': username,
-               'first_name': current_user_info.user.first_name,
-               'last_name': current_user_info.user.last_name,
-               'email': current_user_info.user.email,
-               'user_type': current_user_info.user_type,
-               'errors': errors,
-                }
-      return HttpResponse(json.dumps(response), content_type='application/json')
-    else:
-      return return_error(errors)
+               'errors': form.errors,
+              }
+    return HttpResponse(json.dumps(response), content_type='application/json')
 
     
 @csrf_exempt

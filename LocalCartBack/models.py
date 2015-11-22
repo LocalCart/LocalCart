@@ -47,16 +47,16 @@ class UserInfo(models.Model):
             return None
         current_user = User.objects.get(username=username)
         current_user_info = UserInfo.objects.get(user__username=username)
-        if first_name is not None:
+        if first_name:
             current_user.first_name = first_name
-        if last_name is not None:
+        if last_name:
             current_user.last_name = last_name
-        if email is not None:
+        if email:
             current_user.email = email
-        if password is not None:
+        if password:
             current_user.set_password(password)
         current_user.save()
-        if picture is not None:
+        if picture:
             current_user_info.picture = picture
             current_user_info.save()
         return current_user_info
