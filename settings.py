@@ -144,6 +144,8 @@ STATICFILES_DIRS = (
     os.path.join(BASE_DIR, 'static'),
 )
 
+MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+MEDIA_URL = '/media/'
 
 # # Parse database configuration from $DATABASE_URL
 # ON_HEROKU = os.environ.get('ON_HEROKU')

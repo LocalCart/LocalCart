@@ -884,6 +884,191 @@ class TestCarts(testLib.CartTestCase):
         self.assertSuccessResponse(respSearchItem)
 
 
+############################################################################################################
+
+
+    def testCreateList(self):
+        respCreate = self.makeRequest("/api/user/create", method="POST",
+                                    data = { 'username' : 'Tom',
+                                             'password' : '123456',
+                                             'user_type' : 'customer',
+                                             'email' : 'tommeng@berkeley.edu'
+                                             })
+
+        self.assertSuccessResponse(respCreate)
+
+        respCreateList = self.makeRequest("/api/list/create", method="POST",
+                                    data = { 'username' : 'Tom',
+                                             'name' : 'My Favorite Things',
+                                             })
+        self.assertSuccessResponse(respCreateList)
+
+    def testCreateListUsernameNotExist(self):
+        respCreate = self.makeRequest("/api/user/create", method="POST",
+                                    data = { 'username' : 'Tom',
+                                             'password' : '123456',
+                                             'user_type' : 'customer',
+                                             'email' : 'tommeng@berkeley.edu'
+                                             })
+
+        self.assertSuccessResponse(respCreate)
+
+        respCreateList = self.makeRequest("/api/list/create", method="POST",
+                                    data = { 'username': 'NotExist',
+                                             'name': "Tom's shopping list"
+                                             })
+        self.assertFailResponse(respCreateList)
+        self.assertEquals("username does not exist or user is not a customer", respCreateList['errors'][0]) 
+
+    def testCreateListUsernameNotCustomer(self):
+        respCreate = self.makeRequest("/api/user/create", method="POST",
+                                    data = { 'username' : 'Tom',
+                                             'password' : '123456',
+                                             'user_type' : 'merchant',
+                                             'email' : 'tommeng@berkeley.edu'
+                                             })
+
+        self.assertSuccessResponse(respCreate)
+
+        respCreateList = self.makeRequest("/api/list/create", method="POST",
+                                    data = { 'username': 'Tom',
+                                             'name': "Tom's shopping list"
+                                             })
+        self.assertFailResponse(respCreateList)
+        self.assertEquals("username does not exist or user is not a customer", respCreateList['errors'][0]) 
+
+    # def testCreateListInvalidFields(self):
+    #     request = self.factory.post("/api/user/create", json.dumps({ 'username' : 'Tom',
+    #                                          'password' : '123456',
+    #                                          'user_type' : 'customer',
+    #                                          'email' : 'tommeng@berkeley.edu',
+    #                                          }), content_type='application/json')
+    #     response = views.create_user(request);
+
+    #     request = self.factory.post("/api/list/create", json.dumps({
+    #                                          'username': '',
+    #                                          }), content_type='application/json')
+    #     response = views.create_list(request)
+    #     respCreateList = self.getDataFromResponse(response)
+
+    #     self.assertEquals("username must be non-empty", respCreateList['errors'][0]) 
+    #     self.assertEquals("name must be non-empty", respCreateList['errors'][1]) 
+
+
+    # def testDeleteList(self):
+    #     request = self.factory.post("/api/user/create", json.dumps({ 'username' : 'Tom',
+    #                                          'password' : '123456',
+    #                                          'user_type' : 'customer',
+    #                                          'email' : 'tommeng@berkeley.edu',
+    #                                          }), content_type='application/json')
+    #     response = views.create_user(request);
+
+    #     request = self.factory.post("/api/list/create", json.dumps({
+    #                                          'username': 'Tom',
+    #                                          'name': "Tom's shopping list"
+    #                                          }), content_type='application/json')
+    #     response = views.create_list(request)
+        
+    #     request = self.factory.post("/api/list/delete", json.dumps({
+    #                                          'username': 'Tom',
+    #                                          'name': "Tom's shopping list"
+    #                                          }), content_type='application/json')
+    #     response = views.delete_list(request)
+    #     respDeleteList = self.getDataFromResponse(response)
+    #     self.assertEquals(0, len(respDeleteList['errors']))  
+
+    # def testDeleteListUsernameNotExist(self):
+    #     request = self.factory.post("/api/user/create", json.dumps({ 'username' : 'Tom',
+    #                                          'password' : '123456',
+    #                                          'user_type' : 'customer',
+    #                                          'email' : 'tommeng@berkeley.edu',
+    #                                          }), content_type='application/json')
+    #     response = views.create_user(request);
+
+    #     request = self.factory.post("/api/list/create", json.dumps({
+    #                                          'username': 'Tom',
+    #                                          'name': "Tom's shopping list"
+    #                                          }), content_type='application/json')
+    #     response = views.create_list(request)
+        
+    #     request = self.factory.post("/api/list/delete", json.dumps({
+    #                                          'username': 'NotExist',
+    #                                          'name': "Tom's shopping list"
+    #                                          }), content_type='application/json')
+    #     response = views.delete_list(request)
+    #     respDeleteList = self.getDataFromResponse(response)
+    #     self.assertEquals("no list of this name exists for this username", respDeleteList['errors'][0])  
+
+    # def testDeleteListListnameNotExist(self):
+    #     request = self.factory.post("/api/user/create", json.dumps({ 'username' : 'Tom',
+    #                                          'password' : '123456',
+    #                                          'user_type' : 'customer',
+    #                                          'email' : 'tommeng@berkeley.edu',
+    #                                          }), content_type='application/json')
+    #     response = views.create_user(request);
+
+    #     request = self.factory.post("/api/list/create", json.dumps({
+    #                                          'username': 'Tom',
+    #                                          'name': "Tom's shopping list"
+    #                                          }), content_type='application/json')
+    #     response = views.create_list(request)
+        
+    #     request = self.factory.post("/api/list/delete", json.dumps({
+    #                                          'username': 'Tom',
+    #                                          'name': "NotExist"
+    #                                          }), content_type='application/json')
+    #     response = views.delete_list(request)
+    #     respDeleteList = self.getDataFromResponse(response)
+    #     self.assertEquals("no list of this name exists for this username", respDeleteList['errors'][0]) 
+
+    # def testDeleteListInvalidFields(self):
+    #     request = self.factory.post("/api/user/create", json.dumps({ 'username' : 'Tom',
+    #                                          'password' : '123456',
+    #                                          'user_type' : 'customer',
+    #                                          'email' : 'tommeng@berkeley.edu',
+    #                                          }), content_type='application/json')
+    #     response = views.create_user(request);
+
+    #     request = self.factory.post("/api/list/create", json.dumps({
+    #                                          'username': 'Tom',
+    #                                          'name': "Tom's shopping list"
+    #                                          }), content_type='application/json')
+    #     response = views.create_list(request)
+        
+    #     request = self.factory.post("/api/list/delete", json.dumps({
+    #                                          'username': '',
+    #                                          }), content_type='application/json')
+    #     response = views.delete_list(request)
+    #     respDeleteList = self.getDataFromResponse(response)
+    #     self.assertEquals("username must be non-empty", respDeleteList['errors'][0]) 
+    #     self.assertEquals("name must be non-empty", respDeleteList['errors'][1])   
+
+
+    # def testEditList(self):
+    #     request = self.factory.post("/api/user/create", json.dumps({ 'username' : 'Tom',
+    #                                          'password' : '123456',
+    #                                          'user_type' : 'customer',
+    #                                          'email' : 'tommeng@berkeley.edu',
+    #                                          }), content_type='application/json')
+    #     response = views.create_user(request);
+
+    #     request = self.factory.post("/api/list/create", json.dumps({
+    #                                          'username': 'Tom',
+    #                                          'name': "Tom's shopping list"
+    #                                          }), content_type='application/json')
+    #     response = views.create_list(request)
+    #     respList = self.getDataFromResponse(response)
+
+    #     request = self.factory.post("/api/list/edit", json.dumps({
+    #                                          'listID': respList['listID'],
+    #                                          'contents': [
+    #                                                         {'name': 'chair', 'type': 'name'},
+    #                                                         {'name': 'apple', 'type': 'name'}
+    #                                                      ]
+    #                                          }), content_type='application/json')
+    #     response = views.edit_list(request)
+    #     respEditList = self.getDataFromResponse(response)
+    #     self.assertEquals(0, len(respEditList['errors']))  
 
 
 

@@ -7,8 +7,14 @@ from time import sleep
 
 class UserInfo(models.Model):
     user = models.OneToOneField(User)
-    user_type = models.CharField(max_length=16)
-    picture = models.CharField(max_length=128, null=True) # A url
+    CUSTOMER = 'CR'
+    MERCHANT = 'MT'
+    USER_TYPE_CHOICES = (
+        (CUSTOMER, 'Customer'),
+        (MERCHANT, 'Merchant'),
+    )
+    user_type = models.CharField(max_length=2, choices=USER_TYPE_CHOICES)
+    picture = models.ImageField(max_length=128, upload_to='profile') # A url
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
