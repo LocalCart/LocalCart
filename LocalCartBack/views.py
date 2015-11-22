@@ -124,47 +124,15 @@ def create_user(request):
 
         new_user_info = UserInfo.create_new_user(username, password, email, first_name, last_name, user_type, picture)
         if new_user_info:
-            return HttpResponseRedirect('home') # redirect to "successfully registered" page
+            return HttpResponseRedirect('home') # TODO: redirect to "successfully registered" page
         else:
             form.errors['username'] = ['Username already exists.']
     response = {
+               'status': 200,
                'errors': form.errors,
               }
-    return HttpResponse(response)
+    return HttpResponse(json.dumps(response), content_type='application/json')
 
-    # errors = []
-    # post = QueryDict('', mutable=True)
-    # post.update(json.loads(request.body))
-    # username = post.get('username', '')
-    # password = post.get('password', '')
-    # user_type = post.get('user_type', '')
-    # if user_type not in ['merchant', 'customer']:
-    #     errors.append('user_type must be either merchant or customer')
-    # email = post.get('email', '')
-    # picture = post.get('picture', 'images/default_user_image') # Make this default
-    # fields = [
-    #           'username',
-    #           'password',
-    #           'user_type',
-    #           'email',
-    #          ]
-    # errors = check_empty(fields, post, errors)
-    # first_name = post.get('first_name', '') # Optional
-    # last_name = post.get('last_name', '') # Optional
-    # if len(errors) == 0:
-    #     try:
-    #         new_user_info = UserInfo.create_new_user(username, password, email, first_name, last_name, user_type, picture)
-    #     except ValidationError as e:
-    #         errors.append(e)
-    #     if not new_user_info:
-    #         errors.append('username already exists')
-    # reponse = {
-    #            'status': 200,
-    #            'username': username,
-    #            'user_type': user_type,
-    #            'errors': errors,
-    #           }
-    # return HttpResponse(json.dumps(reponse), content_type='application/json')
 
 
 @csrf_exempt

@@ -17,9 +17,10 @@ class TestWithForms(TestCase):
         self.assertEquals(200, resp['status'], msg)
 
     def assertFailResponse(self,
-                              respData,
+                              resp,
                               msg=None):
-        self.assertEquals(200, respData.status_code, msg)
+        self.assertEquals(200, resp['status'], msg)
+        self.assertTrue(len(resp['errors']) > 0)
 
     def assertRedirectResponse(self,
                               resp,
@@ -53,7 +54,7 @@ class TestWithForms(TestCase):
                                              'email' : 'tommeng@berkeley.edu',
                                              'picture' : open('no-user-profile-picture.jpg'),
                                              })
-        response = views.create_user(request);
+        response = views.create_user(request)
         self.assertRedirectResponse(response)
 
 
@@ -66,7 +67,8 @@ class TestWithForms(TestCase):
                                              'user_type' : 'CR',
                                              'email' : 'tommeng@berkeley.edu',
                                              })
-        response = views.create_user(request);
-        self.assertFailResponse(response)
+        response = views.create_user(request)
+        resp = self.getDataFromResponse(response)
+        self.assertFailResponse(resp)
 
 

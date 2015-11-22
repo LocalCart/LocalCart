@@ -5,3 +5,5 @@ cover
 db.sqlite3
 .coverage
 htmlcov
+ven
+.DS_Store
