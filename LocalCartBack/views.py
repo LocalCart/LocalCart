@@ -204,21 +204,26 @@ def create_store(request):
     assert request.method == 'POST', 'api/store/create requires a POST request'
     post = request.POST
     files = request.FILES
-    form = EditUserForm(post, files)
+    form = NewStoreForm(post, files)
     if form.is_valid():
         username = post.get('username', '')
-        password = post.get('password', '')
-        email = post.get('email', '')
-        if files:
-            picture = files['picture']
-        else:
-            picture = ''
-        first_name = post.get('first_name', '') # Optional
-        last_name = post.get('last_name', '') # Optional
+        name = post.get('name', '')
+        description = post.get('description', '')
+        picture = files['picture']
+        address_street = post.get('address_street', '')
+        address_apt = post.get('address_apt', '')
+        address_city = post.get('address_city', '')
+        address_state = post.get('address_state', '')
+        address_zip = post.get('address_zip', '')
+        phone_number = post.get('phone_number', '')
 
-        current_user_info = UserInfo.edit_user_info(username=username, first_name=first_name, last_name=last_name, email=email, password=password, picture=picture)
-        if current_user_info:
-            return HttpResponseRedirect('home') # TODO: redirect to "user profile" page??? re-render page???
+        new_store = Store.create_new_store(username=username, name=name, description=description, picture=picture,
+                          address_street=address_street, address_apt=address_apt, address_city=address_city, address_state=address_state, address_zip=address_zip, phone_number=phone_number)
+        if new_store:
+            if new_store == 'exists':
+                form.errors['address'] = [u'Another store already exists at this address.']
+            else:
+                return HttpResponseRedirect('home') # TODO: redirect to "user profile" page??? re-render page???
         else:
             form.errors['username'] = [u'Username does not exist.']
     response = {
@@ -227,108 +232,39 @@ def create_store(request):
               }
     return HttpResponse(json.dumps(response), content_type='application/json')
 
-    #     errors = []
-    # post = QueryDict('', mutable=True)
-    # post.update(json.loads(request.body))
-    # username = post.get('username', '') ### changed to username since username is also unique
-    # if not User.objects.filter(username=username).exists():
-    #     errors.append('username does not exist')
-    #     user = None
-    # else:
-    #     user = User.objects.get(username=username)
-    
-    # name = post.get('name', '')
-
-    # # If using the address format
-    # address = post.get('address', '').split('\n')
-    # if len(address) == 5:
-    #     address_street = address[0]
-    #     address_city = address[2]
-    #     address_state = address[3]
-    #     address_zip = address[4]
-    #     if Store.objects.filter(address_street=address_street, address_city=address_city,
-    #                           address_state = address_state, address_zip = address_zip).exists():
-    #         errors.append('store already exists at this address')
-    # else:
-    #     errors.append('address not correctly formatted')
-
-    # phone_number = post.get('phone_number', '')
-    # description = post.get('description', 'Good Store') #default
-    # picture = post.get('picture', 'images/default_user_image') #default
-    # fields = [
-    #           'name',
-    #           'address',
-    #           'phone_number',
-    #          ]
-    # errors = check_empty(fields, post, errors)
-    # if len(errors) > 0:
-    #     return return_error(errors)
-    # try:
-    #     new_store = Store.create_new_store(user=user, name=name, description=description, picture=picture,
-    #                       address_street=address_street, address_city=address_city,
-    #                       address_state = address_state, address_zip = address_zip,
-    #                       phone_number=phone_number)
-    # except ValidationError as e:
-    #     return return_error(errors)
-    # reponse = {
-    #            'status': 200,
-    #            'storeID': new_store.id,
-    #            'errors': errors
-
-    #           }
-    # return HttpResponse(json.dumps(reponse), content_type='application/json')
-
 @csrf_exempt
 def edit_store(request):
     assert request.method == 'POST', 'api/store/edit requires a POST request'
-    errors = []
-    post = QueryDict('', mutable=True)
-    post.update(json.loads(request.body))
-    storeID = post.get('storeID', '')
-    try:
-        storeID = int(storeID)
-        store = Store.objects.get(id=storeID)
-    except ValueError:
-        store = None
-        errors.append('storeID must be an integer')
-    except DoesNotExist:
-        store = None
-        errors.append('Store does not exist')
+    post = request.POST
+    files = request.FILES
+    form = EditStoreForm(post, files)
+    if form.is_valid():
+        storeID = post.get('storeID', '')
+        name = post.get('name', '')
+        description = post.get('description', '')
+        if files:
+            picture = files['picture']
+        address_street = post.get('address_street', '')
+        address_apt = post.get('address_apt', '')
+        address_city = post.get('address_city', '')
+        address_state = post.get('address_state', '')
+        address_zip = post.get('address_zip', '')
+        phone_number = post.get('phone_number', '')
 
-    name = post.get('name', '')
-    address_street = post.get('address_street', '')
-    address_city = post.get('address_city', '')
-    address_state = post.get('address_state', '')
-    address_zip = post.get('address_zip', '')
-    address = [address_street, address_city, address_state, address_zip]
-    address_change = any(address)
-    if (store is not None) and address_change:
-        if not address_street:
-            address_street = store.address_street
-        if not address_city:
-            address_city = store.address_city
-        if not address_state:
-            address_state = store.address_state
-        if not address_zip:
-            address_zip = store.address_zip
-        if Store.objects.filter(address_street=address_street, address_city=address_city,
-                              address_state=address_state, address_zip=address_zip).exists():
-            errors.append('store already exists at this address')
-    phone_number = post.get('phone_number', '')
-    description = post.get('description', '')
-    if len(errors) > 0:
-        return return_error(errors)
-    try:
-        store.edit_store(name=name, description=description, phone_number=phone_number,
-                         address_street=address_street, address_city=address_city,
-                         address_state = address_state, address_zip = address_zip)
-    except ValidationError as e:
-        return return_error(errors)
-    reponse = {
+        edited_store = Store.edit_store(storeID=storeID, name=name, description=description, picture=picture,
+                          address_street=address_street, address_apt=address_apt, address_city=address_city, address_state=address_state, address_zip=address_zip, phone_number=phone_number)
+        if edited_store:
+            if edited_store == 'exists':
+                form.errors['address'] = [u'Another store already exists at this address.']
+            else:
+                return HttpResponseRedirect('home') # TODO: redirect to "user profile" page??? re-render page???
+        else:
+            form.errors['store'] = [u'Store does not exist.']
+    response = {
                'status': 200,
-               'errors': errors
+               'errors': form.errors,
               }
-    return HttpResponse(json.dumps(reponse), content_type='application/json')
+    return HttpResponse(json.dumps(response), content_type='application/json')
 
 
 @csrf_exempt

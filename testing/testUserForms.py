@@ -48,7 +48,7 @@ class TestNewUserForms(TestCase):
 
 
 
-    def testCreate1User(self):
+    def testCreateUser(self):
         """
         Test adding one user
         """
@@ -257,7 +257,16 @@ class TestEditUserForms(TestCase):
         self.assertFailResponse(resp)
         self.assertErrorInvalidEmail(resp['errors']['email'])
 
-
+    def testEditUserDoesNotExist(self):
+        """
+        Test edit user that does not exist
+        """
+        request = self.factory.post("/api/user/edit", { 'username' : 'Mack',
+                                             })
+        response = views.edit_user(request)
+        resp = self.getDataFromResponse(response)
+        self.assertFailResponse(resp)
+        self.assertEquals([u'Username does not exist.'], resp['errors']['username'])
 
 
 

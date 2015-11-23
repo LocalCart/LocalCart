@@ -1,25 +1,5 @@
 import models
 from django import forms
-from django.core.validators import RegexValidator
-
-# class AddressField(MultiValueField):
-#     def __init__(self, *args, **kwargs):
-#         # Define one message for all fields.
-#         error_messages = {
-#             'incomplete': 'Enter an address.',
-#         }
-#         # Or define a different message for each field.
-#         fields = (
-#             forms.CharField(error_messages={'incomplete': 'Enter a country calling code.'},
-#                       validators=[RegexValidator(r'^[0-9]+$', 'Enter a valid country calling code.')]),
-#             forms.CharField(error_messages={'incomplete': 'Enter a phone number.'},
-#                       validators=[RegexValidator(r'^[0-9]+$', 'Enter a valid phone number.')]),
-#             forms.CharField(validators=[RegexValidator(r'^[0-9]+$', 'Enter a valid extension.')],
-#                       required=False),
-#         )
-#         super(AddressField, self).__init__(
-#             error_messages=error_messages, fields=fields,
-#             require_all_fields=False, *args, **kwargs)
 
 class NewUserForm(forms.ModelForm):
 	class Meta:
@@ -40,12 +20,43 @@ class EditUserForm(forms.Form):
 	last_name = forms.CharField(label="Last Name", required=False)
 
 class NewStoreForm(forms.ModelForm):
+	class Meta:
+		model = models.Store
+		fields = ['name', 'description', 'picture', 'address_street', 'address_apt', 'address_city', 'address_state', 'address_zip', 'phone_number']
 	username = forms.CharField(label="Username")
-	name = forms.CharField(label="Store Name")
-	description = forms.CharField(label="Store Description")
-	picture = forms.ImageField(label="Store Picture")
-	address_street = forms.CharField(label="Address Street")
-	address_city = forms.CharField(label="City")
-	address_state = forms.CharField(label="State")
-	address_zip = forms.CharField(label="Zip Code", min_length=5, max_length=5)
-	phone_number = forms.CharField(label="Phone Number", min_length=10)
+
+class EditStoreForm(forms.ModelForm):
+	class Meta:
+		model = models.Store
+		fields = ['name', 'description', 'picture', 'address_street', 'address_apt', 'address_city', 'address_state', 'address_zip', 'phone_number']
+	storeID = forms.IntegerField(label="Store ID")
+	def __init__(self, *args, **kwargs):
+		super(EditStoreForm, self).__init__(*args, **kwargs)
+		self.fields['name'].required = False
+		self.fields['description'].required = False
+		self.fields['picture'].required = False
+		self.fields['address_street'].required = False
+		self.fields['address_apt'].required = False
+		self.fields['address_city'].required = False
+		self.fields['address_state'].required = False
+		self.fields['address_zip'].required = False
+		self.fields['phone_number'].required = False
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

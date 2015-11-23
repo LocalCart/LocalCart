@@ -4,7 +4,6 @@ import json
 import urllib
 from time import sleep
 
-
 class UserInfo(models.Model):
     user = models.OneToOneField(User)
     CUSTOMER = 'CR'
@@ -14,7 +13,7 @@ class UserInfo(models.Model):
         (MERCHANT, 'Merchant'),
     )
     user_type = models.CharField(max_length=2, choices=USER_TYPE_CHOICES)
-    picture = models.ImageField(max_length=128, upload_to='profile') # A url
+    picture = models.ImageField(max_length=128, upload_to='profile')
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
@@ -70,12 +69,13 @@ class Store(models.Model):
     user = models.ForeignKey(User)
     name = models.CharField(max_length=64)
     address_street = models.CharField(max_length=64)
+    address_apt = models.CharField(max_length=32, blank=True)
     address_city = models.CharField(max_length=32)
     address_state = models.CharField(max_length=32)
     address_zip = models.CharField(max_length=16)
     phone_number = models.CharField(max_length=16)
     description = models.CharField(max_length=4096, default="Good Store") # Allowed to be empty?
-    picture = models.CharField(max_length=128, default="images/default_user_image", null=True) # A url
+    picture = models.ImageField(max_length=128, upload_to='store')
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     # Add hours
@@ -99,40 +99,64 @@ class Store(models.Model):
         return False, store_in_dic
 
     @staticmethod
-    def create_new_store(user, name, description, picture, address_street, address_city,
-                          address_state , address_zip ,phone_number):
+    def create_new_store(username, name, description, picture, address_street, address_apt, address_city, address_state, address_zip, phone_number):
         """
         Assume all necessary info is correctly filled in.
         Create a new store with given information.
         description and picture are optional (can be empty).
         """
+        if not User.objects.filter(username=username).exists():
+            return None
+        if Store.objects.filter(address_street=address_street, address_apt=address_apt, address_city=address_city,
+                              address_state=address_state, address_zip=address_zip).exists():
+            return 'exists'
+        user = User.objects.get(username=username)
         new_store = Store(user=user, name=name, description=description, picture=picture,
-                          address_street=address_street, address_city=address_city,
-                          address_state = address_state, address_zip = address_zip,
-                          phone_number=phone_number)
+                          address_street=address_street, address_apt=address_apt, address_city=address_city, address_state=address_state, address_zip=address_zip, phone_number=phone_number)
         new_store.full_clean()
         new_store.save()
         return new_store
 
-    def edit_store(name, address_street, address_city, address_state, address_zip,
-                   phone_number, description):
+    @staticmethod
+    def edit_store(storeID, name, address_street, address_apt, address_city, address_state, address_zip,
+                   phone_number, description, picture):
+        try:
+            store = Store.objects.get(id=storeID)
+        except DoesNotExist:
+            return None
         if name:
-            self.name = name
-        if address_street:
-            self.address_street = address_street
-        if address_city:
-            self.address_city = address_city
-        if address_state:
-            self.address_state = address_state
-        if address_zip:
-            self.address_zip = address_zip
+            store.name = name
+        if address_street or address_apt or address_city or address_state or address_zip:
+            if not address_street:
+                address_street = store.address_street
+            if not address_apt:
+                address_apt = store.address_apt
+            if not address_city:
+                address_city = store.address_city
+            if not address_state:
+                address_state = store.address_state
+            if not address_zip:
+                address_zip = store.address_zip
+            possible_store = Store.objects.filter(address_street=address_street, address_apt=address_apt, address_city=address_city,
+                                  address_state=address_state, address_zip=address_zip)
+            if possible_store.exists():
+                if store != Store.objects.get(address_street=address_street, address_apt=address_apt, address_city=address_city,
+                                  address_state=address_state, address_zip=address_zip):
+                    return 'exists'
+            store.address_street = address_street
+            store.address_apt = address_apt
+            store.address_city = address_city
+            store.address_state = address_state
+            store.address_zip = address_zip
         if phone_number:
-            self.phone_number = phone_number
+            store.phone_number = phone_number
         if description:
-            self.description = description
-        self.full_clean()
-        self.save()
-        
+            store.description = description
+        if picture:
+            store.picture = picture
+        store.full_clean()
+        store.save()
+        return store
 
 
 
