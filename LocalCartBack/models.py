@@ -61,7 +61,7 @@ class UserInfo(models.Model):
 class Store(models.Model):
 
     # inventoryID = models.ForeignKey(Inventory)
-    user = models.ForeignKey(User)
+    user = models.ForeignKey(User, unique=True)
     name = models.CharField(max_length=64)
     address_street = models.CharField(max_length=64)
     address_city = models.CharField(max_length=32)
@@ -404,7 +404,7 @@ class CartList(models.Model):
     def get_cartlist(listID):
         if not CartList.objects.filter(id=listID).exists():
             return True, []
-        cartlist = CartLIst.objects.get(id=listID)
+        cartlist = CartList.objects.get(id=listID)
         list_items = ListItem.objects.filter(cartlist=cartlist).order_by('list_position')
 
         items_list = []
