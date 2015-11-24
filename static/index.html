@@ -32,19 +32,19 @@
       <div id="navbar" class="navbar-collapse collapse">
         <form class="navbar-form navbar-right">
           <!-- merchant toolbar -->
-          <div ng-show="indexController.current_user == 'merchant'">
+          <div ng-show="indexController.current_user_type == 'merchant'">
             <a href="" class="btn btn-info">Welcome [[indexController.current_user]]!</a>
             <a href="merchant" class="btn btn-info">View Profile</a>
             <a href="inventory" class="btn btn-info">View Inventory</a>
             <a ng-click="indexController.logout()" class="btn btn-success">Logout</a>
           </div>
           <!-- customer toolbar -->
-          <div ng-show="indexController.current_user == 'customer'">
+          <div ng-show="indexController.current_user_type == 'customer'">
             <a href="" class="btn btn-info">Welcome [[indexController.current_user]]!</a>
             <a href="" class="btn btn-info" data-toggle="modal" data-target="#myModal">View Shopping List</a>
             <a ng-click="indexController.logout()" class="btn btn-success">Logout</a>
           </div>
-          <div ng-show="indexController.current_user == ''">
+          <div ng-show="indexController.current_user_type == ''">
             <input ng-model="indexController.User.username" class="form-control" placeholder="Username" required autofocus>
             <input ng-model="indexController.User.password" type="password" id="inputPassword" class="form-control" placeholder="Password" required>
             <a ng-click="indexController.loginAttempt()" class="btn btn-success">Login</a>
