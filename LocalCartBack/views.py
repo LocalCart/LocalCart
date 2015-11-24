@@ -656,12 +656,15 @@ def search_items(request):
 @csrf_exempt
 def create_list(request):
     assert request.method == 'POST', 'api/list/create requires a POST request'
+    import pdb; pdb.set_trace()
     errors = []
     post = QueryDict('', mutable=True)
     post.update(json.loads(request.body))
     if not request.user.is_authenticated():
         errors.append('user must be logged in')
-    username = request.user.username
+        username = ''
+    else:
+        username = request.user.username
     name = post.get('name', '')
     if not name:
         errors.append('name must be non-empty')
