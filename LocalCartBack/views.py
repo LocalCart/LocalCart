@@ -50,7 +50,7 @@ def empty_db(request):
                   Store, 
                   Inventory, 
                   Item, 
-                  Reviews,
+                  Review,
                   CartList,
                   ListItem,
                   ]
@@ -345,14 +345,14 @@ def get_store(request):
                 "errors": []
                 }
 
-    store_id = request.GET.get('store_id', '')    
-    if store_id == "":
-        retData["errors"].append("store_id must be non-empty")
+    storeID = request.GET.get('storeID', '')    
+    if storeID == "":
+        retData["errors"].append("storeID must be non-empty")
         hasError = True
     if not hasError:
-        hasError, store = Store.get_store(store_id)
+        hasError, store = Store.get_store(storeID)
         if hasError:
-            retData["errors"].append("Can't get store from store_id")
+            retData["errors"].append("Can't get store from storeID")
         retData["store"] = store
     return HttpResponse(json.dumps(retData), content_type='application/json', status=200)
 
@@ -402,14 +402,14 @@ def get_inventory(request):
                 "errors": []
                 }
 
-    inventory_id = request.GET.get('inventory_id', '')    
-    if inventory_id == "":
-        retData["errors"].append("inventory_id must be non-empty")
+    inventoryID = request.GET.get('inventoryID', '')    
+    if inventoryID == "":
+        retData["errors"].append("inventoryID must be non-empty")
         hasError = True
     if not hasError:
-        hasError, inventory = Inventory.get_inventory(inventory_id)
+        hasError, inventory = Inventory.get_inventory(inventoryID)
         if hasError:
-            retData["errors"].append("Can't get inventory from inventory_id")
+            retData["errors"].append("Can't get inventory from inventoryID")
         retData["inventory"] = inventory
     return HttpResponse(json.dumps(retData), content_type='application/json', status=200)
 
@@ -474,20 +474,21 @@ def create_item(request):
 
 @csrf_exempt
 def get_item(request):
+    assert request.method == 'GET', 'api/item/get requires a GET request'
     hasError = False
     retData = { 
                 "status": 200,
                 "errors": []
                 }
 
-    item_id = request.GET.get('item_id', '')    
-    if item_id == "":
-        retData["errors"].append("item_id must be non-empty")
+    itemID = request.GET.get('itemID', '')    
+    if itemID == "":
+        retData["errors"].append("itemID must be non-empty")
         hasError = True
     if not hasError:
-        hasError, item = Item.get_item(item_id)
+        hasError, item = Item.get_item(itemID)
         if hasError:
-            retData["errors"].append("Can't get inventory from inventory_id")
+            retData["errors"].append("Can't get item from itemID")
         retData["item"] = item
     return HttpResponse(json.dumps(retData), content_type='application/json', status=200)
 
@@ -645,16 +646,33 @@ def get_list(request):
                 "errors": []
                 }
 
-    list_id = request.GET.get('list_id', '')    
-    if list_id == "":
-        retData["errors"].append("list_id must be non-empty")
+    listID = request.GET.get('listID', '')    
+    if listID == "":
+        retData["errors"].append("listID must be non-empty")
         hasError = True
     if not hasError:
-        hasError, cartlist = Inventory.get_list(list_id)
+        hasError, cartlist = CartList.get_cartlist(listID)
         if hasError:
-            retData["errors"].append("Can't get list from list_id")
+            retData["errors"].append("Can't get list from listID")
         retData["list"] = cartlist
     return HttpResponse(json.dumps(retData), content_type='application/json', status=200)
+
+@csrf_exempt
+def get_listIDs(request):
+    assert request.method == 'GET', 'api/list/getID requires a GET request'
+    errors = []
+    current_user = request.user
+    if not user.is_authenticated():
+        errors.append('Not logged in')
+        listIDs = []
+    else:
+        listIDs = CartList.objects.filter(user=current_user).order_by('id').values_list('id', flat=True)
+    response = { 
+                "status": 200,
+                "listIDs": listIDs,
+                "errors": []
+                }
+    return HttpResponse(json.dumps(response), content_type='application/json', status=200)
 
 
 @csrf_exempt
@@ -751,3 +769,113 @@ def map_list(request):
                'errors': errors,
               }
     return HttpResponse(json.dumps(reponse), content_type='application/json')
+
+@csrf_exempt
+def add_review(request):
+    assert request.method == 'POST', 'api/review/add requires a POST request'
+    errors = []
+    user = request.user
+    if not user.is_authenticated():
+        errors.append('user not logged in')
+    post = QueryDict('', mutable=True)
+    post.update(json.loads(request.body))
+    itemID = post.get('itemID', '')
+    storeID = post.get('itemID', '')
+    rating = post.get('rating', '')
+    text = post.get('text', '')
+    item = None
+    if itemID:
+        try:
+            itemID = int(itemID)
+            if Item.objects.filter(id=itemID):
+                item = Item.objects.get(id=itemID)
+            else:
+                item = None
+                errors.append('itemID not valid')
+        except ValueError:
+            item = None
+            errors.append('itemID must be an integer')
+    if storeID:
+        try:
+            storeID = int(storeID)
+            if Store.objects.filter(id=storeID):
+                store = Store.objects.get(id=storeID)
+            else:
+                store = None
+                errors.append('storeID not valid')
+        except ValueError:
+            store = None
+            errors.append('storeID must be an integer')
+    elif item:
+        store = item.store
+    else:
+        errors.append('must provide valid storeID or itemID')
+    try:
+        rating = int(rating)
+    except ValueError:
+        errors.append('rating must be an integer')
+    else:
+        if (rating < 1) or (rating > 5):
+            errors.append('rating must be an integer between 1 and 5, inclusively')
+    if len(errors) == 0:
+        try:
+            new_review = Review.create_new_review(user, item, store, rating, text)
+        except ValidationError as e:
+            new_review = None
+            errors.append(e)
+    return return_error(errors)
+
+
+@csrf_exempt
+def get_reviews(request):
+    assert request.method == 'GET', 'api/review/get requires a GET request'
+    errors = []
+    storeID = request.GET.get('storeID', '')
+    itemID = request.GET.get('itemID', '')
+    reviewID = request.GET.get('reviewID', '')
+    review_list = []
+    if itemID:
+        try:
+            itemID = int(itemID)
+            if Item.objects.filter(id=itemID):
+                item = Item.objects.get(id=itemID)
+            else:
+                item = None
+                errors.append('itemID not valid')
+        except ValueError:
+            item = None
+            errors.append('itemID must be an integer')
+        if item:
+            review_list = Review.get_item_reviews(item)
+    elif storeID:
+        try:
+            storeID = int(storeID)
+            if Store.objects.filter(id=storeID):
+                store = Store.objects.get(id=storeID)
+            else:
+                store = None
+                errors.append('storeID not valid')
+        except ValueError:
+            store = None
+            errors.append('storeID must be an integer')
+        if store:
+            review_list = Review.get_store_reviews(store)
+    elif reviewID:
+        try:
+            reviewID = int(reviewID)
+        except ValueError:
+            errors.append('reviewID must be an integer')
+        status, current_review = Review.get_review(reviewID)
+        if status:
+            errors.append('reviewID invalid')
+        else:
+            review_list = [current_review]
+    else:
+        errors.append('must provide valid storeID or itemID')
+    reponse = {
+               'status': 200,
+               'reviews': review_list,
+               'errors': errors,
+              }
+    return HttpResponse(json.dumps(reponse), content_type='application/json')
+

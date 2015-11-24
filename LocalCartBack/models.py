@@ -169,12 +169,11 @@ class Item(models.Model):
             return True, {}
         item = Item.objects.get(id=item_id)
         item_in_dic = {
-        #"store": item.store,
-        #"inventory": item.inventory,
+        "storeName": item.store.name,
         "name": item.name,
         "description": item.description,
         "price": item.price,
-        "picture": item.picture
+        "picture": item.picture,
         }
         return False, item_in_dic
 
@@ -191,27 +190,86 @@ class Item(models.Model):
         self.save()
 
 
-class Reviews(models.Model):
+class Review(models.Model):
 
     user = models.ForeignKey(User)
     store = models.ForeignKey(Store)
-    itemID = models.ForeignKey(Item)
+    item = models.ForeignKey(Item, null=True)
     rating = models.PositiveSmallIntegerField()
     text = models.CharField(max_length=4096, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
     @staticmethod
-    def get_review(review_id):
-        if not Reviews.objects.filter(id=review_id).exists():
+    def create_new_review(user, item, store, rating, text):
+        if item:
+            new_review = Review(user=user, item=item, store=store, 
+                                rating=rating, text=text)
+        else:
+            new_review = Review(user=user, store=store, 
+                                rating=rating, text=text)
+        new_review.full_clean()
+        new_review.save()
+
+    @staticmethod
+    def get_review(reviewID):
+        if not Review.objects.filter(id=reviewID).exists():
             return True, {}
-        review = Reviews.objects.get(id=review_id)
+        review = Review.objects.get(id=reviewID)
+        if review.item:
+            item = review.item.name
+        else:
+            item = ''
         review_in_dic = {
-        "rating": review.rating,
-        "text": review.text
-        }
+            "username": review.user.username,
+            "store": review.store.name,
+            "item": item,
+            "rating": review.rating,
+            "text": review.text,
+            }
         return False, review_in_dic
 
+
+    @staticmethod
+    def get_store_reviews(store):
+        store_reviews = Review.objects.filter(store=store, item__isnull=True)
+        review_dicts = store_reviews.order_by('created_at').values('user__username', 'rating', 'text')
+        review_list = []
+        for review_dict in review_dicts:
+            json_review = {
+                            'username': review_dict['user__username'],
+                            'item': '',
+                            'rating': review_dict['rating'],
+                            'text': review_dict['text']
+                            }
+            review_list.append(json_review)
+        store_reviews_with_items = Review.objects.filter(store=store, item__isnull=False)
+        review_dicts = store_reviews_with_items.order_by('created_at').values('user__username', 'item__name', 'rating', 'text')
+        for review_dict in review_dicts:
+            json_review = {
+                            'username': review_dict['user__username'],
+                            'item': review_dict['item__name'],
+                            'rating': review_dict['rating'],
+                            'text': review_dict['text']
+                            }
+            review_list.append(json_review)
+        return review_list
+
+    @staticmethod
+    def get_item_reviews(item):
+        item_reviews = Review.objects.filter(item=item)
+        review_dicts = item_reviews.order_by('created_at').values('user__username', 'rating', 'text')
+        review_list = []
+        for review_dict in review_dicts:
+            json_review = {
+                            'username': review_dict['user__username'],
+                            'rating': review_dict['rating'],
+                            'text': review_dict['text']
+                            }
+            review_list.append(json_review)
+        return review_list
+
+        
 
 class CartList(models.Model):
 
@@ -332,17 +390,37 @@ class CartList(models.Model):
 
 
     @staticmethod
-    def get_cartlist(cartlist_id):
-        if not CartList.objects.filter(id=cartlist_id).exists():
+    def get_cartlist(listID):
+        if not CartList.objects.filter(id=listID).exists():
             return True, []
-        cartlist = CartLIst.objects.get(id=cartlist_id)
-        list_items = ListItem.objects.filter(cartlist=cartlist)
-        list_items_in_array = []
-        for item in list_items:
-            status, list_item_in_dic = Item.get_list_item(item.id)
-            list_items_in_array.append(list_item_in_dic)
-        return False, list_items_in_array
+        cartlist = CartLIst.objects.get(id=listID)
+        list_items = ListItem.objects.filter(cartlist=cartlist).order_by('list_position')
 
+        items_list = []
+        for list_item in list_items:
+            if list_item.item:
+                current_item = list_item.item
+                json_item =  {
+                              "type": "id",
+                              "storeName": current_item.store.name,
+                              "name": item.name,
+                              "description": current_item.description,
+                              "price": current_item.price,
+                              "picture": current_item.picture,
+                              "itemID": item.id
+                             }
+            else:
+                json_item =  {
+                              "type": "name",
+                              "storeName": '',
+                              "name": list_item.item_name,
+                              "description": '',
+                              "price": '',
+                              "picture": '',
+                              "itemID": -1,
+                             }
+            item_list.append(json_item)
+        return False, item_list
         
 
 class ListItem(models.Model):

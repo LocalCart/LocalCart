@@ -14,52 +14,131 @@ app.controller('IndexController', function($http, $window){
 
 
   // add link get request
-  vm.searchResults = results;
-  vm.shoppingList = inventory;
-  
+  vm.searchResults = [];
+  vm.shoppingList = [];
+  vm.listIndex = 0;
+  vm.listIDs = [];
+  vm.currentListID = -1;
   vm.current_user = "";
   $http.get("api/user/get").then(
-       function successCallBack(response) {
-         var data = response.data;
-         if (data.errors.length == 0) {
-           // if (vm.newUser.user_type == 'merchant'){
-           //   $window.location.href = 'merchant';
-           // } else {
-           //   $window.location.href = 'home';
-           // }
-           // hide login, register buttons
-           vm.current_user = data.username;
-           console.log(data.username);
-           if (data.user_type == "merchant") {
-            $window.location.href("merchant");
-           }
-         } else {
-           // for (var i = 0; i < data.errors.length; i++) {
-             // alert(e);
-             // $window.alert(data.errors[i]);
-             // console.error(e);
-           // }
-         }
-       }, function errorCallBack(response) {
-         alert('An error has occured');
-       })
+      function successCallBack(response) {
+        var data = response.data;
+        if (data.errors.length == 0) {
+          // if (vm.newUser.user_type == 'merchant'){
+          //   $window.location.href = 'merchant';
+          // } else {
+          //   $window.location.href = 'home';
+          // }
+          // hide login, register buttons
+          vm.current_user = data.username;
+          console.log(data.username);
+          if (data.user_type == "merchant") {
+           $window.location.href("merchant");
+          }
+        } else {
+          // for (var i = 0; i < data.errors.length; i++) {
+            // alert(e);
+            // $window.alert(data.errors[i]);
+            // console.error(e);
+          // }
+        }
+      }, errorCallBackGeneral);
+  if (current_user != "") {
+    $http.get("api/list/getID").then(
+        function successCallBack(response) {
+          var data = response.data;
+          if (data.errors.length == 0) {
+            vm.listIDs = data.listIDs;
+            vm.listIndex = 0;
+            vm.currentListID = vm.listIDs[vm.listIndex];
+            $http.get("api/list/get?listID=" + vm.currentListID).then(
+              function successCallBack(response) {
+                var data = response.data;
+                if (data.errors.length == 0) {
+                  vm.shoppinglist = data.list;
+                }
+              }, errorCallBackGeneral);
+          } else {
+            vm.currentListID = -1;
+          }
+        }, errorCallBackGeneral);
+  }
 
   vm.search = function() {
     vm.query = vm.searchQuery;
   }
   vm.remove = function(index) {
     vm.shoppingList.splice(index, 1);
-    // var editData = {};
-    // editData.listID = 120391023901284091823904130948;//CURRENT LIST ID
-    // editData.contents = vm.shoppingList; // REPLACE WITH CURRENT SHOPPING LIST
-    // $http.post("api/list/edit", editData).then(successListError, errorCallBackGeneral);
+    if (current_user != "") {
+      vm.updateList();
+    }
   }
   vm.addItem = function(index) {
+    vm.searchResults[index].type = "id"
     vm.shoppingList.push(vm.searchResults[index]);
-    // var editData = {};
-    // editData.listID = 120391023901284091823904130948;//CURRENT LIST ID
-    // editData.contents = vm.shoppingList; // REPLACE WITH CURRENT SHOPPING LIST
-    // $http.post("api/list/edit", editData).then(successListError, errorCallBackGeneral);
+    if (current_user != "") {
+      vm.updateList();
+    }
+  }
+  vm.updateList = function() {
+    if (current_user != "") {
+      var contents = [];
+
+      for (var i = 0; i < vm.shoppingList.length; i++) {
+        var entry = {};
+        var item = vm.shoppinglist[i];
+        if (item.type == "name") {
+          entry.type = "name";
+          entry.name = item.name;
+        } else {
+          entry.type = "id";
+          entry.name = item.itemID;
+        }
+      }
+      var editData = {};
+      editData.listID = vm.currentListID;//CURRENT LIST ID
+      editData.contents = vm.contents;
+      $http.post("api/list/edit", editData).then(successListError, errorCallBackGeneral);
+    }
+  }
+  vm.mapList = function() {
+    var listData = {};
+    listData.listID = vm.currentListID;//CURRENT LIST ID
+    $http.post("api/list/map", listData).then(successListError, errorCallBackGeneral).then(
+        function successCallBack(response) {
+          var data = response.data;
+          if (data.errors.length == 0) {
+            var mapMarkers = response.data.mapMarkers;
+            var bounds = google.maps.LatLngBounds();
+            var infowindow = new google.maps.InfoWindow();
+            var map = new google.maps.Map(document.getElementById('list_map'), {
+              zoom: 4,
+              center: new google.maps.LatLng(mapMarkers[0].latitude, mapMarkers[0].longitude),
+              mapTypeId: google.maps.MapTypeId.ROADMAP
+            });
+ 
+            for (var i = 0; i < mapMarkers.length; i++) {
+              var marker = new google.maps.Marker({
+                position: new google.maps.LatLng(mapMarkers[i].latitude, mapMarkers[i].longitude),
+                map: map
+              });
+              bounds.extend(marker.position);
+              google.maps.event.addListener(marker, 'click', (function(marker, i) {
+                return function() {
+                  infowindow.setContent(locations[i].pin_name);
+                  infowindow.open(map, marker);
+                }
+              })(marker, i));
+            }
+            map.fitBounds(bounds);
+          } else {
+            for (var i = 0; i < data.errors.length; i++) {
+              alert(e);
+              $window.alert(data.errors[i]);
+              console.error(e);
+            }
+          }
+        }, errorCallBackGeneral)
   }
   vm.loginAttempt = function() {
     $http.post("/api/user/login", vm.User).then(

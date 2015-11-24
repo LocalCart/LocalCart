@@ -12,6 +12,8 @@
     <script src="https://code.jquery.com/jquery-2.1.4.min.js"></script>
     
     <script src="static/js/bootstrap.js"></script>
+    <script src="http://maps.google.com/maps/api/js?sensor=false" 
+          type="text/javascript"></script>
     <script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/angularjs/1.4.7/angular.min.js"></script>
     <script type="text/javascript" src="static/controller.js"></script>
   </head>
@@ -110,7 +112,7 @@
             <table class="table table-hover">
               <thead>
                 <tr>
-                  <th>Store<th>
+                  <th>Store</th>
                   <th>Item Name</th>
                   <th>Item Description</th>
                   <th>Item Cost</th>
@@ -130,6 +132,7 @@
               </tbody>
             </table>  
           </div>
+          <div id="list_map" style="width: 500px; height: 400px;"></div>
           <div class="modal-footer">
             <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
           </div>
