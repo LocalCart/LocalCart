@@ -615,9 +615,9 @@ def create_list(request):
     errors = []
     post = QueryDict('', mutable=True)
     post.update(json.loads(request.body))
-    username = post.get('username', '')
-    if not username:
-        errors.append('username must be non-empty')
+    if not request.user.is_authenticated():
+        errors.append('user must be logged in')
+    username = request.user.username
     name = post.get('name', '')
     if not name:
         errors.append('name must be non-empty')
@@ -625,6 +625,7 @@ def create_list(request):
         try:
             new_list = CartList.create_new_list(username, name)
         except ValidationError as e:
+            new_list = None
             errors.append(e)
         if not new_list:
             errors.append('username does not exist or user is not a customer')
@@ -673,6 +674,27 @@ def get_listIDs(request):
                 "errors": []
                 }
     return HttpResponse(json.dumps(response), content_type='application/json', status=200)
+
+@csrf_exempt
+def delete_list_with_id(request):
+    assert request.method == 'POST', 'api/list/delete requires a POST request'
+    errors = []
+    post = QueryDict('', mutable=True)
+    post.update(json.loads(request.body))
+    listID = post.get('listID', '')
+    try:
+        listID = int(listID)
+    except ValueError:
+        listID = None
+        errors.append('listID must be an integer')
+    if len(errors) == 0:
+        try:
+            new_list = CartList.delete_list_with_id(listID)
+        except ValidationError as e:
+            errors.append(e)
+        if not new_list:
+            errors.append('no list of this listID exists')
+    return return_error(errors)
 
 
 @csrf_exempt

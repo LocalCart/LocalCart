@@ -342,11 +342,22 @@ class CartList(models.Model):
         ListItem.objects.filter(cartlist=current_list).delete()
         return 'Success'
 
+
     @staticmethod
     def delete_list(username, name):
         if CartList.empty_list(username, name) is not None:
             CartList.objects.filter(user__username=username, name=name).delete()
             return 'Success'
+        else:
+            return None
+
+
+
+    @staticmethod
+    def delete_list_with_id(listID):
+        if CartList.objects.filter(listID).exists():
+            current_list = CartList.objects.get(listID)
+            return delete_list(current_list.user.username, current_list.name)
         else:
             return None
 
