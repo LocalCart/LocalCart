@@ -338,6 +338,50 @@ def edit_store(request):
 
 
 @csrf_exempt
+def get_store_user(request):
+    errors = []
+    retData = { 
+                "status": 200,
+                "errors": []
+                }
+    store_info = {
+                  'storeID': -1,
+                  'name': store.name,
+                  'address_street': '',
+                  'address_city': '',
+                  'address_state': '',
+                  'address_zip': '',
+                  'phone_number': '',
+                  'description': '',
+                  'picture': '',
+                 }
+    if request.user.is_authenticated():
+        if Store.objects.filter(user=request.user).exists():
+            store = Store.objects.get(user=request.user)
+        else:
+            store = None
+        if store:
+            store_info = {
+                          'storeID': store.id,
+                          'name': store.name,
+                          'address_street': store.address_street,
+                          'address_city': store.address_city,
+                          'address_state': store.address_state,
+                          'address_zip': store.address_zip,
+                          'phone_number': store.phone_number,
+                          'description': store.description,
+                          'picture': store.picture,
+                         }
+    else:
+        errors.append('user must be logged in')
+    reponse = {
+               'status': 200,
+               'errors': errors,
+               'store': store_info,
+              }
+    return HttpResponse(json.dumps(retData), content_type='application/json', status=200)
+
+@csrf_exempt
 def get_store(request):
     hasError = False
     retData = { 
@@ -345,7 +389,7 @@ def get_store(request):
                 "errors": []
                 }
 
-    storeID = request.GET.get('storeID', '')    
+    storeID = request.GET.get('storeID', '')
     if storeID == "":
         retData["errors"].append("storeID must be non-empty")
         hasError = True
@@ -656,6 +700,37 @@ def get_list(request):
         if hasError:
             retData["errors"].append("Can't get list from listID")
         retData["list"] = cartlist
+    return HttpResponse(json.dumps(retData), content_type='application/json', status=200)
+
+
+@csrf_exempt
+def get_user_lists(request):
+    assert request.method == 'GET', 'api/list/getID requires a GET request'
+    errors = []
+    current_user = request.user
+    if not current_user.is_authenticated():
+        errors.append('Not logged in')
+        listIDs = []
+    else:
+        listIDs = CartList.objects.filter(user=current_user).order_by('id').values_list('id', flat=True)
+    all_lists = []
+    import pdb; pdb.set_trace()
+    for listID in listIDs:
+        hasError, cartlist = CartList.get_cartlist(listID)
+        if hasError:
+            errors.append("Can't get list from listID")
+        else:
+            name = CartList.objects.get(id=listID).name
+            entry = {'listName': name, 
+                     'listID': listID,
+                     'contents': cartlist}
+            all_lists.append(entry)
+    response = {
+                'status': 200,
+                'listIDs': listIDs,
+                'allLists': all_lists,
+                'errors': errors,
+               }
     return HttpResponse(json.dumps(retData), content_type='application/json', status=200)
 
 @csrf_exempt

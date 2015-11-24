@@ -35,6 +35,19 @@ app.controller('IndexController', function($http, $window) {
           // if (data.user_type == "merchant") {
           //  $window.location.href = "merchant";
           // }
+          $http.get("api/list/getUser").then(
+              function successCallBack(response) {
+                var data = response.data;
+                if (data.errors.length == 0) {
+                  vm.listIDs = data.listIDs;
+                  vm.tab = 0;
+                  vm.currentListID = vm.listIDs[vm.tab];
+                  vm.shoppingLists = data.allLists;
+                  vm.shoppingList = vm.shoppingLists[tab];
+                } else {
+                  vm.currentListID = -1;
+                }
+              }, errorCallBackGeneral);
         } else {
           // for (var i = 0; i < data.errors.length; i++) {
             // alert(e);
@@ -43,26 +56,8 @@ app.controller('IndexController', function($http, $window) {
           // }
         }
       }, errorCallBackGeneral);
-  if (vm.current_user != "") {
-    $http.get("api/list/getID").then(
-        function successCallBack(response) {
-          var data = response.data;
-          if (data.errors.length == 0) {
-            vm.listIDs = data.listIDs;
-            vm.tab = 0;
-            vm.currentListID = vm.listIDs[vm.tab];
-            $http.get("api/list/get?listID=" + vm.currentListID).then(
-              function successCallBack(response) {
-                var data = response.data;
-                if (data.errors.length == 0) {
-                  vm.shoppinglist = data.list;
-                }
-              }, errorCallBackGeneral);
-          } else {
-            vm.currentListID = -1;
-          }
-        }, errorCallBackGeneral);
-  }
+
+
 
 
   vm.search = function() {
