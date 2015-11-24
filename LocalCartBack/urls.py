@@ -11,6 +11,7 @@ urlpatterns = [
     url(r'^api/user/logout$', views.log_out),
     url(r'^api/user/get$', views.return_user),
     url(r'^api/store/create$', views.create_store),
+    url(r'^api/store/edit$', views.edit_store),
     url(r'^api/store/getUser$', views.get_store_user),
     url(r'^api/inventory/create$', views.create_inventory),
     url(r'^api/inventory/add$', views.create_item),

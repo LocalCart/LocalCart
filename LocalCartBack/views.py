@@ -236,7 +236,7 @@ def create_store(request):
     errors = []
     post = QueryDict('', mutable=True)
     post.update(json.loads(request.body))
-    username = post.get('username', '') ### changed to username since username is also unique
+    username = request.user.username ### changed to username since username is also unique
     if not User.objects.filter(username=username).exists():
         errors.append('username does not exist')
         user = None
@@ -340,10 +340,6 @@ def edit_store(request):
 @csrf_exempt
 def get_store_user(request):
     errors = []
-    retData = { 
-                "status": 200,
-                "errors": []
-                }
     store_info = {
                   'storeID': -1,
                   'name': '',
@@ -374,12 +370,12 @@ def get_store_user(request):
                          }
     else:
         errors.append('user must be logged in')
-    reponse = {
+    response = {
                'status': 200,
                'errors': errors,
                'store': store_info,
               }
-    return HttpResponse(json.dumps(retData), content_type='application/json', status=200)
+    return HttpResponse(json.dumps(response), content_type='application/json', status=200)
 
 @csrf_exempt
 def get_store(request):

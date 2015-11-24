@@ -108,7 +108,7 @@ class Store(models.Model):
         new_store.save()
         return new_store
 
-    def edit_store(name, address_street, address_city, address_state, address_zip,
+    def edit_store(self, name, address_street, address_city, address_state, address_zip,
                    phone_number, description):
         if name:
             self.name = name
