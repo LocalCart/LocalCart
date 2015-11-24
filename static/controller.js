@@ -227,7 +227,6 @@ app.controller('MerchantController', function($http, $window) {
     vm.editable = !vm.editable
   }
   vm.storeInfo = {};
-  vm.storeInfo.storeName = "";
   vm.tempStoreInfo = angular.copy(vm.storeInfo);
   vm.saveInfo = function() {
     vm.storeInfo = angular.copy(vm.tempStoreInfo);
@@ -271,6 +270,19 @@ app.controller('MerchantController', function($http, $window) {
         console.log(data.username);
       } else {
         $window.location.href = "home";
+      }
+    },
+    function errorCallBack(response) {
+      alert('An error has occured');
+    }
+  )
+  $http.get("api/store/getUser").then(
+    function successCallBack(response) {
+      vm.storeInfo = response.data.store;
+      if (data.errors.length == 0) {
+        if (vm.storeInfo.storeID == -1) {
+          editable = false
+        }
       }
     },
     function errorCallBack(response) {
