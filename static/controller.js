@@ -12,7 +12,6 @@ app.controller('IndexController', function($http, $window) {
   vm.query = "";
   // add link get request
   // vm.searchResults = [];
-  vm.shoppingList = [];
   vm.tab = 0; // ListIDs index
   vm.listIDs = [];
   vm.currentListID = -1;
@@ -21,57 +20,54 @@ app.controller('IndexController', function($http, $window) {
   vm.current_user = "";
   vm.mapped = "list" // search or list
   $http.get("api/user/get").then(
-    function successCallBack(response) {
-      var data = response.data;
-      if (data.errors.length == 0) {
-        // if (vm.newUser.user_type == 'merchant'){
-        //   $window.location.href = 'merchant';
-        // } else {
-        //   $window.location.href = 'home';
-        // }
-        // hide login, register buttons
-        vm.current_user = data.username;
-        console.log(data.username);
-        // if (data.user_type == "merchant") {
-        //  $window.location.href = "merchant";
-        // }
-        $http.get("api/list/getUser").then(
-          function successCallBack(response) {
-            var data = response.data;
-            if (data.errors.length == 0) {
-              vm.listIDs = data.listIDs;
-              vm.tab = 0;
-              vm.currentListID = vm.listIDs[vm.tab];
-              vm.shoppingLists = data.allLists;
-              vm.shoppingList = vm.shoppingLists[tab];
-            } else {
-              vm.currentListID = -1;
-            }
-          }, errorCallBackGeneral);
-      } else {
-        // for (var i = 0; i < data.errors.length; i++) {
-        // alert(e);
-        // $window.alert(data.errors[i]);
-        // console.error(e);
-        // }
-      }
-    }, errorCallBackGeneral);
-
-
+      function successCallBack(response) {
+        var data = response.data;
+        if (data.errors.length == 0) {
+          // if (vm.newUser.user_type == 'merchant'){
+          //   $window.location.href = 'merchant';
+          // } else {
+          //   $window.location.href = 'home';
+          // }
+          // hide login, register buttons
+          vm.current_user = data.username;
+          console.log(data.username);
+          // if (data.user_type == "merchant") {
+          //  $window.location.href = "merchant";
+          // }
+          $http.get("api/list/getUser").then(
+              function successCallBack(response) {
+                var data = response.data;
+                if (data.errors.length == 0) {
+                  vm.listIDs = data.listIDs;
+                  vm.tab = 0;
+                  vm.currentListID = vm.listIDs[vm.tab];
+                  vm.shoppingLists = data.allLists;
+                } else {
+                  vm.currentListID = -1;
+                }
+              }, errorCallBackGeneral);
+        } else {
+          // for (var i = 0; i < data.errors.length; i++) {
+            // alert(e);
+            // $window.alert(data.errors[i]);
+            // console.error(e);
+          // }
+        }
+      }, errorCallBackGeneral);
 
 
   vm.search = function() {
     vm.query = vm.searchQuery;
   }
   vm.remove = function(index) {
-    vm.shoppingList.splice(index, 1);
+    vm.shoppingLists[vm.tab].contents.splice(index, 1);
     if (vm.current_user != "") {
       vm.updateList();
     }
   }
   vm.addItem = function(index) {
     vm.searchResults[index].type = "id"
-    vm.shoppingList.push(vm.searchResults[index]);
+    vm.shoppingLists[vm.tab].contents.push(vm.searchResults[index]);
     if (vm.current_user != "") {
       vm.updateList();
     }
@@ -83,9 +79,9 @@ app.controller('IndexController', function($http, $window) {
     if (vm.current_user != "") {
       var contents = [];
 
-      for (var i = 0; i < vm.shoppingList.length; i++) {
+      for (var i = 0; i < vm.shoppingLists[vm.tab].contents.length; i++) {
         var entry = {};
-        var item = vm.shoppinglist[i];
+        var item = vm.shoppingLists[vm.tab].contents[i];
         if (item.type == "name") {
           entry.type = "name";
           entry.name = item.name;
@@ -193,8 +189,8 @@ app.controller('IndexController', function($http, $window) {
           if (data.errors.length == 0) {
             vm.listIDs.push(data.listID);
           }
+          vm.shoppingLists.push({listName: vm.newListName, contents: []});
         }, errorCallBackGeneral);
-      vm.shoppingLists.push({});
     }
 
   }

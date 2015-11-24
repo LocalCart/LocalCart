@@ -652,7 +652,6 @@ def search_items(request):
 @csrf_exempt
 def create_list(request):
     assert request.method == 'POST', 'api/list/create requires a POST request'
-    import pdb; pdb.set_trace()
     errors = []
     post = QueryDict('', mutable=True)
     post.update(json.loads(request.body))
@@ -711,18 +710,19 @@ def get_user_lists(request):
         errors.append('Not logged in')
         listIDs = []
     else:
-        listIDs = CartList.objects.filter(user=current_user).order_by('id').values_list('id', flat=True)
+        listIDs = list(CartList.objects.filter(user=current_user).order_by('id').values_list('id', flat=True))
     all_lists = []
-    import pdb; pdb.set_trace()
     for listID in listIDs:
         hasError, cartlist = CartList.get_cartlist(listID)
         if hasError:
             errors.append("Can't get list from listID")
         else:
             name = CartList.objects.get(id=listID).name
-            entry = {'listName': name, 
+            entry = {
+                     'listName': name, 
                      'listID': listID,
-                     'contents': cartlist}
+                     'contents': cartlist
+                    }
             all_lists.append(entry)
     response = {
                 'status': 200,
@@ -730,7 +730,7 @@ def get_user_lists(request):
                 'allLists': all_lists,
                 'errors': errors,
                }
-    return HttpResponse(json.dumps(retData), content_type='application/json', status=200)
+    return HttpResponse(json.dumps(response), content_type='application/json', status=200)
 
 @csrf_exempt
 def get_listIDs(request):
