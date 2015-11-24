@@ -3,6 +3,7 @@ from django.contrib.auth.models import User
 import json
 import urllib
 from time import sleep
+from django.core.exceptions import ValidationError, ObjectDoesNotExist, MultipleObjectsReturned
 
 
 class UserInfo(models.Model):
@@ -335,12 +336,15 @@ class CartList(models.Model):
                 item_names.append(content_item['name'])
         temp = CartList.temporary_storage(current_list.user)
         ListItem.objects.filter(cartlist=current_list).update(cartlist=temp)
+        import pdb; pdb.set_trace()
         try:
             for i in range(0, len(contents)):
                 new_list_item = ListItem(cartlist=current_list, item=items[i], 
                                          item_name=item_names[i], list_position=i)
+                import pdb; pdb.set_trace()
                 new_list_item.save()
         except ValidationError as e:
+            ListItem.objects.filter(cartlist=current_list).delete()
             ListItem.objects.filter(cartlist=temp).update(cartlist=current_list)
             temp.delete()
             return 'VE'
@@ -386,7 +390,7 @@ class CartList(models.Model):
                 counter += 1
                 store = li.item.store
                 if store.name in map_dict.keys():
-                    map_dict[store.name]['positions'].append(li.list_position)
+                    map_dict[store.name]['positions'].append(counter)
                 else:
                     address_list = [
                                     store.address_street,
@@ -398,7 +402,7 @@ class CartList(models.Model):
                     coord = lat_lon(address)
                     curr_entry = dict()
                     curr_entry['location'] = coord
-                    curr_entry['positions'] = [li.list_position]
+                    curr_entry['positions'] = [counter]
                     map_dict[store.name] = curr_entry
         map_markers = []
         for store_name in map_dict.keys():
@@ -453,7 +457,7 @@ class ListItem(models.Model):
     cartlist = models.ForeignKey(CartList)
     item = models.ForeignKey(Item, null=True, default=None)
     item_name = models.CharField(max_length=64)
-    list_position = models.PositiveSmallIntegerField(unique=True)
+    list_position = models.PositiveSmallIntegerField()
 
     @staticmethod
     def get_list_item(list_item_id):
