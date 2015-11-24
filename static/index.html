@@ -121,7 +121,7 @@
               <a href ng-click="indexController.setTab($index)">[[list.listName]]</a>
             </li>
             <li>
-              <input type="text" ng-model="indexController.newListName">
+              <input placeholder="New list name"type="text" ng-model="indexController.newListName">
             </li>
             <li>
               <button type="button" ng-click="indexController.addList()" class="btn btn-success">Add List +</button>
@@ -152,9 +152,9 @@
           </table>
         </div>
         <div class="modal-footer">
-          <tr>
-            <button type="button" class="btn btn-danger" ng-click="indexController.removeList()">Delete this list!</button>
-          </tr>
+          <input placeholder="Item Name" type="text" ng-model="indexController.newItemName">
+          <button type="button" class="btn btn-default" ng-click="indexController.addTextItem()">Add new item</button>
+          <button type="button" class="btn btn-danger" ng-click="indexController.removeList()">Delete this list!</button>
           <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
         </div>
       </div>
