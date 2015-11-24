@@ -21,41 +21,41 @@ app.controller('IndexController', function($http, $window) {
   vm.current_user = "";
   vm.mapped = "list" // search or list
   $http.get("api/user/get").then(
-      function successCallBack(response) {
-        var data = response.data;
-        if (data.errors.length == 0) {
-          // if (vm.newUser.user_type == 'merchant'){
-          //   $window.location.href = 'merchant';
-          // } else {
-          //   $window.location.href = 'home';
-          // }
-          // hide login, register buttons
-          vm.current_user = data.username;
-          console.log(data.username);
-          // if (data.user_type == "merchant") {
-          //  $window.location.href = "merchant";
-          // }
-          $http.get("api/list/getUser").then(
-              function successCallBack(response) {
-                var data = response.data;
-                if (data.errors.length == 0) {
-                  vm.listIDs = data.listIDs;
-                  vm.tab = 0;
-                  vm.currentListID = vm.listIDs[vm.tab];
-                  vm.shoppingLists = data.allLists;
-                  vm.shoppingList = vm.shoppingLists[tab];
-                } else {
-                  vm.currentListID = -1;
-                }
-              }, errorCallBackGeneral);
-        } else {
-          // for (var i = 0; i < data.errors.length; i++) {
-            // alert(e);
-            // $window.alert(data.errors[i]);
-            // console.error(e);
-          // }
-        }
-      }, errorCallBackGeneral);
+    function successCallBack(response) {
+      var data = response.data;
+      if (data.errors.length == 0) {
+        // if (vm.newUser.user_type == 'merchant'){
+        //   $window.location.href = 'merchant';
+        // } else {
+        //   $window.location.href = 'home';
+        // }
+        // hide login, register buttons
+        vm.current_user = data.username;
+        console.log(data.username);
+        // if (data.user_type == "merchant") {
+        //  $window.location.href = "merchant";
+        // }
+        $http.get("api/list/getUser").then(
+          function successCallBack(response) {
+            var data = response.data;
+            if (data.errors.length == 0) {
+              vm.listIDs = data.listIDs;
+              vm.tab = 0;
+              vm.currentListID = vm.listIDs[vm.tab];
+              vm.shoppingLists = data.allLists;
+              vm.shoppingList = vm.shoppingLists[tab];
+            } else {
+              vm.currentListID = -1;
+            }
+          }, errorCallBackGeneral);
+      } else {
+        // for (var i = 0; i < data.errors.length; i++) {
+        // alert(e);
+        // $window.alert(data.errors[i]);
+        // console.error(e);
+        // }
+      }
+    }, errorCallBackGeneral);
 
 
 
@@ -95,49 +95,49 @@ app.controller('IndexController', function($http, $window) {
         }
       }
       var editData = {};
-      editData.listID = vm.currentListID;//CURRENT LIST ID
+      editData.listID = vm.currentListID; //CURRENT LIST ID
       editData.contents = vm.contents;
       $http.post("api/list/edit", editData).then(successListError, errorCallBackGeneral);
     }
   }
   vm.mapList = function() {
     var listData = {};
-    listData.listID = vm.currentListID;//CURRENT LIST ID
+    listData.listID = vm.currentListID; //CURRENT LIST ID
     $http.post("api/list/map", listData).then(successListError, errorCallBackGeneral).then(
-        function successCallBack(response) {
-          var data = response.data;
-          if (data.errors.length == 0) {
-            var mapMarkers = response.data.mapMarkers;
-            var bounds = google.maps.LatLngBounds();
-            var infowindow = new google.maps.InfoWindow();
-            vm.map = new google.maps.Map(document.getElementById('list_map'), {
-              zoom: 4,
-              center: new google.maps.LatLng(mapMarkers[0].latitude, mapMarkers[0].longitude),
-              mapTypeId: google.maps.MapTypeId.ROADMAP
+      function successCallBack(response) {
+        var data = response.data;
+        if (data.errors.length == 0) {
+          var mapMarkers = response.data.mapMarkers;
+          var bounds = google.maps.LatLngBounds();
+          var infowindow = new google.maps.InfoWindow();
+          vm.map = new google.maps.Map(document.getElementById('list_map'), {
+            zoom: 4,
+            center: new google.maps.LatLng(mapMarkers[0].latitude, mapMarkers[0].longitude),
+            mapTypeId: google.maps.MapTypeId.ROADMAP
+          });
+
+          for (var i = 0; i < mapMarkers.length; i++) {
+            var marker = new google.maps.Marker({
+              position: new google.maps.LatLng(mapMarkers[i].latitude, mapMarkers[i].longitude),
+              map: vm.map
             });
- 
-            for (var i = 0; i < mapMarkers.length; i++) {
-              var marker = new google.maps.Marker({
-                position: new google.maps.LatLng(mapMarkers[i].latitude, mapMarkers[i].longitude),
-                map: vm.map
-              });
-              bounds.extend(marker.position);
-              google.maps.event.addListener(marker, 'click', (function(marker, i) {
-                return function() {
-                  infowindow.setContent(locations[i].pin_name);
-                  infowindow.open(vm.map, marker);
-                }
-              })(marker, i));
-            }
-            vm.map.fitBounds(bounds);
-          } else {
-            for (var i = 0; i < data.errors.length; i++) {
-              alert(e);
-              $window.alert(data.errors[i]);
-              console.error(e);
-            }
+            bounds.extend(marker.position);
+            google.maps.event.addListener(marker, 'click', (function(marker, i) {
+              return function() {
+                infowindow.setContent(locations[i].pin_name);
+                infowindow.open(vm.map, marker);
+              }
+            })(marker, i));
           }
-        }, errorCallBackGeneral)
+          vm.map.fitBounds(bounds);
+        } else {
+          for (var i = 0; i < data.errors.length; i++) {
+            alert(e);
+            $window.alert(data.errors[i]);
+            console.error(e);
+          }
+        }
+      }, errorCallBackGeneral)
   }
   vm.loginAttempt = function() {
     $http.post("/api/user/login", vm.User).then(
@@ -218,6 +218,7 @@ app.controller('IndexController', function($http, $window) {
 app.controller('MerchantController', function($http, $window) {
   var vm = this;
   vm.editable = false;
+  vm.noStore = false;
   vm.editInfo = function() {
     vm.editable = !vm.editable
   }
@@ -225,8 +226,7 @@ app.controller('MerchantController', function($http, $window) {
   vm.tempStoreInfo = angular.copy(vm.storeInfo);
   vm.saveInfo = function() {
     vm.storeInfo = angular.copy(vm.tempStoreInfo);
-    vm.editInfo();
-    vm.editUser()
+    vm.editStore();
   }
   vm.cancel = function() {
     vm.tempStoreInfo = angular.copy(vm.storeInfo);
@@ -236,11 +236,32 @@ app.controller('MerchantController', function($http, $window) {
     $http.post("api/user/logout");
     $window.location.href = "home";
   }
+  vm.createStore = function() {
+    // vm.saveInfo()
+    vm.requestInfo = angular.copy(vm.tempStoreInfo)
+    vm.requestInfo.address = vm.tempStoreInfo.address_street + '\n\n' + vm.tempStoreInfo.address_city + '\n' + vm.tempStoreInfo.address_state + '\n' + vm.tempStoreInfo.address_zip;
+    $http.post("/api/store/create", vm.requestInfo).then(
+      function successCallBack(response) {
+        var data = response.data;
+        if (data.errors.length == 0) {
+          vm.getUserStore()
+          vm.saveInfo()
+        } else {
+          for (var i = 0; i < data.errors.length; i++) {
+            // alert(e);
+            $window.alert(data.errors[i]);
+            // console.error(e);
+          }
+        }
+      }, errorCallBackGeneral)
+  }
   vm.editStore = function() {
+    console.log(vm.storeInfo)
     $http.post("/api/store/edit", vm.storeInfo).then(
       function successCallBack(response) {
         var data = response.data;
         if (data.errors.length == 0) {
+          vm.editInfo();
 
           // if (vm.newUser.user_type == 'merchant') {
           //   $window.location.href = 'merchant';
@@ -271,19 +292,27 @@ app.controller('MerchantController', function($http, $window) {
       alert('An error has occured');
     }
   )
-  $http.get("api/store/getUser").then(
-    function successCallBack(response) {
-      vm.storeInfo = response.data.store;
-      if (data.errors.length == 0) {
-        if (vm.storeInfo.storeID == -1) {
-          editable = false
+  vm.getUserStore = function() {
+    $http.get("api/store/getUser").then(
+      function successCallBack(response) {
+        var data = response.data
+        if (data.errors.length == 0) {
+          vm.storeInfo = data.store
+          vm.tempStoreInfo = angular.copy(vm.storeInfo);
+          console.log(data)
+          if (vm.storeInfo.storeID == -1) {
+            console.log("yolo")
+            vm.editable = true
+            vm.noStore = true
+          }
         }
+      },
+      function errorCallBack(response) {
+        alert('An error has occured');
       }
-    },
-    function errorCallBack(response) {
-      alert('An error has occured');
-    }
-  )
+    )
+  }
+  vm.getUserStore()
 });
 
 
@@ -493,8 +522,9 @@ var inventory = [{
   price: "7.00"
 }]
 
-var shoppingLists = [
-  {listName: 'listName0', contents: [{
+var shoppingLists = [{
+  listName: 'listName0',
+  contents: [{
     storeName: "GameStop1",
     itemID: "1",
     name: "Halo 5",
@@ -512,8 +542,10 @@ var shoppingLists = [
     name: "Deodorant",
     description: "Use this to tackle body odor!",
     price: "7.00"
-  }]},
-  {listName: 'listName1', contents: [{
+  }]
+}, {
+  listName: 'listName1',
+  contents: [{
     storeName: "GameStop2",
     itemID: "1",
     name: "Halo 5",
@@ -525,8 +557,8 @@ var shoppingLists = [
     name: "Shampoo",
     description: "New shampoo for dry hair",
     price: "5.50"
-  }]}
-];
+  }]
+}];
 
 successListError = function(response) {
   var data = response.data;
