@@ -20,6 +20,7 @@ app.controller('IndexController', function($http, $window){
   vm.listIDs = [];
   vm.currentListID = -1;
   vm.current_user = "";
+  vm.mapped = "list" // search or list
   $http.get("api/user/get").then(
       function successCallBack(response) {
         var data = response.data;
@@ -79,6 +80,9 @@ app.controller('IndexController', function($http, $window){
     if (current_user != "") {
       vm.updateList();
     }
+    if (vm.mapped == "list") {
+      vm.mapList()
+    }
   }
   vm.updateList = function() {
     if (current_user != "") {
@@ -111,7 +115,7 @@ app.controller('IndexController', function($http, $window){
             var mapMarkers = response.data.mapMarkers;
             var bounds = google.maps.LatLngBounds();
             var infowindow = new google.maps.InfoWindow();
-            var map = new google.maps.Map(document.getElementById('list_map'), {
+            vm.map = new google.maps.Map(document.getElementById('list_map'), {
               zoom: 4,
               center: new google.maps.LatLng(mapMarkers[0].latitude, mapMarkers[0].longitude),
               mapTypeId: google.maps.MapTypeId.ROADMAP
@@ -120,17 +124,17 @@ app.controller('IndexController', function($http, $window){
             for (var i = 0; i < mapMarkers.length; i++) {
               var marker = new google.maps.Marker({
                 position: new google.maps.LatLng(mapMarkers[i].latitude, mapMarkers[i].longitude),
-                map: map
+                map: vm.map
               });
               bounds.extend(marker.position);
               google.maps.event.addListener(marker, 'click', (function(marker, i) {
                 return function() {
                   infowindow.setContent(locations[i].pin_name);
-                  infowindow.open(map, marker);
+                  infowindow.open(vm.map, marker);
                 }
               })(marker, i));
             }
-            map.fitBounds(bounds);
+            vm.map.fitBounds(bounds);
           } else {
             for (var i = 0; i < data.errors.length; i++) {
               alert(e);
