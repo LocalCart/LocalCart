@@ -403,52 +403,74 @@ app.controller('RegisterController', function($http, $window) {
 
 app.controller('InventoryController', function($http) {
   var vm = this;
-  vm.inventory = inventory;
+  vm.inventory = [];
+  vm.inventoryID = -1;
   vm.tempItem = {}
-  vm.remove = function(index) {
-    console.log("wtf");
-    vm.inventory.splice(index, 1);
-  }
-  count = 4
-  vm.addItem = function() {
-    vm.tempItem.itemID = count;
-    count += 1;
-    vm.inventory.push(vm.tempItem);
-    vm.tempItem = {}
-  }
-  vm.logout = function() {
-    $http.post("api/user/logout");
-    $window.location.href = "home";
-  }
+  vm.count = 0
   vm.current_user = "";
   $http.get("api/user/get").then(
     function successCallBack(response) {
       var data = response.data;
       if (data.errors.length == 0) {
-        // if (vm.newUser.user_type == 'merchant'){
-        //   $window.location.href = 'merchant';
-        // } else {
-        //   $window.location.href = 'home';
-        // }
-        // hide login, register buttons
         vm.current_user = data.username;
         console.log(data.username);
-        // if (data.user_type == "merchant") {
-        //  $window.location.href = "merchant";
-        // }
+        $http.get("api/inventory/getUser").then(
+            function successCallBack2(response) {
+              var data2 = reponse.data;
+              if (data2.errors.length == 0) {
+                vm.inventory = data2.contents;
+                vm.count = vm.inventory.length;
+                vm.inventoryID = data2.inventoryID;
+              }
+            }, errorCallBackGeneral)
       } else {
-        // for (var i = 0; i < data.errors.length; i++) {
-        // alert(e);
-        // $window.alert(data.errors[i]);
-        // console.error(e);
-        // }
         $window.location.href = "home";
       }
-    },
-    function errorCallBack(response) {
-      alert('An error has occured');
-    }
-  )
+    }, errorCallBackGeneral)
+  vm.remove = function(index) {
+    var removedID = {};
+    removedID.itemID = vm.inventory[index].itemID;
+    $http.post("api/item/delete", removedID).then(
+      function successCallBack(response) {
+        var data = response.data;
+        if (data.errors.length == 0) {
+          vm.inventory.splice(index, 1);
+          for (var i = index; i < vm.inventory.length; i++) {
+            vm.inventory[index].index -= 1;
+          }
+          count -= 1;
+        } else {
+          for (var i = 0; i < data.errors.length; i++) {
+            $window.alert(data.errors[i]);
+            console.error(e);
+          }
+        }
+      }, errorCallBackGeneral)
+  }
+  vm.addItem = function() {
+    vm.count += 1;
+    vm.tempItem.itemID = vm.count;
+    vm.tempItem.inventoryID = vm.inventoryID;
+    $http.post("api/item/create", vm.tempItem).then(
+      function successCallBack(response) {
+        var data = response.data;
+        if (data.errors.length == 0) {
+          vm.tempItem.itemID = data.itemID;
+          vm.inventory.push(vm.tempItem);
+          vm.tempItem = {}
+        } else {
+          for (var i = 0; i < data.errors.length; i++) {
+          $window.alert(data.errors[i]);
+          console.error(e);
+          }
+        }
+      }, errorCallBackGeneral)
+  }
+  vm.logout = function() {
+    $http.post("api/user/logout");
+    $window.location.href = "home";
+  }
+
 });
 
 var results = [{
@@ -500,19 +522,19 @@ var results = [{
 
 var inventory = [{
   storeName: "GameStop1",
-  itemID: "1",
+  index: "1",
   name: "Halo 5",
   description: "A first person shooter video game",
   price: "80.00"
 }, {
   storeName: "GameStop1",
-  itemID: "2",
+  index: "2",
   name: "Shampoo",
   description: "New shampoo for dry hair",
   price: "5.50"
 }, {
   storeName: "GameStop1",
-  itemID: "3",
+  index: "3",
   name: "Deodorant",
   description: "Use this to tackle body odor!",
   price: "7.00"

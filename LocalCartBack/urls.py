@@ -15,8 +15,10 @@ urlpatterns = [
     url(r'^api/store/getUser$', views.get_store_user),
     url(r'^api/inventory/create$', views.create_inventory),
     url(r'^api/inventory/add$', views.create_item),
+    url(r'^api/inventory/getUser$', views.get_user_inventory),
     url(r'^api/item/create$', views.create_item),
     url(r'^api/item/edit$', views.edit_item),
+    url(r'^api/item/delete$', views.delete_item),
     url(r'^api/list/create$', views.create_list),
     url(r'^api/list/delete$', views.delete_list),
     url(r'^api/list/deleteid$', views.delete_list_with_id),
@@ -33,5 +35,3 @@ urlpatterns = [
     url(r'^search$', views.search_render),
     url(r'^inventory$', views.inventory_render),
 ]
-
-
