@@ -355,9 +355,9 @@ class CartList(models.Model):
 
     @staticmethod
     def delete_list_with_id(listID):
-        if CartList.objects.filter(listID).exists():
-            current_list = CartList.objects.get(listID)
-            return delete_list(current_list.user.username, current_list.name)
+        if CartList.objects.filter(id=listID).exists():
+            current_list = CartList.objects.get(id=listID)
+            return CartList.delete_list(current_list.user.username, current_list.name)
         else:
             return None
 
@@ -407,7 +407,7 @@ class CartList(models.Model):
         cartlist = CartList.objects.get(id=listID)
         list_items = ListItem.objects.filter(cartlist=cartlist).order_by('list_position')
 
-        items_list = []
+        item_list = []
         for list_item in list_items:
             if list_item.item:
                 current_item = list_item.item
