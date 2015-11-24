@@ -87,6 +87,7 @@ app.controller('IndexController', function($http, $window) {
     if (vm.current_user != "") {
       vm.updateList();
     }
+    vm.newItemName = "";
   }
 
   vm.updateList = function() {
@@ -103,10 +104,11 @@ app.controller('IndexController', function($http, $window) {
           entry.type = "id";
           entry.name = item.itemID;
         }
+        contents.push(entry)
       }
       var editData = {};
       editData.listID = vm.currentListID; //CURRENT LIST ID
-      editData.contents = vm.contents;
+      editData.contents = contents;
       $http.post("api/list/edit", editData).then(successListError, errorCallBackGeneral);
     }
   }
@@ -205,6 +207,7 @@ app.controller('IndexController', function($http, $window) {
           if (data.errors.length == 0) {
             vm.listIDs.push(data.listID);
             vm.shoppingLists.push({listName: vm.newListName, contents: []});
+            vm.newListName = "";
           } else {
             for (var i = 0; i < data.errors.length; i++) {
               // alert(e);

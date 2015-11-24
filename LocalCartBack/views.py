@@ -294,7 +294,7 @@ def edit_store(request):
     except ValueError:
         store = None
         errors.append('storeID must be an integer')
-    except DoesNotExist:
+    except ObjectDoesNotExist:
         store = None
         errors.append('Store does not exist')
 
@@ -856,8 +856,10 @@ def edit_list(request):
                 errors.append('item reference reference type must be "id" or "name"')
     if len(errors) == 0:
         try:
+            import pdb; pdb.set_trace()
             refill = CartList.refill_list(listID, contents)
         except ValidationError as e:
+            refill = 1
             errors.append(e)
         except ObjectDoesNotExist as e:
             refill = 1
