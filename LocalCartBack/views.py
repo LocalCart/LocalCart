@@ -460,6 +460,7 @@ def get_inventory(request):
 
 @csrf_exempt
 def get_user_inventory(request):
+    assert request.method == 'GET', 'api/inventory/getUser requires a GET request'
     errors = []
     errors, user = extract_user(request, errors)
     inventory_list = []
@@ -1014,6 +1015,7 @@ def extract_user(request, errors):
         if User.objects.filter(username=username).exists():
             user = User.objects.get(username=username)
         else:
+            user = None
             errors.append('username does not exist')
     else:
         user = request.user

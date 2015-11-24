@@ -33,6 +33,8 @@ class TestUnitViewsUser(TestCase):
     def setUp(self):
         # Run first the setUp from the superclass
         self.factory = RequestFactory()
+        request = self.factory.post("/api/user/destroy", data={})
+        response = views.empty_db(request)
 
     def tearDown(self):
         
@@ -179,6 +181,8 @@ class TestUnitViewsStore(TestCase):
     def setUp(self):
         # Run first the setUp from the superclass
         self.factory = RequestFactory()
+        request = self.factory.post("/api/user/destroy", data={})
+        response = views.empty_db(request)
 
     def tearDown(self):
         
@@ -275,6 +279,8 @@ class TestUnitViewsInventory(TestCase):
     def setUp(self):
         # Run first the setUp from the superclass
         self.factory = RequestFactory()
+        request = self.factory.post("/api/user/destroy", data={})
+        response = views.empty_db(request)
 
     def tearDown(self):
         
@@ -284,7 +290,7 @@ class TestUnitViewsInventory(TestCase):
         self.assertSuccessResponse(respDestroy)
 
 
-    def testCreateInventory(self):
+    def testGetInventory(self):
         request = self.factory.post("/api/user/create", json.dumps({ 'username' : 'Tom',
                                              'password' : '123456',
                                              'user_type' : 'customer',
@@ -300,11 +306,10 @@ class TestUnitViewsInventory(TestCase):
                                              #'description' : 'This is a very good store'
                                              }), content_type='application/json')
         response = views.create_store(request)
-        respCreateStore = self.getDataFromResponse(response)
 
-        request = self.factory.post("/api/inventory/create", json.dumps({ 'storeID' : respCreateStore['storeID']
+        request = self.factory.get("/api/inventory/getUser", json.dumps({ 'username' : 'Tom'
                                              }), content_type='application/json')
-        response = views.create_inventory(request)
+        response = views.get_user_inventory(request)
         respCreateInventory = self.getDataFromResponse(response)
         self.assertSuccessResponse(respCreateInventory)
         self.assertEquals(0, len(respCreateInventory['errors']))
@@ -410,6 +415,8 @@ class TestUnitViewsItem(TestCase):
     def setUp(self):
         # Run first the setUp from the superclass
         self.factory = RequestFactory()
+        request = self.factory.post("/api/user/destroy", data={})
+        response = views.empty_db(request)
 
     def tearDown(self):
         
@@ -436,9 +443,9 @@ class TestUnitViewsItem(TestCase):
         response = views.create_store(request)
         respCreateStore = self.getDataFromResponse(response)
 
-        request = self.factory.post("/api/inventory/create", json.dumps({ 'storeID' : respCreateStore['storeID']
+        request = self.factory.get("/api/inventory/getUser", json.dumps({ 'username' : 'Tom'
                                              }), content_type='application/json')
-        response = views.create_inventory(request)
+        response = views.get_user_inventory(request)
         respCreateInventory = self.getDataFromResponse(response)
 
 
@@ -761,6 +768,8 @@ class TestUnitViewsList(TestCase):
     def setUp(self):
         # Run first the setUp from the superclass
         self.factory = RequestFactory()
+        request = self.factory.post("/api/user/destroy", data={})
+        response = views.empty_db(request)
 
     def tearDown(self):
         
@@ -803,7 +812,7 @@ class TestUnitViewsList(TestCase):
         response = views.create_list(request)
         respCreateList = self.getDataFromResponse(response)
 
-        self.assertEquals("username does not exist or user is not a customer", respCreateList['errors'][0]) 
+        self.assertEquals("username does not exist", respCreateList['errors'][0]) 
 
     def testCreateListUsernameNotCustomer(self):
         request = self.factory.post("/api/user/create", json.dumps({ 'username' : 'Tom',
@@ -831,13 +840,12 @@ class TestUnitViewsList(TestCase):
         response = views.create_user(request);
 
         request = self.factory.post("/api/list/create", json.dumps({
-                                             'username': '',
+                                             'username': 'Tom',
                                              }), content_type='application/json')
         response = views.create_list(request)
         respCreateList = self.getDataFromResponse(response)
 
-        self.assertEquals("username must be non-empty", respCreateList['errors'][0]) 
-        self.assertEquals("name must be non-empty", respCreateList['errors'][1]) 
+        self.assertEquals("name must be non-empty", respCreateList['errors'][0]) 
 
 
     def testDeleteList(self):
