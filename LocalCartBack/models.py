@@ -4,7 +4,7 @@ import json
 import urllib
 from time import sleep
 from django.core.exceptions import ValidationError, ObjectDoesNotExist, MultipleObjectsReturned
-
+from django.db import IntegrityError
 
 class UserInfo(models.Model):
     user = models.OneToOneField(User)
@@ -344,6 +344,11 @@ class CartList(models.Model):
                 import pdb; pdb.set_trace()
                 new_list_item.save()
         except ValidationError as e:
+            ListItem.objects.filter(cartlist=current_list).delete()
+            ListItem.objects.filter(cartlist=temp).update(cartlist=current_list)
+            temp.delete()
+            return 'VE'
+        except IntegrityError as e:
             ListItem.objects.filter(cartlist=current_list).delete()
             ListItem.objects.filter(cartlist=temp).update(cartlist=current_list)
             temp.delete()
