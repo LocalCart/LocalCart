@@ -82,7 +82,7 @@ app.controller('IndexController', function($http, $window) {
     $window.location.href = "home";
   }
 
-  vm.tab = 1;
+  vm.tab = 0;
 
   vm.isSet = function(checkTab) {
     return vm.tab === checkTab;
@@ -100,6 +100,12 @@ app.controller('IndexController', function($http, $window) {
   //   item.picture = "add picture text"
   //   $http.post("api/item/create", item);
   // }
+  vm.addList = function() {
+    vm.shoppingLists.push({})
+  }
+  vm.removeList = function(tabNumber) {
+    vm.shoppingLists.splice(tabNumber, 1)
+  }
 
 });
 

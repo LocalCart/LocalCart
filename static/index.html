@@ -57,11 +57,12 @@
   <hr>
   <div class="col-sm-12">
     <div class="row">
-      <div class="container col-sm-offset-3 col-sm-5">
+      <div class="container col-sm-offset-2 col-sm-5">
         <input ng-model="indexController.searchQuery" type="text" placeholder="Search for item!" class="form-control">
       </div>
-      <div class="container col-sm-4">
-        <a href="" ng-click="indexController.search()" class="btn btn-primary">Search</a>
+      <div class="container col-sm-5">
+        <a href="" ng-click="indexController.search()" class="btn btn-primary">Search and Map Results</a>
+        <a href="" ng-click="indexController.search()" class="btn btn-primary">Map current list: </a>
       </div>
     </div>
     <br>
@@ -92,8 +93,9 @@
           </div>
         </div>
       </div>
-      <div class="container panel col-sm-4">
-        <iframe width="600" height="450" frameborder="0" style="border:0" src="https://www.google.com/maps/embed/v1/search?q=2609EllsworthStreet&zoom=12&center=37.8716,-122.2727&key=AIzaSyBkTNmmKUDXA82v1479nIbcjPuYfS58098" allowfullscreen></iframe>
+      <div class="LocalCartMap">
+        <!-- put map here -->
+        <!--         <iframe width="600" height="450" frameborder="0" style="border:0" src="https://www.google.com/maps/embed/v1/search?q=2609EllsworthStreet&zoom=12&center=37.8716,-122.2727&key=AIzaSyBkTNmmKUDXA82v1479nIbcjPuYfS58098" allowfullscreen></iframe> -->
       </div>
       <!-- /container -->
     </div>
@@ -111,6 +113,9 @@
           <ul class="nav nav-pills">
             <li ng-repeat="list in indexController.shoppingLists" ng-class="{active:indexController.isSet($index)}">
               <a href ng-click="indexController.setTab($index)">List[[$index]]</a>
+            </li>
+            <li>
+              <button type="button" ng-click="indexController.addList()" class="btn btn-success">Add List +</button>
             </li>
           </ul>
           <table class="table table-hover">
@@ -138,6 +143,9 @@
           </table>
         </div>
         <div class="modal-footer">
+          <tr>
+            <button type="button" class="btn btn-danger" ng-click="indexController.removeList(indexController.tab)">Delete this list!</button>
+          </tr>
           <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
         </div>
       </div>
