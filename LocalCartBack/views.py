@@ -83,9 +83,8 @@ def return_error(errors):
 def return_user(request):
     assert request.method == 'GET', 'api/user/get requires a GET request'
     errors = []
-    errors, user = extractUser(request, errors)
-    if not user.is_authenticated():
-        errors.append('Not logged in')
+    errors, user = extract_user(request, errors)
+    if len(errors) > 0:
         user_id = -1
         username = ''
         user_type = 'customer'
@@ -237,7 +236,7 @@ def create_store(request):
     post = QueryDict('', mutable=True)
     post.update(json.loads(request.body))
 
-    errors, user = extractUser(request, errors)
+    errors, user = extract_user(request, errors)
     
     name = post.get('name', '')
 
@@ -357,8 +356,8 @@ def get_store_user(request):
                   'description': '',
                   'picture': '',
                  }
-    errors, user = extractUser(request, errors)
-    if user.is_authenticated():
+    errors, user = extract_user(request, errors)
+    if len(errors) == 0:
         if Store.objects.filter(user=user).exists():
             store = Store.objects.get(user=user)
         else:
@@ -375,8 +374,6 @@ def get_store_user(request):
                           'description': store.description,
                           'picture': store.picture,
                          }
-    else:
-        errors.append('user must be logged in')
     response = {
                'status': 200,
                'errors': errors,
@@ -463,25 +460,30 @@ def get_inventory(request):
 
 @csrf_exempt
 def get_user_inventory(request):
-    hasError = False
-    retData = { 
-                "status": 200,
-                "errors": []
-                }
-
-    if not current_user.is_authenticated():
-        retData["errors"].append("user must be logged in")
-        hasError = True
-    inventoryID = request.GET.get('inventoryID', '')    
-    if inventoryID == "":
-        retData["errors"].append("inventoryID must be non-empty")
-        hasError = True
-    if not hasError:
-        hasError, inventory = Inventory.get_inventory(inventoryID)
-        if hasError:
-            retData["errors"].append("Can't get inventory from inventoryID")
-        retData["inventory"] = inventory
-    return HttpResponse(json.dumps(retData), content_type='application/json', status=200)
+    errors = []
+    errors, user = extract_user(request, errors)
+    inventory_list = []
+    inventoryID = -1
+    if not Store.objects.filter(user=user).exists():
+        errors.append('user does not have inventory')
+        store = None
+        inventory = None
+    else:
+        store = Store.objects.get(user=user)
+        if not Inventory.objects.filter(store=store).exists():
+            errors.append('user does not have inventory')
+            inventory = None
+        else:
+            inventory = Inventory.objects.get(store=store)
+            inventoryID = inventory.id
+            hasError, inventory_list = Inventory.get_inventory(inventory.id)
+    response = {
+               'status': 200,
+               'inventoryID': inventoryID,
+               'contents': inventory_list,
+               'errors': errors
+              }
+    return HttpResponse(json.dumps(response), content_type='application/json', status=200)
 
 @csrf_exempt
 def create_item(request):
@@ -629,6 +631,7 @@ def delete_item(request):
     elif not Item.objects.filter(id=itemID).exists():
         errors.append('invalid itemID')
     else:
+        ListItem.objects.filter(item_id=itemID).delete()
         Item.objects.filter(id=itemID).delete()
     reponse = {
                'status': 200,
@@ -685,9 +688,8 @@ def create_list(request):
     errors = []
     post = QueryDict('', mutable=True)
     post.update(json.loads(request.body))
-    errors, user = extractUser(request, errors)
-    if not user.is_authenticated():
-        errors.append('user must be logged in')
+    errors, user = extract_user(request, errors)
+    if len(errors) > 0:
         username = ''
     else:
         username = user.username
@@ -736,8 +738,8 @@ def get_list(request):
 def get_user_lists(request):
     assert request.method == 'GET', 'api/list/getID requires a GET request'
     errors = []
-    errors, user = extractUser(request, errors)
-    if not user.is_authenticated():
+    errors, user = extract_user(request, errors)
+    if len(errors) > 0:
         listIDs = []
     else:
         listIDs = list(CartList.objects.filter(user=user).order_by('id').values_list('id', flat=True))
@@ -766,9 +768,8 @@ def get_user_lists(request):
 def get_listIDs(request):
     assert request.method == 'GET', 'api/list/getID requires a GET request'
     errors = []
-    errors, user = extractUser(request, errors)
-    if not user.is_authenticated():
-        errors.append('Not logged in')
+    errors, user = extract_user(request, errors)
+    if len(errors) > 0:
         listIDs = []
     else:
         listIDs = CartList.objects.filter(user=user).order_by('id').values_list('id', flat=True)
@@ -900,7 +901,7 @@ def map_list(request):
 def add_review(request):
     assert request.method == 'POST', 'api/review/add requires a POST request'
     errors = []
-    errors, user = extractUser(request, errors)
+    errors, user = extract_user(request, errors)
     post = QueryDict('', mutable=True)
     post.update(json.loads(request.body))
     itemID = post.get('itemID', '')
@@ -1005,7 +1006,7 @@ def get_reviews(request):
 
 
 
-def extractUser(request, errors):
+def extract_user(request, errors):
     post = QueryDict('', mutable=True)
     post.update(json.loads(request.body))
     username = post.get('username', '')

@@ -146,7 +146,9 @@ class Inventory(models.Model):
         inventory = Inventory.objects.get(id=inventory_id)
         items = Item.objects.filter(inventory=inventory).order_by('created_at')
         items_in_array = []
+        i = 0
         for item in items:
+            i += 1
             item_in_dic = {
                            "itemID": item.id,
                            "storeName": item.store.name,
@@ -154,6 +156,7 @@ class Inventory(models.Model):
                            "description": item.description,
                            "price": item.price,
                            "picture": item.picture,
+                           "index": i
                           }
             items_in_array.append(item_in_dic)
         return False, items_in_array
