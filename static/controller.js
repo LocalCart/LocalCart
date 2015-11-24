@@ -19,16 +19,18 @@ app.controller('IndexController', function($http, $window) {
   vm.shoppingLists = shoppingLists;
   vm.newItemName = "";
   vm.current_user = "";
+  vm.current_user_type = "";
   vm.mapped = "list" // search or list
   $http.get("api/user/get").then(
       function successCallBack(response) {
         var data = response.data;
         if (data.errors.length == 0) {
-          if (data.user_type == 'merchant'){
-            $window.location.href = 'merchant';
-          }
+          // if (data.user_type == 'merchant'){
+          //   $window.location.href = 'merchant';
+          // }
           // hide login, register buttons
           vm.current_user = data.username;
+          vm.current_user_type = data.user_type;
           console.log(data.username);
           // if (data.user_type == "merchant") {
           //  $window.location.href = "merchant";
@@ -81,6 +83,10 @@ app.controller('IndexController', function($http, $window) {
     var addText = {};
     addText.type = "name";
     addText.name = vm.newItemName;
+    vm.shoppingLists[vm.tab].contents.push(addText);
+    if (vm.current_user != "") {
+      vm.updateList();
+    }
   }
 
   vm.updateList = function() {
