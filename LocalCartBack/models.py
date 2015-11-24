@@ -61,7 +61,7 @@ class UserInfo(models.Model):
 class Store(models.Model):
 
     # inventoryID = models.ForeignKey(Inventory)
-    user = models.ForeignKey(User, unique=True)
+    user = models.OneToOneField(User)
     name = models.CharField(max_length=64)
     address_street = models.CharField(max_length=64)
     address_city = models.CharField(max_length=32)
@@ -106,6 +106,9 @@ class Store(models.Model):
                           phone_number=phone_number)
         new_store.full_clean()
         new_store.save()
+        new_inventory = Inventory(store=new_store)
+        new_inventory.full_clean()
+        new_inventory.save()
         return new_store
 
     def edit_store(self, name, address_street, address_city, address_state, address_zip,
@@ -141,10 +144,17 @@ class Inventory(models.Model):
         if not Inventory.objects.filter(id=inventory_id).exists():
             return True, []
         inventory = Inventory.objects.get(id=inventory_id)
-        items = Item.objects.filter(inventory=inventory)
+        items = Item.objects.filter(inventory=inventory).order_by('created_at')
         items_in_array = []
         for item in items:
-            status, item_in_dic = Item.get_item(item.id)
+            item_in_dic = {
+                           "itemID": item.id,
+                           "storeName": item.store.name,
+                           "name": item.name,
+                           "description": item.description,
+                           "price": item.price,
+                           "picture": item.picture,
+                          }
             items_in_array.append(item_in_dic)
         return False, items_in_array
 
@@ -169,6 +179,7 @@ class Item(models.Model):
             return True, {}
         item = Item.objects.get(id=item_id)
         item_in_dic = {
+        "itemID": item.id,
         "storeName": item.store.name,
         "name": item.name,
         "description": item.description,

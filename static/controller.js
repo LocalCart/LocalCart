@@ -169,6 +169,7 @@ app.controller('IndexController', function($http, $window) {
 
   vm.setTab = function(setTab) {
     vm.tab = setTab;
+    vm.currentListID = vm.listIDs[vm.tab];
   };
   // vm.addItem = function(itemToAdd) {
   //   var item = {};
@@ -241,7 +242,7 @@ app.controller('MerchantController', function($http, $window) {
         var data = response.data;
         if (data.errors.length == 0) {
           vm.getUserStore()
-          vm.saveInfo()
+          // vm.saveInfo()
         } else {
           for (var i = 0; i < data.errors.length; i++) {
             // alert(e);
@@ -291,13 +292,12 @@ app.controller('MerchantController', function($http, $window) {
   vm.getUserStore = function() {
     $http.get("api/store/getUser").then(
       function successCallBack(response) {
-        var data = response.data
+        var data = response.data;
         if (data.errors.length == 0) {
-          vm.storeInfo = data.store
+          vm.storeInfo = data.store;
           vm.tempStoreInfo = angular.copy(vm.storeInfo);
           console.log(data)
           if (vm.storeInfo.storeID == -1) {
-            console.log("yolo")
             vm.editable = true
             vm.noStore = true
           }

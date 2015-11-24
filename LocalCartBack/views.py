@@ -83,7 +83,7 @@ def return_error(errors):
 def return_user(request):
     assert request.method == 'GET', 'api/user/get requires a GET request'
     errors = []
-    user = request.user
+    errors, user = extractUser(request, errors)
     if not user.is_authenticated():
         errors.append('Not logged in')
         user_id = -1
@@ -236,12 +236,8 @@ def create_store(request):
     errors = []
     post = QueryDict('', mutable=True)
     post.update(json.loads(request.body))
-    username = request.user.username ### changed to username since username is also unique
-    if not User.objects.filter(username=username).exists():
-        errors.append('username does not exist')
-        user = None
-    else:
-        user = User.objects.get(username=username)
+
+    errors, user = extractUser(request, errors)
     
     name = post.get('name', '')
 
@@ -260,7 +256,9 @@ def create_store(request):
 
     phone_number = post.get('phone_number', '')
     description = post.get('description', 'Good Store') #default
-    picture = post.get('picture', 'images/default_user_image') #default
+    picture = post.get('picture', '') #default
+    if not picture:
+        picture = 'images/default_user_image'
     fields = [
               'name',
               'address',
@@ -272,15 +270,15 @@ def create_store(request):
     try:
         new_store = Store.create_new_store(user=user, name=name, description=description, picture=picture,
                           address_street=address_street, address_city=address_city,
-                          address_state = address_state, address_zip = address_zip,
+                          address_state=address_state, address_zip = address_zip,
                           phone_number=phone_number)
     except ValidationError as e:
+        errors.append(e)
         return return_error(errors)
     reponse = {
                'status': 200,
                'storeID': new_store.id,
                'errors': errors
-
               }
     return HttpResponse(json.dumps(reponse), content_type='application/json')
 
@@ -311,14 +309,22 @@ def edit_store(request):
     if (store is not None) and address_change:
         if not address_street:
             address_street = store.address_street
+        elif address_street == store.address_street:
+            address_change = False
         if not address_city:
             address_city = store.address_city
+        elif address_city == store.address_city:
+            address_change = False
         if not address_state:
             address_state = store.address_state
+        elif address_state == store.address_state:
+            address_change = False
         if not address_zip:
             address_zip = store.address_zip
-        if Store.objects.filter(address_street=address_street, address_city=address_city,
-                              address_state=address_state, address_zip=address_zip).exists():
+        elif address_zip == store.address_zip:
+            address_change = False
+        if address_change and Store.objects.filter(address_street=address_street, address_city=address_city,
+                                                    address_state=address_state, address_zip=address_zip).exists():
             errors.append('store already exists at this address')
     phone_number = post.get('phone_number', '')
     description = post.get('description', '')
@@ -351,9 +357,10 @@ def get_store_user(request):
                   'description': '',
                   'picture': '',
                  }
-    if request.user.is_authenticated():
-        if Store.objects.filter(user=request.user).exists():
-            store = Store.objects.get(user=request.user)
+    errors, user = extractUser(request, errors)
+    if user.is_authenticated():
+        if Store.objects.filter(user=user).exists():
+            store = Store.objects.get(user=user)
         else:
             store = None
         if store:
@@ -442,6 +449,29 @@ def get_inventory(request):
                 "errors": []
                 }
 
+    inventoryID = request.GET.get('inventoryID', '')    
+    if inventoryID == "":
+        retData["errors"].append("inventoryID must be non-empty")
+        hasError = True
+    if not hasError:
+        hasError, inventory = Inventory.get_inventory(inventoryID)
+        if hasError:
+            retData["errors"].append("Can't get inventory from inventoryID")
+        retData["inventory"] = inventory
+    return HttpResponse(json.dumps(retData), content_type='application/json', status=200)
+
+
+@csrf_exempt
+def get_user_inventory(request):
+    hasError = False
+    retData = { 
+                "status": 200,
+                "errors": []
+                }
+
+    if not current_user.is_authenticated():
+        retData["errors"].append("user must be logged in")
+        hasError = True
     inventoryID = request.GET.get('inventoryID', '')    
     if inventoryID == "":
         retData["errors"].append("inventoryID must be non-empty")
@@ -655,11 +685,12 @@ def create_list(request):
     errors = []
     post = QueryDict('', mutable=True)
     post.update(json.loads(request.body))
-    if not request.user.is_authenticated():
+    errors, user = extractUser(request, errors)
+    if not user.is_authenticated():
         errors.append('user must be logged in')
         username = ''
     else:
-        username = request.user.username
+        username = user.username
     name = post.get('name', '')
     if not name:
         errors.append('name must be non-empty')
@@ -705,12 +736,11 @@ def get_list(request):
 def get_user_lists(request):
     assert request.method == 'GET', 'api/list/getID requires a GET request'
     errors = []
-    current_user = request.user
-    if not current_user.is_authenticated():
-        errors.append('Not logged in')
+    errors, user = extractUser(request, errors)
+    if not user.is_authenticated():
         listIDs = []
     else:
-        listIDs = list(CartList.objects.filter(user=current_user).order_by('id').values_list('id', flat=True))
+        listIDs = list(CartList.objects.filter(user=user).order_by('id').values_list('id', flat=True))
     all_lists = []
     for listID in listIDs:
         hasError, cartlist = CartList.get_cartlist(listID)
@@ -736,12 +766,12 @@ def get_user_lists(request):
 def get_listIDs(request):
     assert request.method == 'GET', 'api/list/getID requires a GET request'
     errors = []
-    current_user = request.user
+    errors, user = extractUser(request, errors)
     if not user.is_authenticated():
         errors.append('Not logged in')
         listIDs = []
     else:
-        listIDs = CartList.objects.filter(user=current_user).order_by('id').values_list('id', flat=True)
+        listIDs = CartList.objects.filter(user=user).order_by('id').values_list('id', flat=True)
     response = { 
                 "status": 200,
                 "listIDs": listIDs,
@@ -870,9 +900,7 @@ def map_list(request):
 def add_review(request):
     assert request.method == 'POST', 'api/review/add requires a POST request'
     errors = []
-    user = request.user
-    if not user.is_authenticated():
-        errors.append('user not logged in')
+    errors, user = extractUser(request, errors)
     post = QueryDict('', mutable=True)
     post.update(json.loads(request.body))
     itemID = post.get('itemID', '')
@@ -975,3 +1003,19 @@ def get_reviews(request):
               }
     return HttpResponse(json.dumps(reponse), content_type='application/json')
 
+
+
+def extractUser(request, errors):
+    post = QueryDict('', mutable=True)
+    post.update(json.loads(request.body))
+    username = post.get('username', '')
+    if username:
+        if User.objects.filter(username=username).exists():
+            user = User.objects.get(username=username)
+        else:
+            errors.append('username does not exist')
+    else:
+        user = request.user
+        if not user.is_authenticated():
+            errors.append('user not logged in')
+    return errors, user
