@@ -11,7 +11,7 @@ import urllib
 import os
 #import testLib
 
-class TestUnitViewsCarts(TestCase):
+class TestUnitViewsUser(TestCase):
 
     def assertSuccessResponse(self,
                               respData,
@@ -157,6 +157,36 @@ class TestUnitViewsCarts(TestCase):
         self.assertEquals("password must not be empty", respEdit["errors"][3])
 
 
+class TestUnitViewsStore(TestCase):
+
+    def assertSuccessResponse(self,
+                              respData,
+                              msg=None):
+        """
+        Check that the response is not an error response
+        """
+        self.assertEquals(200, respData['status'], msg)
+
+    def assertFailResponse(self,
+                              respData,
+                              msg=None):
+        self.assertEquals(400, respData['status'], msg)
+
+    def getDataFromResponse(self, resp):
+
+            return json.loads(resp.content)
+
+    def setUp(self):
+        # Run first the setUp from the superclass
+        self.factory = RequestFactory()
+
+    def tearDown(self):
+        
+        request = self.factory.post("/api/user/destroy", data={})
+        response = views.empty_db(request)
+        respDestroy = self.getDataFromResponse(response)
+        self.assertSuccessResponse(respDestroy)
+
 
 
     def testCreateStore(self):
@@ -223,6 +253,36 @@ class TestUnitViewsCarts(TestCase):
 
 # #################################################################################################
         
+class TestUnitViewsInventory(TestCase):
+
+    def assertSuccessResponse(self,
+                              respData,
+                              msg=None):
+        """
+        Check that the response is not an error response
+        """
+        self.assertEquals(200, respData['status'], msg)
+
+    def assertFailResponse(self,
+                              respData,
+                              msg=None):
+        self.assertEquals(400, respData['status'], msg)
+
+    def getDataFromResponse(self, resp):
+
+            return json.loads(resp.content)
+
+    def setUp(self):
+        # Run first the setUp from the superclass
+        self.factory = RequestFactory()
+
+    def tearDown(self):
+        
+        request = self.factory.post("/api/user/destroy", data={})
+        response = views.empty_db(request)
+        respDestroy = self.getDataFromResponse(response)
+        self.assertSuccessResponse(respDestroy)
+
 
     def testCreateInventory(self):
         request = self.factory.post("/api/user/create", json.dumps({ 'username' : 'Tom',
@@ -328,6 +388,36 @@ class TestUnitViewsCarts(TestCase):
         self.assertEquals("store already has an inventory", respCreateInventory['errors'][0])   
 
 # ###################################################################################################
+class TestUnitViewsItem(TestCase):
+
+    def assertSuccessResponse(self,
+                              respData,
+                              msg=None):
+        """
+        Check that the response is not an error response
+        """
+        self.assertEquals(200, respData['status'], msg)
+
+    def assertFailResponse(self,
+                              respData,
+                              msg=None):
+        self.assertEquals(400, respData['status'], msg)
+
+    def getDataFromResponse(self, resp):
+
+            return json.loads(resp.content)
+
+    def setUp(self):
+        # Run first the setUp from the superclass
+        self.factory = RequestFactory()
+
+    def tearDown(self):
+        
+        request = self.factory.post("/api/user/destroy", data={})
+        response = views.empty_db(request)
+        respDestroy = self.getDataFromResponse(response)
+        self.assertSuccessResponse(respDestroy)
+
     def testCreateItem(self):
         request = self.factory.post("/api/user/create", json.dumps({ 'username' : 'Tom',
                                              'password' : '123456',
@@ -648,6 +738,36 @@ class TestUnitViewsCarts(TestCase):
 
 
 #########################################################################################
+
+class TestUnitViewsList(TestCase):
+
+    def assertSuccessResponse(self,
+                              respData,
+                              msg=None):
+        """
+        Check that the response is not an error response
+        """
+        self.assertEquals(200, respData['status'], msg)
+
+    def assertFailResponse(self,
+                              respData,
+                              msg=None):
+        self.assertEquals(400, respData['status'], msg)
+
+    def getDataFromResponse(self, resp):
+
+            return json.loads(resp.content)
+
+    def setUp(self):
+        # Run first the setUp from the superclass
+        self.factory = RequestFactory()
+
+    def tearDown(self):
+        
+        request = self.factory.post("/api/user/destroy", data={})
+        response = views.empty_db(request)
+        respDestroy = self.getDataFromResponse(response)
+        self.assertSuccessResponse(respDestroy)
 
 
 
