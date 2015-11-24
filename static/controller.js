@@ -17,17 +17,16 @@ app.controller('IndexController', function($http, $window) {
   vm.currentListID = -1;
   vm.searchResults = results;
   vm.shoppingLists = shoppingLists;
+  vm.newItemName = "";
   vm.current_user = "";
   vm.mapped = "list" // search or list
   $http.get("api/user/get").then(
       function successCallBack(response) {
         var data = response.data;
         if (data.errors.length == 0) {
-          // if (vm.newUser.user_type == 'merchant'){
-          //   $window.location.href = 'merchant';
-          // } else {
-          //   $window.location.href = 'home';
-          // }
+          if (data.user_type == 'merchant'){
+            $window.location.href = 'merchant';
+          }
           // hide login, register buttons
           vm.current_user = data.username;
           console.log(data.username);
@@ -59,12 +58,14 @@ app.controller('IndexController', function($http, $window) {
   vm.search = function() {
     vm.query = vm.searchQuery;
   }
+
   vm.remove = function(index) {
     vm.shoppingLists[vm.tab].contents.splice(index, 1);
     if (vm.current_user != "") {
       vm.updateList();
     }
   }
+
   vm.addItem = function(index) {
     vm.searchResults[index].type = "id"
     vm.shoppingLists[vm.tab].contents.push(vm.searchResults[index]);
@@ -75,6 +76,13 @@ app.controller('IndexController', function($http, $window) {
       vm.mapList()
     }
   }
+
+  vm.addTextItem = function() {
+    var addText = {};
+    addText.type = "name";
+    addText.name = vm.newItemName;
+  }
+
   vm.updateList = function() {
     if (vm.current_user != "") {
       var contents = [];
@@ -97,6 +105,7 @@ app.controller('IndexController', function($http, $window) {
     }
   }
   vm.mapList = function() {
+    vm.mapped = "list"
     var listData = {};
     listData.listID = vm.currentListID; //CURRENT LIST ID
     $http.post("api/list/map", listData).then(successListError, errorCallBackGeneral).then(
@@ -189,8 +198,15 @@ app.controller('IndexController', function($http, $window) {
           var data = response.data;
           if (data.errors.length == 0) {
             vm.listIDs.push(data.listID);
+            vm.shoppingLists.push({listName: vm.newListName, contents: []});
+          } else {
+            for (var i = 0; i < data.errors.length; i++) {
+              // alert(e);
+              $window.alert(data.errors[i]);
+              // console.error(e);
+            }
           }
-          vm.shoppingLists.push({listName: vm.newListName, contents: []});
+          
         }, errorCallBackGeneral);
     }
 
@@ -217,7 +233,7 @@ app.controller('MerchantController', function($http, $window) {
   vm.editable = false;
   vm.noStore = false;
   vm.editInfo = function() {
-    vm.editable = !vm.editable
+    vm.editable = !vm.editable;
   }
   vm.storeInfo = {};
   vm.tempStoreInfo = angular.copy(vm.storeInfo);
@@ -242,7 +258,9 @@ app.controller('MerchantController', function($http, $window) {
         var data = response.data;
         if (data.errors.length == 0) {
           vm.getUserStore()
-          // vm.saveInfo()
+          vm.storeInfo = angular.copy(vm.tempStoreInfo);
+          vm.editable = !vm.editable;
+          vm.noStore = false;
         } else {
           for (var i = 0; i < data.errors.length; i++) {
             // alert(e);
@@ -324,7 +342,7 @@ app.controller('RegisterController', function($http, $window) {
         function successCallBack(response) {
           var data = response.data;
           if (data.errors.length == 0) {
-
+            $window.location.href = 'home';
             // if (vm.newUser.user_type == 'merchant') {
             //   $window.location.href = 'merchant';
             // } else {
@@ -416,11 +434,12 @@ app.controller('InventoryController', function($http) {
         console.log(data.username);
         $http.get("api/inventory/getUser").then(
             function successCallBack2(response) {
-              var data2 = reponse.data;
+              var data2 = response.data;
               if (data2.errors.length == 0) {
                 vm.inventory = data2.contents;
                 vm.count = vm.inventory.length;
                 vm.inventoryID = data2.inventoryID;
+                vm.tempItem.inventoryID = vm.inventoryID;
               }
             }, errorCallBackGeneral)
       } else {
@@ -458,6 +477,7 @@ app.controller('InventoryController', function($http) {
           vm.tempItem.index = vm.count;
           vm.inventory.push(vm.tempItem);
           vm.tempItem = {}
+          vm.tempItem.inventoryID = vm.inventoryID;
         } else {
           for (var i = 0; i < data.errors.length; i++) {
           $window.alert(data.errors[i]);

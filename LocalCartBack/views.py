@@ -522,9 +522,9 @@ def create_item(request):
         errors.append('price must be a number')
     if (price is not None) and price < 0.0:
         errors.append('price must be a positive number')
-    picture = post.get('picture', 'pic')
+    picture = post.get('picture', '')
     if not picture:
-        errors.append('picture must be non-empty')
+        picture = 'images/default_user_image'
     if len(errors) > 0:
         return return_error(errors)
     if Item.objects.filter(name=name, inventory_id=inventoryID).exists():
