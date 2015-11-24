@@ -325,11 +325,11 @@ app.controller('RegisterController', function($http, $window) {
           var data = response.data;
           if (data.errors.length == 0) {
 
-            if (vm.newUser.user_type == 'merchant') {
-              $window.location.href = 'merchant';
-            } else {
-              $window.location.href = 'home';
-            }
+            // if (vm.newUser.user_type == 'merchant') {
+            //   $window.location.href = 'merchant';
+            // } else {
+            //   $window.location.href = 'home';
+            // }
           } else {
             for (var i = 0; i < data.errors.length; i++) {
               // alert(e);
@@ -448,14 +448,14 @@ app.controller('InventoryController', function($http) {
       }, errorCallBackGeneral)
   }
   vm.addItem = function() {
-    vm.count += 1;
-    vm.tempItem.itemID = vm.count;
     vm.tempItem.inventoryID = vm.inventoryID;
     $http.post("api/item/create", vm.tempItem).then(
       function successCallBack(response) {
         var data = response.data;
         if (data.errors.length == 0) {
           vm.tempItem.itemID = data.itemID;
+          vm.count += 1;
+          vm.tempItem.index = vm.count;
           vm.inventory.push(vm.tempItem);
           vm.tempItem = {}
         } else {

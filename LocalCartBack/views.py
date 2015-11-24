@@ -1009,8 +1009,11 @@ def get_reviews(request):
 
 def extract_user(request, errors):
     post = QueryDict('', mutable=True)
-    post.update(json.loads(request.body))
-    username = post.get('username', '')
+    if request.body:
+        post.update(json.loads(request.body))
+        username = post.get('username', '')
+    else:
+        username = ''
     if username:
         if User.objects.filter(username=username).exists():
             user = User.objects.get(username=username)
