@@ -336,12 +336,10 @@ class CartList(models.Model):
                 item_names.append(content_item['name'])
         temp = CartList.temporary_storage(current_list.user)
         ListItem.objects.filter(cartlist=current_list).update(cartlist=temp)
-        import pdb; pdb.set_trace()
         try:
             for i in range(0, len(contents)):
                 new_list_item = ListItem(cartlist=current_list, item=items[i], 
                                          item_name=item_names[i], list_position=i)
-                import pdb; pdb.set_trace()
                 new_list_item.save()
         except ValidationError as e:
             ListItem.objects.filter(cartlist=current_list).delete()

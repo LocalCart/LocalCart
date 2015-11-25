@@ -7,6 +7,10 @@ import time
 from django import forms
 from django.contrib.auth import authenticate, login, logout
 from django.core.exceptions import ValidationError, ObjectDoesNotExist, MultipleObjectsReturned
+import tablib
+from admin import *
+from django.core.files.storage import default_storage
+from django.core.files.base import ContentFile
 
     # Use this code if the POST request sends parameters
     # post = request.POST
@@ -856,7 +860,6 @@ def edit_list(request):
                 errors.append('item reference reference type must be "id" or "name"')
     if len(errors) == 0:
         try:
-            import pdb; pdb.set_trace()
             refill = CartList.refill_list(listID, contents)
         except ValidationError as e:
             refill = 1
@@ -1010,12 +1013,18 @@ def get_reviews(request):
 
 
 def extract_user(request, errors):
-    post = QueryDict('', mutable=True)
-    if request.body:
-        post.update(json.loads(request.body))
-        username = post.get('username', '')
+    
+    errors = []
+    if request.method == 'POST':
+        post = QueryDict('', mutable=True)
+        if request.body:
+            post.update(json.loads(request.body))
+            username = post.get('username', '')
+        else:
+            username = ''
     else:
-        username = ''
+        get = request.GET
+        username = get.get('username', '')
     if username:
         if User.objects.filter(username=username).exists():
             user = User.objects.get(username=username)
@@ -1027,3 +1036,54 @@ def extract_user(request, errors):
         if not user.is_authenticated():
             errors.append('user not logged in')
     return errors, user
+
+
+def import_inventory(request):
+    assert request.method == 'POST', 'api/inventory/import requires a POST request'
+    errors = []
+    post = request.POST
+    files = request.FILES
+    storeID = post.get('storeID', '')
+    inventoryID = post.get('inventoryID', '')
+    imported_file = files['dataset']
+    path = default_storage.save('temporary.csv', ContentFile(imported_file.read()))
+    dataset = tablib.Dataset()
+    dataset.csv = default_storage.open(path).read()
+    dataset.headers = ('id', 'name', 'description', 'price', 'picture')
+    try:
+        storeID = int(storeID)
+        inventoryID = int(inventoryID)
+    except ValueError:
+        storeID = None
+        inventoryID = None
+        errors.append('storeID and inventoryID must be integers')
+    if len(errors) == 0:
+        if not (Inventory.objects.filter(id=inventoryID).exists() and Store.objects.filter(id=storeID).exists()):
+            errors.append('inventoryID or storeID is not valid')
+            map_markers = []
+        else:
+            store_list = []
+            inventory_list = []
+            inventory = Inventory.objects.get(id=inventoryID)
+            store = Store.objects.get(id=storeID)
+            for x in xrange(dataset.height):
+                store_list.append(store)
+                inventory_list.append(inventory)
+            dataset.append_col(col=store_list, header='store')
+            dataset.append_col(col=inventory_list, header='inventory')
+            item_resource = ItemResource()
+            result = item_resource.import_data(dataset, dry_run=True)
+            if not result.has_errors():
+                result = item_resource.import_data(dataset, dry_run=False)
+            else:
+                errors.append('not correct')
+    reponse = {
+               'status': 200,
+               'errors': errors,
+              }
+    default_storage.delete(path)
+    return HttpResponse(json.dumps(reponse), content_type='application/json')
+
+
+
+
