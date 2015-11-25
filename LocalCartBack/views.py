@@ -41,6 +41,10 @@ def inventory_render(request):
     return render(request, 'inventory.html', context={})
 
 @csrf_exempt
+def store_render(request):
+    return render(request, 'store.html', context={})
+
+@csrf_exempt
 def empty_db(request):
     errors = []
     try:

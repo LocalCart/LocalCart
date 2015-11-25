@@ -22,39 +22,39 @@ app.controller('IndexController', function($http, $window) {
   vm.current_user_type = "";
   vm.mapped = "list" // search or list
   $http.get("api/user/get").then(
-      function successCallBack(response) {
-        var data = response.data;
-        if (data.errors.length == 0) {
-          // if (data.user_type == 'merchant'){
-          //   $window.location.href = 'merchant';
-          // }
-          // hide login, register buttons
-          vm.current_user = data.username;
-          vm.current_user_type = data.user_type;
-          console.log(data.username);
-          // if (data.user_type == "merchant") {
-          //  $window.location.href = "merchant";
-          // }
-          $http.get("api/list/getUser").then(
-              function successCallBack(response) {
-                var data = response.data;
-                if (data.errors.length == 0) {
-                  vm.listIDs = data.listIDs;
-                  vm.tab = 0;
-                  vm.currentListID = vm.listIDs[vm.tab];
-                  vm.shoppingLists = data.allLists;
-                } else {
-                  vm.currentListID = -1;
-                }
-              }, errorCallBackGeneral);
-        } else {
-          // for (var i = 0; i < data.errors.length; i++) {
-            // alert(e);
-            // $window.alert(data.errors[i]);
-            // console.error(e);
-          // }
-        }
-      }, errorCallBackGeneral);
+    function successCallBack(response) {
+      var data = response.data;
+      if (data.errors.length == 0) {
+        // if (data.user_type == 'merchant'){
+        //   $window.location.href = 'merchant';
+        // }
+        // hide login, register buttons
+        vm.current_user = data.username;
+        vm.current_user_type = data.user_type;
+        console.log(data.username);
+        // if (data.user_type == "merchant") {
+        //  $window.location.href = "merchant";
+        // }
+        $http.get("api/list/getUser").then(
+          function successCallBack(response) {
+            var data = response.data;
+            if (data.errors.length == 0) {
+              vm.listIDs = data.listIDs;
+              vm.tab = 0;
+              vm.currentListID = vm.listIDs[vm.tab];
+              vm.shoppingLists = data.allLists;
+            } else {
+              vm.currentListID = -1;
+            }
+          }, errorCallBackGeneral);
+      } else {
+        // for (var i = 0; i < data.errors.length; i++) {
+        // alert(e);
+        // $window.alert(data.errors[i]);
+        // console.error(e);
+        // }
+      }
+    }, errorCallBackGeneral);
 
 
   vm.search = function() {
@@ -206,7 +206,10 @@ app.controller('IndexController', function($http, $window) {
           var data = response.data;
           if (data.errors.length == 0) {
             vm.listIDs.push(data.listID);
-            vm.shoppingLists.push({listName: vm.newListName, contents: []});
+            vm.shoppingLists.push({
+              listName: vm.newListName,
+              contents: []
+            });
             vm.newListName = "";
           } else {
             for (var i = 0; i < data.errors.length; i++) {
@@ -215,7 +218,7 @@ app.controller('IndexController', function($http, $window) {
               // console.error(e);
             }
           }
-          
+
         }, errorCallBackGeneral);
     }
 
@@ -442,15 +445,15 @@ app.controller('InventoryController', function($http) {
         vm.current_user = data.username;
         console.log(data.username);
         $http.get("api/inventory/getUser").then(
-            function successCallBack2(response) {
-              var data2 = response.data;
-              if (data2.errors.length == 0) {
-                vm.inventory = data2.contents;
-                vm.count = vm.inventory.length;
-                vm.inventoryID = data2.inventoryID;
-                vm.tempItem.inventoryID = vm.inventoryID;
-              }
-            }, errorCallBackGeneral)
+          function successCallBack2(response) {
+            var data2 = response.data;
+            if (data2.errors.length == 0) {
+              vm.inventory = data2.contents;
+              vm.count = vm.inventory.length;
+              vm.inventoryID = data2.inventoryID;
+              vm.tempItem.inventoryID = vm.inventoryID;
+            }
+          }, errorCallBackGeneral)
       } else {
         $window.location.href = "home";
       }
@@ -489,8 +492,8 @@ app.controller('InventoryController', function($http) {
           vm.tempItem.inventoryID = vm.inventoryID;
         } else {
           for (var i = 0; i < data.errors.length; i++) {
-          $window.alert(data.errors[i]);
-          console.error(e);
+            $window.alert(data.errors[i]);
+            console.error(e);
           }
         }
       }, errorCallBackGeneral)
@@ -501,6 +504,54 @@ app.controller('InventoryController', function($http) {
   }
 
 });
+
+
+app.controller('StoreController', function($http) {
+  var vm = this;
+  vm.current_user = "";
+  // populate store info
+  vm.storeInfo = {}
+    // $http.get(store)
+    // mocked inventory items, look at results
+  vm.products = results;
+  $http.get("api/user/get").then(
+    function successCallBack(response) {
+      var data = response.data;
+      if (data.errors.length == 0) {
+        vm.current_user = data.username;
+        vm.current_user_type = data.user_type;
+        console.log(data.username);
+      } else {
+        $window.location.href = "home";
+      }
+    }, errorCallBackGeneral)
+  vm.logout = function() {
+    $http.post("api/user/logout");
+    $window.location.href = "home";
+  }
+  vm.tab = 0
+  vm.isSet = function(checkTab) {
+    return vm.tab === checkTab;
+  };
+
+  vm.setTab = function(setTab) {
+    vm.tab = setTab;
+  };
+  // get request for reviews for store
+  vm.reviews = [];
+
+  vm.review = {};
+
+  //need to add post request 
+  vm.addReview = function(product) {
+    vm.review.user = vm.current_user;
+    console.log(vm.review.user);
+    vm.reviews.push(vm.review);
+    vm.review = {};
+  };
+
+});
+
 
 var results = [{
   storeName: "GameStop",
@@ -519,7 +570,7 @@ var results = [{
   price: "7.00"
 }, {
   storeName: "GameStop",
-  name: "Halo 5",
+  name: "yolo",
   description: "A first person shooter video game",
   price: "80.00"
 }, {
@@ -534,7 +585,7 @@ var results = [{
   price: "7.00"
 }, {
   storeName: "GameStop",
-  name: "Halo 5",
+  name: "Rolo",
   description: "A first person shooter video game",
   price: "80.00"
 }, {
