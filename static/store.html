@@ -135,22 +135,25 @@
         </li>
       </ul>
       <!--  Review Form -->
-      <form name="reviewForm" ng-submit="storeController.addReview()">
-        <h4>Submit a Review</h4>
-        <fieldset class="form-group">
-          <select ng-model="storeController.review.rating" class="form-control" ng-options="stars for stars in [5,4,3,2,1]" title="Stars">
-            <option value>Rate this store</option>
-          </select>
-        </fieldset>
-        <fieldset class="form-group">
-          <textarea ng-model="storeController.review.text" class="form-control" placeholder="Write a short review of the store..." title="Review"></textarea>
-        </fieldset>
-        <fieldset class="form-group">
-          <input type="submit" class="btn btn-primary pull-right" value="Submit Review" />
-        </fieldset>
-      </form>
-      <!--  Product Reviews List -->
-
+      <div ng-show="storeController.current_user_type==customer">
+        <form name="reviewForm" ng-submit="storeController.addReview()">
+          <h4>Submit a Review</h4>
+          <fieldset class="form-group">
+            <select ng-model="storeController.review.rating" class="form-control" ng-options="stars for stars in [5,4,3,2,1]" title="Stars">
+              <option value>Rate this store</option>
+            </select>
+          </fieldset>
+          <fieldset class="form-group">
+            <textarea ng-model="storeController.review.text" class="form-control" placeholder="Write a short review of the store..." title="Review"></textarea>
+          </fieldset>
+          <fieldset class="form-group">
+            <input type="submit" class="btn btn-primary pull-right" value="Submit Review" />
+          </fieldset>
+        </form>
+      </div>
+      <div ng-show="storeController.current_user_type!=customer">
+          <h1> You need to log-in to submit a review! </h1>
+      </div>
       <hr>
     </div>
   </div>
