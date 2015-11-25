@@ -34,4 +34,5 @@ urlpatterns = [
     url(r'^login$', views.login_render),
     url(r'^search$', views.search_render),
     url(r'^inventory$', views.inventory_render),
+    url(r'^store$', views.store_render),
 ]

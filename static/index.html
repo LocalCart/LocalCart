@@ -31,6 +31,7 @@
       </div>
       <div id="navbar" class="navbar-collapse collapse">
         <form class="navbar-form navbar-right">
+
           <!-- merchant toolbar -->
           <div ng-show="indexController.current_user_type == 'merchant'">
             <a href="" class="btn btn-info">Welcome [[indexController.current_user]]!</a>
@@ -50,6 +51,7 @@
             <a ng-click="indexController.loginAttempt()" class="btn btn-success">Login</a>
             <a href="register" class="btn btn-success">Register</a>
           </div>
+          <a href="store" class="btn btn-success">store placeholder</a>
         </form>
       </div>
       <!--/.navbar-collapse -->
