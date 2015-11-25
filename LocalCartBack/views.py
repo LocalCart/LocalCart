@@ -634,6 +634,7 @@ def delete_item(request):
     post = QueryDict('', mutable=True)
     post.update(json.loads(request.body))
     itemID = post.get('itemID', '')
+    index = post.get('index', '')
     try:
         itemID = int(itemID)
     except ValueError:
@@ -648,6 +649,7 @@ def delete_item(request):
         Item.objects.filter(id=itemID).delete()
     reponse = {
                'status': 200,
+               'index': index,
                'errors': errors,
               }
     return HttpResponse(json.dumps(reponse), content_type='application/json')
@@ -1150,6 +1152,7 @@ def import_inventory(request):
                               'name': i.name,
                               'description': i.description,
                               'price': i.price,
+                              'picture': i.picture,
                               })
     reponse = {
                'status': 200,

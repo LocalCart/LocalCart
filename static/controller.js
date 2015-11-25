@@ -61,9 +61,7 @@ app.controller('IndexController', function($http, $window) {
               }, errorCallBackGeneral);
         } else {
           // for (var i = 0; i < data.errors.length; i++) {
-            // alert(e);
             // $window.alert(data.errors[i]);
-            // console.error(e);
           // }
         }
       }, errorCallBackGeneral);
@@ -338,9 +336,7 @@ app.controller('IndexController', function($http, $window) {
             }
           } else {
             for (var i = 0; i < data.errors.length; i++) {
-              // alert(e);
               $window.alert(data.errors[i]);
-              // console.error(e);
             }
           }
         }, errorCallBackGeneral)
@@ -386,9 +382,7 @@ app.controller('IndexController', function($http, $window) {
             vm.newListName = "";
           } else {
             for (var i = 0; i < data.errors.length; i++) {
-              // alert(e);
               $window.alert(data.errors[i]);
-              // console.error(e);
             }
           }
 
@@ -455,9 +449,7 @@ app.controller('MerchantController', function($http, $window) {
           vm.noStore = false;
         } else {
           for (var i = 0; i < data.errors.length; i++) {
-            // alert(e);
             $window.alert(data.errors[i]);
-            // console.error(e);
           }
         }
       }, errorCallBackGeneral)
@@ -476,19 +468,22 @@ app.controller('MerchantController', function($http, $window) {
           // }
         } else {
           for (var i = 0; i < data.errors.length; i++) {
-            // alert(e);
             $window.alert(data.errors[i]);
-            // console.error(e);
           }
         }
       }, errorCallBackGeneral)
   }
   vm.current_user = "";
+  vm.current_user_type = "";
   $http.get("api/user/get").then(
     function successCallBack(response) {
       var data = response.data;
       if (data.errors.length == 0) {
         vm.current_user = data.username;
+        vm.current_user_type = data.user_type;
+        if (vm.current_user_type != "merchant") {
+          $window.location.href = "home";
+        }
         console.log(data.username);
       } else {
         $window.location.href = "home";
@@ -541,9 +536,7 @@ app.controller('RegisterController', function($http, $window) {
             // }
           } else {
             for (var i = 0; i < data.errors.length; i++) {
-              // alert(e);
               $window.alert(data.errors[i]);
-              // console.error(e);
             }
           }
         }, errorCallBackGeneral)
@@ -567,9 +560,7 @@ app.controller('RegisterController', function($http, $window) {
             }
           } else {
             for (var i = 0; i < data.errors.length; i++) {
-              // alert(e);
               $window.alert(data.errors[i]);
-              // console.error(e);
             }
           }
         }, errorCallBackGeneral)
@@ -598,9 +589,7 @@ app.controller('RegisterController', function($http, $window) {
         // }
       } else {
         // for (var i = 0; i < data.errors.length; i++) {
-        // alert(e);
         // $window.alert(data.errors[i]);
-        // console.error(e);
         // }
       }
     },
@@ -615,24 +604,28 @@ app.controller('InventoryController', function($http, $window, $scope) {
   vm.inventory = [];
   vm.inventoryID = -1;
   vm.tempItem = {}
-  vm.count = 0
   vm.current_user = "";
+  vm.current_user_type = "";
   $http.get("api/user/get").then(
     function successCallBack(response) {
       var data = response.data;
       if (data.errors.length == 0) {
         vm.current_user = data.username;
+        vm.current_user_type = data.user_type;
         console.log(data.username);
-        $http.get("api/inventory/getUser").then(
-          function successCallBack2(response) {
-            var data2 = response.data;
-            if (data2.errors.length == 0) {
-              vm.inventory = data2.contents;
-              vm.count = vm.inventory.length;
-              vm.inventoryID = data2.inventoryID;
-              vm.tempItem.inventoryID = vm.inventoryID;
-            }
-          }, errorCallBackGeneral)
+        if (vm.current_user_type == "merchant") {
+          $http.get("api/inventory/getUser").then(
+            function successCallBack2(response) {
+              var data2 = response.data;
+              if (data2.errors.length == 0) {
+                vm.inventory = data2.contents;
+                vm.inventoryID = data2.inventoryID;
+                vm.tempItem.inventoryID = vm.inventoryID;
+              }
+            }, errorCallBackGeneral)
+        } else {
+          $window.location.href = "home";
+        }
       } else {
         $window.location.href = "home";
       }
@@ -640,22 +633,37 @@ app.controller('InventoryController', function($http, $window, $scope) {
   vm.remove = function(index) {
     var removedID = {};
     removedID.itemID = vm.inventory[index].itemID;
+    removedID.index = index;
     $http.post("api/item/delete", removedID).then(
       function successCallBack(response) {
         var data = response.data;
         if (data.errors.length == 0) {
-          vm.inventory.splice(index, 1);
-          for (var i = index; i < vm.inventory.length; i++) {
-            vm.inventory[index].index -= 1;
-          }
-          vm.count -= 1;
+          vm.inventory.splice(data.index, 1);
         } else {
           for (var i = 0; i < data.errors.length; i++) {
             $window.alert(data.errors[i]);
-            console.error(e);
           }
         }
       }, errorCallBackGeneral)
+  }
+  vm.removeAll = function() {
+    var len = vm.inventory.length;
+    for (var index = len - 1; index >= 0; index--) {
+      var removedID = {};
+      removedID.itemID = vm.inventory[index].itemID;
+      removedID.index = index;
+      $http.post("api/item/delete", removedID).then(
+        function successCallBack(response) {
+          var data = response.data;
+          if (data.errors.length == 0) {
+            vm.inventory.splice(data.index, 1);
+          } else {
+            for (var i = 0; i < data.errors.length; i++) {
+              $window.alert(data.errors[i]);
+            }
+          }
+        }, errorCallBackGeneral)
+    }
   }
   vm.addItem = function() {
     vm.tempItem.inventoryID = vm.inventoryID;
@@ -664,15 +672,12 @@ app.controller('InventoryController', function($http, $window, $scope) {
         var data = response.data;
         if (data.errors.length == 0) {
           vm.tempItem.itemID = data.itemID;
-          vm.count += 1;
-          vm.tempItem.index = vm.count;
           vm.inventory.push(vm.tempItem);
           vm.tempItem = {}
           vm.tempItem.inventoryID = vm.inventoryID;
         } else {
           for (var i = 0; i < data.errors.length; i++) {
             $window.alert(data.errors[i]);
-            console.error(e);
           }
         }
       }, errorCallBackGeneral)
@@ -712,8 +717,6 @@ app.controller('InventoryController', function($http, $window, $scope) {
   //           if (data.errors.length == 0) {
   //             for (var i = 0; i < data.items.length; i++) {
   //               vm.tempItem.itemID = data.items[i].id;
-  //               vm.count += 1;
-  //               vm.tempItem.index = vm.count;
   //               vm.inventory.push(vm.tempItem);
   //               vm.tempItem = {}
   //               vm.tempItem.inventoryID = vm.inventoryID;
@@ -721,7 +724,6 @@ app.controller('InventoryController', function($http, $window, $scope) {
   //           } else {
   //             for (var i = 0; i < data.errors.length; i++) {
   //               $window.alert(data.errors[i]);
-  //               console.error(e);
   //             }
   //           }
   //         }, errorCallBackGeneral)
@@ -901,9 +903,7 @@ successListError = function(response) {
   var data = response.data;
   if (data.errors.length > 0) {
     for (var i = 0; i < data.errors.length; i++) {
-      // alert(e);
       alert(data.errors[i]);
-      // console.error(e);
     }
   }
 };
