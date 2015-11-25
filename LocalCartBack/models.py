@@ -6,10 +6,12 @@ from time import sleep
 from django.core.exceptions import ValidationError, ObjectDoesNotExist, MultipleObjectsReturned
 from django.db import IntegrityError
 
+default_image = "data:image/svg+xml;base64,PD94bWwgdmVyc2lvbj0iMS4wIiBlbmNvZGluZz0iVVRGLTgiIHN0YW5kYWxvbmU9InllcyI/PjxzdmcgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIiB3aWR0aD0iNjQiIGhlaWdodD0iNjQiIHZpZXdCb3g9IjAgMCA2NCA2NCIgcHJlc2VydmVBc3BlY3RSYXRpbz0ibm9uZSI+PGRlZnMvPjxyZWN0IHdpZHRoPSI2NCIgaGVpZ2h0PSI2NCIgZmlsbD0iI0VFRUVFRSIvPjxnPjx0ZXh0IHg9IjEzLjQ2MDkzNzUiIHk9IjMyIiBzdHlsZT0iZmlsbDojQUFBQUFBO2ZvbnQtd2VpZ2h0OmJvbGQ7Zm9udC1mYW1pbHk6QXJpYWwsIEhlbHZldGljYSwgT3BlbiBTYW5zLCBzYW5zLXNlcmlmLCBtb25vc3BhY2U7Zm9udC1zaXplOjEwcHQ7ZG9taW5hbnQtYmFzZWxpbmU6Y2VudHJhbCI+NjR4NjQ8L3RleHQ+PC9nPjwvc3ZnPg=="
+
 class UserInfo(models.Model):
     user = models.OneToOneField(User)
     user_type = models.CharField(max_length=16)
-    picture = models.CharField(max_length=128, null=True) # A url
+    picture = models.CharField(max_length=4096, default=default_image, null=True) # A url
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
@@ -70,7 +72,7 @@ class Store(models.Model):
     address_zip = models.CharField(max_length=16)
     phone_number = models.CharField(max_length=16)
     description = models.CharField(max_length=4096, default="Good Store") # Allowed to be empty?
-    picture = models.CharField(max_length=128, default="images/default_user_image", null=True) # A url
+    picture = models.CharField(max_length=4096, default=default_image, null=True) # A url
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     # Add hours
@@ -170,12 +172,26 @@ class Item(models.Model):
     name = models.CharField(max_length=64)
     description = models.CharField(max_length=4096) # Allowed to be empty? NO
     price = models.FloatField(max_length=4096)
-    picture = models.CharField(max_length=128) # A url
+    picture = models.CharField(max_length=4096, default=default_image, null=True) # A url
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
     class Meta:
         unique_together = ('inventory', 'name')
+
+
+    @staticmethod
+    def search_items(query, location):
+        errors = []
+        if len(location.split('\n')) < 1:
+            errors.append('location empty')
+            address_zip = '!!!!!'
+        else:
+            address_zip = location.split()[-1]
+        if len(address_zip) != 5:
+            errors.append('zip code must be 5 characters')
+        items = Item.objects.filter(name__icontains=query, store__address_zip=address_zip)
+        return items, errors
 
     @staticmethod
     def get_item(item_id):
@@ -336,12 +352,10 @@ class CartList(models.Model):
                 item_names.append(content_item['name'])
         temp = CartList.temporary_storage(current_list.user)
         ListItem.objects.filter(cartlist=current_list).update(cartlist=temp)
-        import pdb; pdb.set_trace()
         try:
             for i in range(0, len(contents)):
                 new_list_item = ListItem(cartlist=current_list, item=items[i], 
                                          item_name=item_names[i], list_position=i)
-                import pdb; pdb.set_trace()
                 new_list_item.save()
         except ValidationError as e:
             ListItem.objects.filter(cartlist=current_list).delete()
@@ -413,9 +427,10 @@ class CartList(models.Model):
         for store_name in map_dict.keys():
             store_dict = map_dict[store_name]
             if store_dict['location']:
-                pin = store_name + ' (' + ', '.join(store_dict[positions]) + ')'
+                pin = store_name + ' (' + ', '.join([str(x) for x in store_dict['positions']]) + ')'
                 map_markers.append({
                                     'pin_name': pin,
+                                    'position': min(store_dict['positions']),
                                     'latitude': store_dict['location'][0],
                                     'longitude': store_dict['location'][1],
                                    })
@@ -431,17 +446,20 @@ class CartList(models.Model):
         list_items = ListItem.objects.filter(cartlist=cartlist).order_by('list_position')
 
         item_list = []
+        counter = 0
         for list_item in list_items:
             if list_item.item:
+                counter += 1
                 current_item = list_item.item
                 json_item =  {
                               "type": "id",
                               "storeName": current_item.store.name,
-                              "name": item.name,
+                              "name": current_item.name,
                               "description": current_item.description,
                               "price": current_item.price,
                               "picture": current_item.picture,
-                              "itemID": item.id
+                              "itemID": current_item.id,
+                              "mapIndex": counter,
                              }
             else:
                 json_item =  {
