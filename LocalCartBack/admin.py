@@ -8,3 +8,4 @@ class ItemResource(resources.ModelResource):
 		model = Item
 		skip_unchanged = True
 		report_skipped = True
+		# exclude = ('store', 'inventory')

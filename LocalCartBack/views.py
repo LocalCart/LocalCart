@@ -1066,6 +1066,7 @@ def search_items(request):
 
 
 def extract_user(request, errors):
+    errors = []
     if request.method == 'POST':
         if request.body:
             post = QueryDict('', mutable=True)
@@ -1094,32 +1095,31 @@ def import_inventory(request):
     errors = []
     post = request.POST
     files = request.FILES
-    storeID = post.get('storeID', '')
     inventoryID = post.get('inventoryID', '')
     imported_file = files['dataset']
     path = default_storage.save('temporary.csv', ContentFile(imported_file.read()))
     dataset = tablib.Dataset()
     dataset.csv = default_storage.open(path).read()
-    dataset.headers = ('id', 'name', 'description', 'price', 'picture')
     try:
-        storeID = int(storeID)
+        dataset.headers = ('id', 'name', 'description', 'price', 'picture')
+    except:
+        errors.append('File formatted incorrectly: missing column')
+    try:
         inventoryID = int(inventoryID)
     except ValueError:
-        storeID = None
         inventoryID = None
-        errors.append('storeID and inventoryID must be integers')
+        errors.append('inventoryID must be integers')
     if len(errors) == 0:
-        if not (Inventory.objects.filter(id=inventoryID).exists() and Store.objects.filter(id=storeID).exists()):
-            errors.append('inventoryID or storeID is not valid')
+        if not Inventory.objects.filter(id=inventoryID).exists():
+            errors.append('inventoryID is not valid')
             map_markers = []
         else:
+            storeID = Inventory.objects.get(id=inventoryID).store
             store_list = []
             inventory_list = []
-            inventory = Inventory.objects.get(id=inventoryID)
-            store = Store.objects.get(id=storeID)
             for x in xrange(dataset.height):
-                store_list.append(store)
-                inventory_list.append(inventory)
+                store_list.append(storeID)
+                inventory_list.append(inventoryID)
             dataset.append_col(col=store_list, header='store')
             dataset.append_col(col=inventory_list, header='inventory')
             item_resource = ItemResource()

@@ -581,19 +581,44 @@ class TestUnitViewsItem(TestCase):
         response = views.get_user_inventory(request)
         respCreateInventory = self.getDataFromResponse(response)
 
-        request = self.factory.get("/api/store/getUser?" + urllib.urlencode({'username' : 'Tom'}), content_type='application/json')
-
-        response = views.get_store_user(request)
-        respCreateStore = self.getDataFromResponse(response)
-
         request = self.factory.post("/api/inventory/import", { 'inventoryID' : respCreateInventory['inventoryID'],
-                                             'storeID' : respCreateStore['store']['storeID'],
                                              'dataset' : open('DummyDB.csv'),
                                              })
         response = views.import_inventory(request)
         respCreateItem = self.getDataFromResponse(response)
         self.assertSuccessResponse(respCreateItem)
-        self.assertEquals(0, len(respCreateItem['errors']), respCreateItem['errors'][0])
+        self.assertEquals(0, len(respCreateItem['errors']))
+
+
+    def testImportInventoryNoID(self):
+        request = self.factory.post("/api/user/create", json.dumps({ 'username' : 'Tom',
+                                             'password' : '123456',
+                                             'user_type' : 'customer',
+                                             'email' : 'tommeng@berkeley.edu',
+                                             }), content_type='application/json')
+        response = views.create_user(request)
+
+        request = self.factory.post("/api/store/create", json.dumps({ 'username' : 'Tom',
+                                             'name' : 'Tom store',
+                                             'address' : '1234 12th st.\n \nBerkeley\nCA\n94704',
+                                             'phone_number' : '(510)642-6000',
+                                             #'picture' : 'pic',
+                                             #'description' : 'This is a very good store'
+                                             }), content_type='application/json')
+        response = views.create_store(request)
+        respCreateStore = self.getDataFromResponse(response)
+
+        request = self.factory.get("/api/inventory/getUser?" + urllib.urlencode({'username' : 'Tom'}), content_type='application/json')
+        response = views.get_user_inventory(request)
+        respCreateInventory = self.getDataFromResponse(response)
+
+        request = self.factory.post("/api/inventory/import", { 'inventoryID' : respCreateInventory['inventoryID'],
+                                             'dataset' : open('DummyDBNoID.csv'),
+                                             })
+        response = views.import_inventory(request)
+        respCreateItem = self.getDataFromResponse(response)
+        self.assertSuccessResponse(respCreateItem)
+        self.assertEquals(1, len(respCreateItem['errors']))
 # #######################################################################################################
 
     def testEditItem(self):

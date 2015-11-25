@@ -8,13 +8,9 @@ curl -X POST -H "Content-Type: application/json" --data '{"username": "Carl", "p
 
 curl -X POST -H "Content-Type: application/json" --data '{"username": "Lucy", "password" : "125", "user_type": "merchant", "email": "a@abc.com"}' https://fierce-island-3989.herokuapp.com/api/user/create
 
-curl -X POST -H "Content-Type: application/json" --data '{"username": "Bob", "name":"Bob", "address":"2605 Channing\n\nBerkeley\nCA\n94704", "phone_number":"1-234-567-4422" }' https://fierce-island-3989.herokuapp.com/api/store/create
+curl -X POST -H "Content-Type: application/json" --data '{"username": "Triangle", "name":"Toys R Us", "address":"2605 Channing\n\nBerkeley\nCA\n94704", "phone_number":"1-234-567-4422" }' https://fierce-island-3989.herokuapp.com/api/store/create
 
-curl -X POST -H "Content-Type: application/json" --data '{"username": "Lucy", "name":"Magical Shop of Wonders", "address":"1234 Rainbow Road\n\nFrustration\nToTheMax\n94704", "phone_number":"1-234-567-4422" }' https://fierce-island-3989.herokuapp.com/api/store/create
-
-# curl -X POST -H "Content-Type: application/json" --data '{"storeID": 1}' https://fierce-island-3989.herokuapp.com/api/inventory/create
-
-# curl -X POST -H "Content-Type: application/json" --data '{"storeID": 2}' https://fierce-island-3989.herokuapp.com/api/inventory/create
+curl -X POST -H "Content-Type: application/json" --data '{"username": "Lucy", "name":"Magical Shop of Wonders", "address":"1921 Francisco St\n\nBerkeley\nCA\n94709", "phone_number":"1-234-567-4422" }' https://fierce-island-3989.herokuapp.com/api/store/create
 
 curl -X POST -H "Content-Type: application/json" --data '{"inventoryID": 1, "name" : "Vanilla Ice Cream", "description" : "Deliciously creamy", "price" : 1}' https://fierce-island-3989.herokuapp.com/api/item/create
 

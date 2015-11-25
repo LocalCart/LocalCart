@@ -71,7 +71,7 @@ class Store(models.Model):
     address_state = models.CharField(max_length=32)
     address_zip = models.CharField(max_length=16)
     phone_number = models.CharField(max_length=16)
-    description = models.CharField(max_length=4096, default="Good Store") # Allowed to be empty?
+    description = models.CharField(max_length=4096, blank=True) # Allowed to be empty?
     picture = models.CharField(max_length=4096, default=default_image, null=True) # A url
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
