@@ -1013,27 +1013,25 @@ def search_items(request):
         items, search_errors = Item.search_items(query, location)
         if len(errors) > 0:
             errors += search_errors
-        elif not items.exists():
+        elif len(items) == 0:
             errors.append('query returned no results')
         else:
             i = 0
-            for item_dict in items.values('store_id', 'store__name', 'name', 'price', 
-                                  'description', 'picture', 'id', 
-                                  'store__address_street', 'store__address_city',
-                                  'store__address_state', 'store__address_zip'):
+            for current_item in items:
                 i += 1
+                store = current_item.store
                 item = {
-                        'itemID': item_dict['id'],
-                        'storeID': item_dict['store_id'],
-                        'storeName': item_dict['store__name'],
-                        'name': item_dict['name'],
-                        'description': item_dict['description'],
-                        'picture': item_dict['picture'],
-                        'price': item_dict['price'],
-                        'address_street': item_dict['store__address_street'],
-                        'address_city': item_dict['store__address_city'],
-                        'address_state': item_dict['store__address_state'],
-                        'address_zip': item_dict['store__address_zip'],
+                        'itemID': current_item.id,
+                        'storeID': store.id,
+                        'storeName': store.name,
+                        'name': current_item.name,
+                        'description': current_item.description,
+                        'picture': current_item.picture,
+                        'price': current_item.price,
+                        'address_street': store.address_street,
+                        'address_city': store.address_city,
+                        'address_state': store.address_state,
+                        'address_zip': store.address_zip,
                         'index': i,
                         }
                 address_list = [
@@ -1068,6 +1066,7 @@ def search_items(request):
 
 
 def extract_user(request, errors):
+    user = None
     if request.method == 'POST':
         if request.body:
             post = QueryDict('', mutable=True)
