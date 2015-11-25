@@ -1121,6 +1121,7 @@ def import_inventory(request):
     except ValueError:
         inventoryID = None
         errors.append('inventoryID must be integers')
+    items = []
     if len(errors) == 0:
         if not Inventory.objects.filter(id=inventoryID).exists():
             errors.append('inventoryID is not valid')
@@ -1140,8 +1141,21 @@ def import_inventory(request):
                     result = item_resource.import_data(dataset, dry_run=False)
             else:
                 errors.append('not correct')
+            queryset = Item.objects.filter(inventory=inventoryID)
+            counter = 0
+            for i in queryset:
+                counter += 1
+                items.append({
+                              'id' : i.id,
+                              'storeName': i.store.name,
+                              'index': counter,
+                              'name': i.name,
+                              'description': i.description,
+                              'price': i.price,
+                              })
     reponse = {
                'status': 200,
+               'items': items,
                'errors': errors,
               }
     default_storage.delete(path)
