@@ -395,8 +395,9 @@ def get_store(request):
                 "status": 200,
                 "errors": []
                 }
-
-    storeID = request.GET.get('storeID', '')
+    post = QueryDict('', mutable=True)
+    post.update(json.loads(request.body))
+    storeID = post.get('storeID', '')
     if storeID == "":
         retData["errors"].append("storeID must be non-empty")
         hasError = True
@@ -464,6 +465,34 @@ def get_inventory(request):
         retData["inventory"] = inventory
     return HttpResponse(json.dumps(retData), content_type='application/json', status=200)
 
+@csrf_exempt
+def get_inventory_store(request):
+    errors = []
+    post = QueryDict('', mutable=True)
+    post.update(json.loads(request.body))
+    storeID = post.get('storeID', '')
+    hasError = False
+    inventory_list = []
+    inventoryID = -1
+    if storeID == "":
+        errors.append("store must be non-empty")
+        hasError = True
+    if not hasError:
+        if not Store.objects.filter(id=storeID).exists():
+          errors.append("StoreID doesn't exist")
+          store = None
+        else:
+          store = Store.objects.get(id=storeID)
+          inventory = Inventory.objects.get(store=store)
+          inventoryID = inventory.id
+          hasError, inventory_list = Inventory.get_inventory(inventory.id)
+    response = {
+       'status': 200,
+       'inventoryID': inventoryID,
+       'contents': inventory_list,
+       'errors': errors
+      }
+    return HttpResponse(json.dumps(response), content_type='application/json', status=200)
 
 @csrf_exempt
 def get_user_inventory(request):

@@ -51,7 +51,6 @@
             <a ng-click="indexController.loginAttempt()" class="btn btn-success">Login</a>
             <a href="register" class="btn btn-success">Register</a>
           </div>
-          <a href="store" class="btn btn-success">store placeholder</a>
         </form>
       </div>
       <!--/.navbar-collapse -->
@@ -87,7 +86,7 @@
               </div>
               <div class="media-body">
                 <h3 class="media-heading">[[result.name]]</h3>
-                <h5>Store: [[result.storeName]]</h5> [[result.description]]
+                <h5><a ng-href="store?storeID=[[result.storeID]]"> Store: [[result.storeName]]</a></h5> [[result.description]]
                 <hr>
               </div>
             </div>

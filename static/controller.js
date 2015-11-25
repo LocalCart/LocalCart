@@ -5,6 +5,14 @@ app.config(function($interpolateProvider) {
   $interpolateProvider.endSymbol(']]');
 });
 
+app.config(function($locationProvider) {
+  $locationProvider.html5Mode({
+    enabled: true,
+    requireBase: false
+  });
+});
+
+
 app.controller('IndexController', function($http, $window) {
   var vm = this;
   vm.User = {};
@@ -685,25 +693,43 @@ app.controller('InventoryController', function($http, $window) {
 });
 
 
-app.controller('StoreController', function($http) {
+app.controller('StoreController', function($http, $location, $window) {
   var vm = this;
   vm.current_user = "";
+  vm.current_user_type = "";
   // populate store info
   vm.storeInfo = {}
-    // $http.get(store)
-    // mocked inventory items, look at results
+  console.log($location.search());
+  var queryParam = $location.search();
   vm.products = results;
-  $http.get("api/user/get").then(
+
+  $http.post("api/store/storeID", queryParam).then(
+    function successCallBack(response) {
+      // console.log(response.data);
+      var data = response.data;
+      if (data.errors.length == 0) {
+        vm.storeInfo = data.store;
+      }
+    }, errorCallBackGeneral)
+
+  $http.post("api/inventory/store", queryParam).then(
     function successCallBack(response) {
       var data = response.data;
       if (data.errors.length == 0) {
-        vm.current_user = data.username;
-        vm.current_user_type = data.user_type;
-        console.log(data.username);
-      } else {
-        $window.location.href = "home";
+        vm.products = data.contents;
       }
     }, errorCallBackGeneral)
+    // mocked inventory items, look at results
+  $http.get("api/user/get").then(
+    function successCallBack(response) {
+      var data = response.data;
+      console.log(data);
+      if (data.errors.length == 0) {
+        vm.current_user = data.username;
+        vm.current_user_type = data.user_type;
+        console.log(vm.current_user_type);
+      } 
+    })
   vm.logout = function() {
     $http.post("api/user/logout");
     $window.location.href = "home";

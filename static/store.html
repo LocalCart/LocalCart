@@ -50,7 +50,6 @@
             <a ng-click="storeController.loginAttempt()" class="btn btn-success">Login</a>
             <a href="register" class="btn btn-success">Register</a>
           </div>
-          <a href="store" class="btn btn-success">store placeholder</a>
         </form>
       </div>
       <!--/.navbar-collapse -->
@@ -60,9 +59,9 @@
   <div class="container">
     <!-- Jumbotron Header -->
     <header class="jumbotron hero-spacer">
-      <h1>[[storeController.storeInfo.description]]Store Name</h1>
-      <p>[[storeController.storeInfo.description]]store description</p>
-      <p>[[storeController.storeInfo.phone_number]]store phone number</p>
+      <h1>[[storeController.storeInfo.description]]</h1>
+      <p>[[storeController.storeInfo.description]]</p>
+      <p>[[storeController.storeInfo.phone_number]]</p>
     </header>
     <hr>
     <!-- Title -->
@@ -85,9 +84,9 @@
           <div class="thumbnail">
             <img src="http://placehold.it/800x500" alt="">
             <div class="caption">
-              <h3>[[storeController.products[$index + 1].name ]] </h3>
+              <h3>[[storeController.products[$index].name ]] </h3>
               <h3>[[storeController.products[$index + 1].description ]] </h3>
-              <h3>[[storeController.products[$index + 1].price ]] </h3>
+              <h3>[[storeController.products[$index + 2].price ]] </h3>
               <p>
                 <a ng-click="storeController.addProduct()" class="btn btn-primary">Add to shopping list!</a>
               </p>
@@ -98,9 +97,9 @@
           <div class="thumbnail">
             <img src="http://placehold.it/800x500" alt="">
             <div class="caption">
-              <h3>[[storeController.products[$index + 1].name ]] </h3>
+              <h3>[[storeController.products[$index].name ]] </h3>
               <h3>[[storeController.products[$index + 1].description ]] </h3>
-              <h3>[[storeController.products[$index + 1].price ]] </h3>
+              <h3>[[storeController.products[$index + 2].price ]] </h3>
               <p>
                 <a ng-click="storeController.addProduct()" class="btn btn-primary">Add to shopping list!</a>
               </p>
@@ -111,9 +110,9 @@
           <div class="thumbnail">
             <img src="http://placehold.it/800x500" alt="">
             <div class="caption">
-              <h3>[[storeController.products[$index + 1].name ]] </h3>
+              <h3>[[storeController.products[$index].name ]] </h3>
               <h3>[[storeController.products[$index + 1].description ]] </h3>
-              <h3>[[storeController.products[$index + 1].price ]] </h3>
+              <h3>[[storeController.products[$index + 2].price ]] </h3>
               <p>
                 <a ng-click="storeController.addProduct()" class="btn btn-primary">Add to shopping list!</a>
               </p>
