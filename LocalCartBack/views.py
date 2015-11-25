@@ -7,6 +7,10 @@ import time
 from django import forms
 from django.contrib.auth import authenticate, login, logout
 from django.core.exceptions import ValidationError, ObjectDoesNotExist, MultipleObjectsReturned
+import tablib
+from admin import *
+from django.core.files.storage import default_storage
+from django.core.files.base import ContentFile
 
     # Use this code if the POST request sends parameters
     # post = request.POST
@@ -240,10 +244,11 @@ def create_store(request):
     post = QueryDict('', mutable=True)
     post.update(json.loads(request.body))
     errors, user = extract_user(request, errors)
-    current_user_info = UserInfo.objects.get(user=user)
-    current_user_type = current_user_info.user_type
-    if current_user_type != "merchant":
-        errors.append('Only merchants can create stores')
+    if user:
+        current_user_info = UserInfo.objects.get(user=user)
+        current_user_type = current_user_info.user_type
+        if current_user_type != "merchant":
+            errors.append('Only merchants can create stores')
     name = post.get('name', '')
 
     # If using the address format
@@ -467,6 +472,7 @@ def get_inventory(request):
 
 @csrf_exempt
 def get_user_inventory(request):
+    assert request.method == 'GET', 'api/inventory/getUser requires a GET request'
     errors = []
     errors, user = extract_user(request, errors)
     inventory_list = []
@@ -1081,9 +1087,81 @@ def extract_user(request, errors):
         if User.objects.filter(username=username).exists():
             user = User.objects.get(username=username)
         else:
+            user = None
             errors.append('username does not exist')
     else:
         user = request.user
         if not user.is_authenticated():
             errors.append('user not logged in')
     return errors, user
+
+
+def import_inventory(request):
+    assert request.method == 'POST', 'api/inventory/import requires a POST request'
+    errors = []
+    # try:
+    post = request.POST
+    files = request.FILES
+    inventoryID = post.get('inventoryID', '')
+    imported_file = files['dataset']
+    path = default_storage.save('temporary.csv', ContentFile(imported_file.read()))
+    dataset = tablib.Dataset()
+    dataset.csv = default_storage.open(path).read()
+    try:
+        dataset.headers = ('id', 'name', 'description', 'price', 'picture')
+    # except Exception as e:
+    #     errors.append('%s (%s)' % (e.message, type(e))) 
+    #     errors.append('File formatted incorrectly: check for dollar signs in prices or missing columns')
+    except tablib.core.InvalidDimensions:
+        errors.append('File formatted incorrectly: missing columns')
+    try:
+        inventoryID = int(inventoryID)
+    except ValueError:
+        inventoryID = None
+        errors.append('inventoryID must be integers')
+    items = []
+    if len(errors) == 0:
+        if not Inventory.objects.filter(id=inventoryID).exists():
+            errors.append('inventoryID is not valid')
+            map_markers = []
+        else:
+            storeID = Inventory.objects.get(id=inventoryID).store.id
+            store_list = []
+            inventory_list = []
+            for x in xrange(dataset.height):
+                store_list.append(storeID)
+                inventory_list.append(inventoryID)
+            dataset.append_col(col=store_list, header='store')
+            dataset.append_col(col=inventory_list, header='inventory')
+            item_resource = ItemResource()
+            result = item_resource.import_data(dataset, dry_run=True)
+            if not result.has_errors():
+                    result = item_resource.import_data(dataset, dry_run=False)
+            else:
+                errors.append('not correct')
+            queryset = Item.objects.filter(inventory=inventoryID)
+            counter = 0
+            for i in queryset:
+                counter += 1
+                items.append({
+                              'id' : i.id,
+                              'storeName': i.store.name,
+                              'index': counter,
+                              'name': i.name,
+                              'description': i.description,
+                              'price': i.price,
+                              })
+    reponse = {
+               'status': 200,
+               'items': items,
+               'errors': errors,
+              }
+    default_storage.delete(path)
+    # except ValueError:
+    #     errors.append('%s (%s)' % (e.message, type(e))) 
+    #     errors.append('File formatted incorrectly: check for dollar signs in prices or missing columns')
+    return HttpResponse(json.dumps(reponse), content_type='application/json')
+
+
+
+
