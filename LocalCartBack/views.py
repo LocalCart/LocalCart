@@ -244,7 +244,10 @@ def create_store(request):
     post = QueryDict('', mutable=True)
     post.update(json.loads(request.body))
     errors, user = extract_user(request, errors)
-    
+    current_user_info = UserInfo.objects.get(user=user)
+    current_user_type = current_user_info.user_type
+    if current_user_type != "merchant":
+        errors.append('Only merchants can create stores')
     name = post.get('name', '')
 
     # If using the address format
@@ -838,6 +841,7 @@ def edit_list(request):
             errors.append('Invalid listID')
         elif refill == 'VE':
             errors.append('List could not be entered into the database, reverted to previous state')
+    entry = None
     if len(errors) == 0:
         hasError, cartlist = CartList.get_cartlist(listID)
         if hasError:
@@ -1044,6 +1048,9 @@ def search_items(request):
                                 item['address_zip'],
                                ]
                 address = ' '.join(address_list)
+                # Google geo-caching is limited to 10 per second without a paid API key
+                if ((i + 1) % 10) == 0:
+                    time.sleep(1)
                 coord = lat_lon(address)
                 if coord:
                     item['latitude'] = coord[0]

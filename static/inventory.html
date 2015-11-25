@@ -53,6 +53,14 @@
   <div class="col-sm-12">
     <div class="container">
       <h2>Your Store!</h2>
+      <div class="csvContainer" style="margin-bottom:40px; margin-top: 20px">
+         <form enctype="multipart/form-data" action="api/inventory/import" method="post">
+            Upload a CSV file in the same format as the template to quickly add to the current inventory.  
+            <input id="csv-file" type="file" />
+          </form>
+
+         <a href="static/template.csv" class="btn btn-success" style="margin-top: 10px" download>Download CSV Template</a>
+      </div>
       <input ng-model="inventoryController.tempItem.name" placeholder="Enter Name">
       <input ng-model="inventoryController.tempItem.description" placeholder="Enter Description">
       <input ng-model="inventoryController.tempItem.price" placeholder="Enter Price">
