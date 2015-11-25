@@ -836,6 +836,7 @@ def edit_list(request):
             errors.append('Invalid listID')
         elif refill == 'VE':
             errors.append('List could not be entered into the database, reverted to previous state')
+    entry = None
     if len(errors) == 0:
         hasError, cartlist = CartList.get_cartlist(listID)
         if hasError:
@@ -1042,6 +1043,9 @@ def search_items(request):
                                 item['address_zip'],
                                ]
                 address = ' '.join(address_list)
+                # Google geo-caching is limited to 10 per second without a paid API key
+                if ((i + 1) % 10) == 0:
+                    time.sleep(1)
                 coord = lat_lon(address)
                 if coord:
                     item['latitude'] = coord[0]
