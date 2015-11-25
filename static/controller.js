@@ -618,7 +618,7 @@ app.controller('RegisterController', function($http, $window) {
   )
 });
 
-app.controller('InventoryController', function($http, $window) {
+app.controller('InventoryController', function($http, $window, $scope) {
   var vm = this;
   vm.inventory = [];
   vm.inventoryID = -1;
@@ -656,7 +656,7 @@ app.controller('InventoryController', function($http, $window) {
           for (var i = index; i < vm.inventory.length; i++) {
             vm.inventory[index].index -= 1;
           }
-          count -= 1;
+          vm.count -= 1;
         } else {
           for (var i = 0; i < data.errors.length; i++) {
             $window.alert(data.errors[i]);
@@ -685,6 +685,57 @@ app.controller('InventoryController', function($http, $window) {
         }
       }, errorCallBackGeneral)
   }
+  $scope.importInventory = function(files) {
+    var form = new FormData();
+    form.append("dataset", files[0]);
+    form.append("inventoryID", vm.inventoryID);
+
+    $http.post("api/inventory/import", form, {
+      headers: {'Content-Type': undefined},
+      transformRequest: angular.identity
+    }).then(
+          function successCallBack(response) {
+
+            var data = response.data;
+            if (data.errors.length == 0) {
+              vm.inventory = data.items
+            } else {
+              for (var i = 0; i < data.errors.length; i++) {
+                $window.alert(data.errors[i]);
+              }
+            }
+          }, errorCallBackGeneral);
+  }
+
+  // vm.importInventory = function() {
+  //   vm.tempItem.inventoryID = vm.inventoryID;
+  //     var f = document.getElementById('csv-file').files[0],
+  //         r = new FileReader();
+  //     r.onloadend = function(e){
+  //       var dataset = e.target.result;
+  //       //send you binary data via $http or $resource or do anything else with it
+  //       $http.post("api/inventory/import", dataset, '').then(
+  //         function successCallBack(response) {
+  //           var data = response.data;
+  //           if (data.errors.length == 0) {
+  //             for (var i = 0; i < data.items.length; i++) {
+  //               vm.tempItem.itemID = data.items[i].id;
+  //               vm.count += 1;
+  //               vm.tempItem.index = vm.count;
+  //               vm.inventory.push(vm.tempItem);
+  //               vm.tempItem = {}
+  //               vm.tempItem.inventoryID = vm.inventoryID;
+  //             }
+  //           } else {
+  //             for (var i = 0; i < data.errors.length; i++) {
+  //               $window.alert(data.errors[i]);
+  //               console.error(e);
+  //             }
+  //           }
+  //         }, errorCallBackGeneral)
+  //     }
+  //     r.readAsBinaryString(f);
+  // }
   vm.logout = function() {
     $http.post("api/user/logout");
     $window.location.href = "home";

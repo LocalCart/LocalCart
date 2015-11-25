@@ -5,6 +5,8 @@ import urllib
 from time import sleep
 from django.core.exceptions import ValidationError, ObjectDoesNotExist, MultipleObjectsReturned
 from django.db import IntegrityError
+import re
+from django.db.models import Q
 
 default_image = "data:image/svg+xml;base64,PD94bWwgdmVyc2lvbj0iMS4wIiBlbmNvZGluZz0iVVRGLTgiIHN0YW5kYWxvbmU9InllcyI/PjxzdmcgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIiB3aWR0aD0iNjQiIGhlaWdodD0iNjQiIHZpZXdCb3g9IjAgMCA2NCA2NCIgcHJlc2VydmVBc3BlY3RSYXRpbz0ibm9uZSI+PGRlZnMvPjxyZWN0IHdpZHRoPSI2NCIgaGVpZ2h0PSI2NCIgZmlsbD0iI0VFRUVFRSIvPjxnPjx0ZXh0IHg9IjEzLjQ2MDkzNzUiIHk9IjMyIiBzdHlsZT0iZmlsbDojQUFBQUFBO2ZvbnQtd2VpZ2h0OmJvbGQ7Zm9udC1mYW1pbHk6QXJpYWwsIEhlbHZldGljYSwgT3BlbiBTYW5zLCBzYW5zLXNlcmlmLCBtb25vc3BhY2U7Zm9udC1zaXplOjEwcHQ7ZG9taW5hbnQtYmFzZWxpbmU6Y2VudHJhbCI+NjR4NjQ8L3RleHQ+PC9nPjwvc3ZnPg=="
 
@@ -181,9 +183,9 @@ class Item(models.Model):
 
 
     @staticmethod
-    def search_items(query, location):
+    def basic_search_items(query, location):
         errors = []
-        if len(location.split('\n')) < 1:
+        if len(location.strip()) == 0:
             errors.append('location empty')
             address_zip = '!!!!!'
         else:
@@ -192,6 +194,91 @@ class Item(models.Model):
             errors.append('zip code must be 5 characters')
         items = Item.objects.filter(name__icontains=query, store__address_zip=address_zip)
         return items, errors
+
+
+    @staticmethod
+    def search_items(query, location):
+        errors = []
+        if len(query.strip()) == 0:
+            errors.append('query empty')
+        elif len(location.strip()) == 0:
+            errors.append('location empty')
+        else:
+            location_coord = lat_lon(location)
+            if location_coord is None:
+                errors.append('location not found')
+        counter = 1
+        items = []
+        if len(errors) == 0:
+            all_relevant_items = Item.relevant_items(query)
+            all_relevant_values = all_relevant_items.values('id', 'price', 'store__address_street',
+                                                            'store__address_city', 'store__address_state',
+                                                            'store__address_zip')
+            for value_dict in all_relevant_values:
+                address = [
+                           value_dict['store__address_street'],
+                           value_dict['store__address_city'],
+                           value_dict['store__address_state'],
+                           value_dict['store__address_zip'],
+                          ]
+                value_dict['address'] = ' '.join(address)
+            relevant_chunks = []
+            for i in xrange(0, len(all_relevant_values), 100):
+                relevant_chunks.append(all_relevant_values[i:i+100])
+            pause = False
+            ids = []
+            prices = []
+            destinations = []
+            distances = []
+            for chunk in relevant_chunks:
+                # Google limits 100 elements per 10 seconds
+                if pause:
+                    sleep(10)
+                pause = True
+                ids += [value_dict['id'] for value_dict in chunk]
+                prices += [value_dict['price'] for value_dict in chunk]
+                destinations += [value_dict['address'] for value_dict in chunk]
+                distances += one_to_many_distance_matrix(location, destinations)
+            zipped = zip(distances, ids, prices, destinations)
+            zipped = filter(lambda x: x[0] < 40000, zipped)
+            heuristics = map(Item.heur_func, zipped)
+            sorted_tuples = sorted(heuristics)
+            final_ids = [s[1] for s in sorted_tuples]
+            final_ids = final_ids[:20]
+            items_qs = Item.objects.filter(id__in=final_ids)
+            items_dict = dict([(i.id, i) for i in items_qs])
+            items = [items_dict[fid] for fid in final_ids]
+        return items, errors
+
+    @staticmethod
+    def heur_func(x):
+        distance = x[0]
+        curr_id = x[1]
+        price = x[2]
+        price_adder = 0.01
+        if price > 1.00:
+            price_adder = 0.10
+        if price > 10.00:
+            price_adder = 1.00
+        heur = ((distance + 1) * ((price + price_adder) ** 0.5))
+        print(distance, price, heur, curr_id, x[3])
+
+        return (heur, curr_id)
+
+
+    # Returns all items that have names and descriptions that contain all terms in the query
+    @staticmethod
+    def relevant_items(query):
+        search_terms = query.replace('"', '').split()
+        quoted_terms = re.findall(r'"([^"]*)"', query)
+        search_terms += quoted_terms
+        combined_query = None
+        for s_term in search_terms:
+            if combined_query is None:
+                combined_query = (Q(name__icontains=s_term) | Q(description__icontains=s_term))
+            else:
+                combined_query &= (Q(name__icontains=s_term) | Q(description__icontains=s_term))
+        return Item.objects.filter(combined_query)
 
     @staticmethod
     def get_item(item_id):
@@ -508,4 +595,29 @@ def lat_lon(address):
     else:
         return None
 
-
+def one_to_many_distance_matrix(origin, destinations):
+    gm_url = 'https://maps.googleapis.com/maps/api/distancematrix/json?'
+    full_url = gm_url + urllib.urlencode({'origins': origin, 'destinations': '|'.join(destinations)})
+    if len(full_url) < 2000:
+        resp = json.loads(urllib.urlopen(full_url).read())
+        if resp['rows']:
+            elements = resp['rows'][0]['elements']
+            distances = []
+            for elem in elements:
+                if elem['status'] == 'OK':
+                    distances.append(elem['distance']['value'])
+                else:
+                    distances.append(100000000)
+            return distances
+        else:
+            return None
+    else:
+        n = len(destinations)
+        left = destination[0:n//2]
+        right = destination[n//2:]
+        left_dists = one_to_many_distance_matrix(origin, left)
+        right_dists = one_to_many_distance_matrix(origin, right)
+        if (left_dists is None) or (right_dists is None):
+            return None
+        else:
+            return left_dists + right_dists

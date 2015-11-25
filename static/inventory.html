@@ -56,7 +56,8 @@
       <div class="csvContainer" style="margin-bottom:40px; margin-top: 20px">
          <form enctype="multipart/form-data" action="api/inventory/import" method="post">
             Upload a CSV file in the same format as the template to quickly add to the current inventory.  
-            <input id="csv-file" type="file" />
+            <input id="csv-file" type="file" onchange="angular.element(this).scope().importInventory(this.files)"/> <br>
+            <!-- <button class="btn btn-primary" ng-click="inventoryController.importInventory()">Submit</button> -->
           </form>
 
          <a href="static/template.csv" class="btn btn-success" style="margin-top: 10px" download>Download CSV Template</a>
@@ -80,7 +81,7 @@
         </thead>
         <tbody>
           <tr ng-repeat="row in inventoryController.inventory">
-            <td>[[row.index]]</td>
+            <td>[[$index + 1]]</td>
             <td>[[row.name]]</td>
             <td>[[row.description]]</td>
             <td>$[[row.price | number:2]]</td>
