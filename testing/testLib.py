@@ -16,7 +16,7 @@ class RestTestCase(unittest.TestCase):
     """
 
     # Lookup the name of the server to test
-    serverToTest = "localhost:8000"
+    serverToTest = "localhost:8080"
     if "TEST_SERVER" in os.environ:
         serverToTest = os.environ["TEST_SERVER"]
         # Drop the http:// prefix

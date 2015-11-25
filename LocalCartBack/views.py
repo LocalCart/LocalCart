@@ -388,8 +388,9 @@ def get_store(request):
                 "status": 200,
                 "errors": []
                 }
-
-    storeID = request.GET.get('storeID', '')
+    get = QueryDict('', mutable=True)
+    get.update(json.loads(request.body))
+    storeID = get.get('storeID', '')
     if storeID == "":
         retData["errors"].append("storeID must be non-empty")
         hasError = True
@@ -552,8 +553,8 @@ def get_item(request):
                 "status": 200,
                 "errors": []
                 }
-
-    itemID = request.GET.get('itemID', '')    
+    get = request.GET         
+    itemID = get.get('itemID', '')   
     if itemID == "":
         retData["errors"].append("itemID must be non-empty")
         hasError = True
@@ -721,8 +722,8 @@ def get_list(request):
                 "status": 200,
                 "errors": []
                 }
-
-    listID = request.GET.get('listID', '')    
+    get = request.GET
+    listID = get.get('listID', '')
     if listID == "":
         retData["errors"].append("listID must be non-empty")
         hasError = True
@@ -768,11 +769,12 @@ def get_user_lists(request):
 def get_listIDs(request):
     assert request.method == 'GET', 'api/list/getID requires a GET request'
     errors = []
+    listIDs = []
     errors, user = extract_user(request, errors)
-    if len(errors) > 0:
-        listIDs = []
-    else:
-        listIDs = CartList.objects.filter(user=user).order_by('id').values_list('id', flat=True)
+    if len(errors) == 0:
+        values = CartList.objects.filter(user=user).order_by('id').values_list('id', flat=True)
+        for v in values:
+            listIDs.append(v)
     response = { 
                 "status": 200,
                 "listIDs": listIDs,
@@ -855,7 +857,6 @@ def edit_list(request):
                 errors.append('item reference reference type must be "id" or "name"')
     if len(errors) == 0:
         try:
-            import pdb; pdb.set_trace()
             refill = CartList.refill_list(listID, contents)
         except ValidationError as e:
             refill = 1
@@ -907,7 +908,7 @@ def add_review(request):
     post = QueryDict('', mutable=True)
     post.update(json.loads(request.body))
     itemID = post.get('itemID', '')
-    storeID = post.get('itemID', '')
+    storeID = post.get('storeID', '')
     rating = post.get('rating', '')
     text = post.get('text', '')
     item = None
@@ -950,6 +951,13 @@ def add_review(request):
         except ValidationError as e:
             new_review = None
             errors.append(e)
+    if len(errors) == 0:
+        reponse = {
+            'status': 200,
+            'reviewID': new_review.id,
+            'errors': errors
+            }
+        return HttpResponse(json.dumps(reponse), content_type='application/json')
     return return_error(errors)
 
 
@@ -1010,11 +1018,15 @@ def get_reviews(request):
 
 def extract_user(request, errors):
     post = QueryDict('', mutable=True)
-    if request.body:
+    user = None
+    if request.method == 'POST' and request.body:
         post.update(json.loads(request.body))
         username = post.get('username', '')
+    elif request.method == 'GET':
+        username = request.GET.get('username', '')
     else:
         username = ''
+
     if username:
         if User.objects.filter(username=username).exists():
             user = User.objects.get(username=username)

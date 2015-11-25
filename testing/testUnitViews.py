@@ -224,30 +224,30 @@ class TestUnitViewsCarts(TestCase):
 # #################################################################################################
         
 
-    def testCreateInventory(self):
-        request = self.factory.post("/api/user/create", json.dumps({ 'username' : 'Tom',
-                                             'password' : '123456',
-                                             'user_type' : 'customer',
-                                             'email' : 'tommeng@berkeley.edu',
-                                             }), content_type='application/json')
-        response = views.create_user(request)
+    # def testCreateInventory(self):
+    #     request = self.factory.post("/api/user/create", json.dumps({ 'username' : 'Tom',
+    #                                          'password' : '123456',
+    #                                          'user_type' : 'customer',
+    #                                          'email' : 'tommeng@berkeley.edu',
+    #                                          }), content_type='application/json')
+    #     response = views.create_user(request)
 
-        request = self.factory.post("/api/store/create", json.dumps({ 'username' : 'Tom',
-                                             'name' : 'Tom store',
-                                             'address' : '1234 12th st.\n \nBerkeley\nCA\n94704',
-                                             'phone_number' : '(510)642-6000',
-                                             #'picture' : 'pic',
-                                             #'description' : 'This is a very good store'
-                                             }), content_type='application/json')
-        response = views.create_store(request)
-        respCreateStore = self.getDataFromResponse(response)
+    #     request = self.factory.post("/api/store/create", json.dumps({ 'username' : 'Tom',
+    #                                          'name' : 'Tom store',
+    #                                          'address' : '1234 12th st.\n \nBerkeley\nCA\n94704',
+    #                                          'phone_number' : '(510)642-6000',
+    #                                          #'picture' : 'pic',
+    #                                          #'description' : 'This is a very good store'
+    #                                          }), content_type='application/json')
+    #     response = views.create_store(request)
+    #     respCreateStore = self.getDataFromResponse(response)
 
-        request = self.factory.post("/api/inventory/create", json.dumps({ 'storeID' : respCreateStore['storeID']
-                                             }), content_type='application/json')
-        response = views.create_inventory(request)
-        respCreateInventory = self.getDataFromResponse(response)
-        self.assertSuccessResponse(respCreateInventory)
-        self.assertEquals(0, len(respCreateInventory['errors']))
+    #     request = self.factory.post("/api/inventory/create", json.dumps({ 'storeID' : respCreateStore['storeID']
+    #                                          }), content_type='application/json')
+    #     response = views.create_inventory(request)
+    #     respCreateInventory = self.getDataFromResponse(response)
+    #     self.assertSuccessResponse(respCreateInventory)
+    #     self.assertEquals(0, len(respCreateInventory['errors']))
 
     def testCreateInventoryWithoutStoreID(self):
         request = self.factory.post("/api/user/create", json.dumps({ 'username' : 'Tom',
@@ -346,13 +346,13 @@ class TestUnitViewsCarts(TestCase):
         response = views.create_store(request)
         respCreateStore = self.getDataFromResponse(response)
 
-        request = self.factory.post("/api/inventory/create", json.dumps({ 'storeID' : respCreateStore['storeID']
+        request = self.factory.post("/api/inventory/create", json.dumps({ 'username' : 'Tom'
                                              }), content_type='application/json')
-        response = views.create_inventory(request)
-        respCreateInventory = self.getDataFromResponse(response)
+        response = views.get_user_inventory(request)
+        respGetInventory = self.getDataFromResponse(response)
 
 
-        request = self.factory.post("/api/inventory/add", json.dumps({ 'inventoryID' : respCreateInventory['inventoryID'],
+        request = self.factory.post("/api/inventory/add", json.dumps({ 'inventoryID' : respGetInventory['inventoryID'],
                                              'name' : 'apple',
                                              'description': 'Fuji',
                                              'picture': 'the picture',
@@ -382,10 +382,11 @@ class TestUnitViewsCarts(TestCase):
         response = views.create_store(request)
         respCreateStore = self.getDataFromResponse(response)
 
-        request = self.factory.post("/api/inventory/create", json.dumps({ 'storeID' : respCreateStore['storeID']
+        request = self.factory.post("/api/inventory/create", json.dumps({ 'username' : 'Tom'
                                              }), content_type='application/json')
-        response = views.create_inventory(request)
-        respCreateInventory = self.getDataFromResponse(response)
+        response = views.get_user_inventory(request)
+        respGetInventory = self.getDataFromResponse(response)
+
 
 
         request = self.factory.post("/api/inventory/add", json.dumps({ 'inventoryID' : '',
@@ -417,10 +418,11 @@ class TestUnitViewsCarts(TestCase):
         response = views.create_store(request)
         respCreateStore = self.getDataFromResponse(response)
 
-        request = self.factory.post("/api/inventory/create", json.dumps({ 'storeID' : respCreateStore['storeID']
+        request = self.factory.post("/api/inventory/create", json.dumps({ 'username' : 'Tom'
                                              }), content_type='application/json')
-        response = views.create_inventory(request)
-        respCreateInventory = self.getDataFromResponse(response)
+        response = views.get_user_inventory(request)
+        respGetInventory = self.getDataFromResponse(response)
+
 
 
         request = self.factory.post("/api/inventory/add", json.dumps({ 'inventoryID' : -1,
@@ -450,13 +452,14 @@ class TestUnitViewsCarts(TestCase):
         response = views.create_store(request)
         respCreateStore = self.getDataFromResponse(response)
 
-        request = self.factory.post("/api/inventory/create", json.dumps({ 'storeID' : respCreateStore['storeID']
+        request = self.factory.post("/api/inventory/create", json.dumps({ 'username' : 'Tom'
                                              }), content_type='application/json')
-        response = views.create_inventory(request)
-        respCreateInventory = self.getDataFromResponse(response)
+        response = views.get_user_inventory(request)
+        respGetInventory = self.getDataFromResponse(response)
 
 
-        request = self.factory.post("/api/inventory/add", json.dumps({ 'inventoryID' : respCreateInventory['inventoryID'],
+
+        request = self.factory.post("/api/inventory/add", json.dumps({ 'inventoryID' : respGetInventory['inventoryID'],
                                              'name' : '',
                                              'picture': '',
                                              'price': '-2.00'
@@ -466,11 +469,51 @@ class TestUnitViewsCarts(TestCase):
         self.assertSuccessResponse(respCreateItem)
         self.assertEquals("name must be non-empty", respCreateItem['errors'][0]) 
         self.assertEquals("description must be non-empty", respCreateItem['errors'][1]) 
-        self.assertEquals("price must be a positive number", respCreateItem['errors'][2]) 
-        self.assertEquals("picture must be non-empty", respCreateItem['errors'][3]) 
+        self.assertEquals("price must be a positive number", respCreateItem['errors'][2])
+
+    def testGetItem(self):
+        request = self.factory.post("/api/user/create", json.dumps({ 'username' : 'Tom',
+                                             'password' : '123456',
+                                             'user_type' : 'customer',
+                                             'email' : 'tommeng@berkeley.edu',
+                                             }), content_type='application/json')
+        response = views.create_user(request)
+
+        request = self.factory.post("/api/store/create", json.dumps({ 'username' : 'Tom',
+                                             'name' : 'Tom store',
+                                             'address' : '1234 12th st.\n \nBerkeley\nCA\n94704',
+                                             'phone_number' : '(510)642-6000',
+                                             #'picture' : 'pic',
+                                             #'description' : 'This is a very good store'
+                                             }), content_type='application/json')
+        response = views.create_store(request)
+        respCreateStore = self.getDataFromResponse(response)
+
+        request = self.factory.post("/api/inventory/create", json.dumps({ 'username' : 'Tom'
+                                             }), content_type='application/json')
+        response = views.get_user_inventory(request)
+        respGetInventory = self.getDataFromResponse(response)
 
 
-# #######################################################################################################
+        request = self.factory.post("/api/inventory/add", json.dumps({ 'inventoryID' : respGetInventory['inventoryID'],
+                                             'name' : 'apple',
+                                             'description': 'Fuji',
+                                             'picture': 'the picture',
+                                             'price': '2.00'
+                                             }), content_type='application/json')
+        response = views.create_item(request)
+        respCreateItem = self.getDataFromResponse(response)
+
+        arguments = { 'itemID': respCreateItem['itemID']}
+        request = self.factory.get("/api/get/item?" + urllib.urlencode(arguments), content_type='application/json')
+
+
+        response = views.get_item(request)
+        respGetItem = self.getDataFromResponse(response)
+        self.assertSuccessResponse(respGetItem)
+        self.assertEquals(0, len(respGetItem['errors']))
+
+#######################################################################################################
 
     def testEditItem(self):
         request = self.factory.post("/api/user/create", json.dumps({ 'username' : 'Tom',
@@ -488,13 +531,13 @@ class TestUnitViewsCarts(TestCase):
         response = views.create_store(request)
         respCreateStore = self.getDataFromResponse(response)
 
-        request = self.factory.post("/api/inventory/create", json.dumps({ 'storeID' : respCreateStore['storeID']
+        request = self.factory.post("/api/inventory/create", json.dumps({ 'username' : 'Tom'
                                              }), content_type='application/json')
-        response = views.create_inventory(request)
-        respCreateInventory = self.getDataFromResponse(response)
+        response = views.get_user_inventory(request)
+        respGetInventory = self.getDataFromResponse(response)
 
 
-        request = self.factory.post("/api/inventory/add", json.dumps({ 'inventoryID' : respCreateInventory['inventoryID'],
+        request = self.factory.post("/api/inventory/add", json.dumps({ 'inventoryID' : respGetInventory['inventoryID'],
                                              'name' : 'apple',
                                              'description': 'Fuji',
                                              'picture': 'the picture',
@@ -532,13 +575,13 @@ class TestUnitViewsCarts(TestCase):
         response = views.create_store(request)
         respCreateStore = self.getDataFromResponse(response)
 
-        request = self.factory.post("/api/inventory/create", json.dumps({ 'storeID' : respCreateStore['storeID']
+        request = self.factory.post("/api/inventory/create", json.dumps({ 'username' : 'Tom'
                                              }), content_type='application/json')
-        response = views.create_inventory(request)
-        respCreateInventory = self.getDataFromResponse(response)
+        response = views.get_user_inventory(request)
+        respGetInventory = self.getDataFromResponse(response)
 
 
-        request = self.factory.post("/api/inventory/add", json.dumps({ 'inventoryID' : respCreateInventory['inventoryID'],
+        request = self.factory.post("/api/inventory/add", json.dumps({ 'inventoryID' : respGetInventory['inventoryID'],
                                              'name' : 'apple',
                                              'description': 'Fuji',
                                              'picture': 'the picture',
@@ -575,13 +618,13 @@ class TestUnitViewsCarts(TestCase):
         response = views.create_store(request)
         respCreateStore = self.getDataFromResponse(response)
 
-        request = self.factory.post("/api/inventory/create", json.dumps({ 'storeID' : respCreateStore['storeID']
+        request = self.factory.post("/api/inventory/create", json.dumps({ 'username' : 'Tom'
                                              }), content_type='application/json')
-        response = views.create_inventory(request)
-        respCreateInventory = self.getDataFromResponse(response)
+        response = views.get_user_inventory(request)
+        respGetInventory = self.getDataFromResponse(response)
 
 
-        request = self.factory.post("/api/inventory/add", json.dumps({ 'inventoryID' : respCreateInventory['inventoryID'],
+        request = self.factory.post("/api/inventory/add", json.dumps({ 'inventoryID' : respGetInventory['inventoryID'],
                                              'name' : 'apple',
                                              'description': 'Fuji',
                                              'picture': 'the picture',
@@ -602,9 +645,161 @@ class TestUnitViewsCarts(TestCase):
         self.assertSuccessResponse(respEditItem)  
         self.assertEquals("invalid itemID", respEditItem['errors'][0]) 
 
+###############################################################################################################
+    def testDeleteItem(self):
+        request = self.factory.post("/api/user/create", json.dumps({ 'username' : 'Tom',
+                                             'password' : '123456',
+                                             'user_type' : 'customer',
+                                             'email' : 'tommeng@berkeley.edu',
+                                             }), content_type='application/json')
+        response = views.create_user(request)
+
+        request = self.factory.post("/api/store/create", json.dumps({ 'username' : 'Tom',
+                                             'name' : 'Tom store',
+                                             'address' : '1234 12th st.\n \nBerkeley\nCA\n94704',
+                                             'phone_number' : '(510)642-6000',
+                                             }), content_type='application/json')
+        response = views.create_store(request)
+        respCreateStore = self.getDataFromResponse(response)
+
+        request = self.factory.post("/api/inventory/create", json.dumps({ 'username' : 'Tom'
+                                             }), content_type='application/json')
+        response = views.get_user_inventory(request)
+        respGetInventory = self.getDataFromResponse(response)
 
 
-# ##############################################################################################################
+        request = self.factory.post("/api/inventory/add", json.dumps({ 'inventoryID' : respGetInventory['inventoryID'],
+                                             'name' : 'apple',
+                                             'description': 'Fuji',
+                                             'picture': 'the picture',
+                                             'price': '2.00'
+                                             }), content_type='application/json')
+        response = views.create_item(request)
+        respCreateItem = self.getDataFromResponse(response)
+
+
+        request = self.factory.post("/api/item/edit", json.dumps({ 'itemID' : respCreateItem['itemID'],
+                                             }), content_type='application/json')
+        response = views.delete_item(request)
+        respDeleteItem = self.getDataFromResponse(response)
+        self.assertSuccessResponse(respDeleteItem)  
+        self.assertEquals(0, len(respDeleteItem['errors']))
+
+    def testDeleteItemWithoutItemID(self):
+        request = self.factory.post("/api/user/create", json.dumps({ 'username' : 'Tom',
+                                             'password' : '123456',
+                                             'user_type' : 'customer',
+                                             'email' : 'tommeng@berkeley.edu',
+                                             }), content_type='application/json')
+        response = views.create_user(request)
+
+        request = self.factory.post("/api/store/create", json.dumps({ 'username' : 'Tom',
+                                             'name' : 'Tom store',
+                                             'address' : '1234 12th st.\n \nBerkeley\nCA\n94704',
+                                             'phone_number' : '(510)642-6000',
+                                             }), content_type='application/json')
+        response = views.create_store(request)
+        respCreateStore = self.getDataFromResponse(response)
+
+        request = self.factory.post("/api/inventory/create", json.dumps({ 'username' : 'Tom'
+                                             }), content_type='application/json')
+        response = views.get_user_inventory(request)
+        respGetInventory = self.getDataFromResponse(response)
+
+
+        request = self.factory.post("/api/inventory/add", json.dumps({ 'inventoryID' : respGetInventory['inventoryID'],
+                                             'name' : 'apple',
+                                             'description': 'Fuji',
+                                             'picture': 'the picture',
+                                             'price': '2.00'
+                                             }), content_type='application/json')
+        response = views.create_item(request)
+        respCreateItem = self.getDataFromResponse(response)
+
+
+        request = self.factory.post("/api/item/edit", json.dumps({'inventoryID': ''}), content_type='application/json')
+        response = views.delete_item(request)
+        respDeleteItem = self.getDataFromResponse(response)
+        self.assertSuccessResponse(respDeleteItem)  
+        self.assertEquals("itemID must be an integer", respDeleteItem['errors'][0]) 
+    def testDeleteItemIDNotInteger(self):
+        request = self.factory.post("/api/user/create", json.dumps({ 'username' : 'Tom',
+                                             'password' : '123456',
+                                             'user_type' : 'customer',
+                                             'email' : 'tommeng@berkeley.edu',
+                                             }), content_type='application/json')
+        response = views.create_user(request)
+
+        request = self.factory.post("/api/store/create", json.dumps({ 'username' : 'Tom',
+                                             'name' : 'Tom store',
+                                             'address' : '1234 12th st.\n \nBerkeley\nCA\n94704',
+                                             'phone_number' : '(510)642-6000',
+                                             }), content_type='application/json')
+        response = views.create_store(request)
+        respCreateStore = self.getDataFromResponse(response)
+
+        request = self.factory.post("/api/inventory/create", json.dumps({ 'username' : 'Tom'
+                                             }), content_type='application/json')
+        response = views.get_user_inventory(request)
+        respGetInventory = self.getDataFromResponse(response)
+
+
+        request = self.factory.post("/api/inventory/add", json.dumps({ 'inventoryID' : respGetInventory['inventoryID'],
+                                             'name' : 'apple',
+                                             'description': 'Fuji',
+                                             'picture': 'the picture',
+                                             'price': '2.00'
+                                             }), content_type='application/json')
+        response = views.create_item(request)
+        respCreateItem = self.getDataFromResponse(response)
+
+
+        request = self.factory.post("/api/item/edit", json.dumps({ 'itemID' : 'abc',
+                                             }), content_type='application/json')
+        response = views.delete_item(request)
+        respDeleteItem = self.getDataFromResponse(response)
+        self.assertSuccessResponse(respDeleteItem)  
+        self.assertEquals("itemID must be an integer", respDeleteItem['errors'][0]) 
+    def testDeleteItemIDNotExist(self):
+        request = self.factory.post("/api/user/create", json.dumps({ 'username' : 'Tom',
+                                             'password' : '123456',
+                                             'user_type' : 'customer',
+                                             'email' : 'tommeng@berkeley.edu',
+                                             }), content_type='application/json')
+        response = views.create_user(request)
+
+        request = self.factory.post("/api/store/create", json.dumps({ 'username' : 'Tom',
+                                             'name' : 'Tom store',
+                                             'address' : '1234 12th st.\n \nBerkeley\nCA\n94704',
+                                             'phone_number' : '(510)642-6000',
+                                             }), content_type='application/json')
+        response = views.create_store(request)
+        respCreateStore = self.getDataFromResponse(response)
+
+        request = self.factory.post("/api/inventory/create", json.dumps({ 'username' : 'Tom'
+                                             }), content_type='application/json')
+        response = views.get_user_inventory(request)
+        respGetInventory = self.getDataFromResponse(response)
+
+
+        request = self.factory.post("/api/inventory/add", json.dumps({ 'inventoryID' : respGetInventory['inventoryID'],
+                                             'name' : 'apple',
+                                             'description': 'Fuji',
+                                             'picture': 'the picture',
+                                             'price': '2.00'
+                                             }), content_type='application/json')
+        response = views.create_item(request)
+        respCreateItem = self.getDataFromResponse(response)
+
+
+        request = self.factory.post("/api/item/edit", json.dumps({ 'itemID' : 100,
+                                             }), content_type='application/json')
+        response = views.delete_item(request)
+        respDeleteItem = self.getDataFromResponse(response)
+        self.assertSuccessResponse(respDeleteItem)  
+        self.assertEquals("invalid itemID", respDeleteItem['errors'][0]) 
+
+###############################################################################################################
 
 #### This one is failing because don't know how to send a fake get request with json
     def testSearchItem(self):
@@ -623,13 +818,13 @@ class TestUnitViewsCarts(TestCase):
         response = views.create_store(request)
         respCreateStore = self.getDataFromResponse(response)
 
-        request = self.factory.post("/api/inventory/create", json.dumps({ 'storeID' : respCreateStore['storeID']
+        request = self.factory.post("/api/inventory/create", json.dumps({ 'username' : 'Tom'
                                              }), content_type='application/json')
-        response = views.create_inventory(request)
-        respCreateInventory = self.getDataFromResponse(response)
+        response = views.get_user_inventory(request)
+        respGetInventory = self.getDataFromResponse(response)
 
 
-        request = self.factory.post("/api/inventory/add", json.dumps({ 'inventoryID' : respCreateInventory['inventoryID'],
+        request = self.factory.post("/api/inventory/add", json.dumps({ 'inventoryID' : respGetInventory['inventoryID'],
                                              'name' : 'apple',
                                              'description': 'Fuji',
                                              'picture': 'the picture',
@@ -683,7 +878,7 @@ class TestUnitViewsCarts(TestCase):
         response = views.create_list(request)
         respCreateList = self.getDataFromResponse(response)
 
-        self.assertEquals("username does not exist or user is not a customer", respCreateList['errors'][0]) 
+        self.assertEquals("username does not exist", respCreateList['errors'][0]) 
 
     def testCreateListUsernameNotCustomer(self):
         request = self.factory.post("/api/user/create", json.dumps({ 'username' : 'Tom',
@@ -702,22 +897,22 @@ class TestUnitViewsCarts(TestCase):
 
         self.assertEquals("username does not exist or user is not a customer", respCreateList['errors'][0]) 
 
-    def testCreateListInvalidFields(self):
-        request = self.factory.post("/api/user/create", json.dumps({ 'username' : 'Tom',
-                                             'password' : '123456',
-                                             'user_type' : 'customer',
-                                             'email' : 'tommeng@berkeley.edu',
-                                             }), content_type='application/json')
-        response = views.create_user(request);
+    # def testCreateListInvalidFields(self):
+    #     request = self.factory.post("/api/user/create", json.dumps({ 'username' : 'Tom',
+    #                                          'password' : '123456',
+    #                                          'user_type' : 'customer',
+    #                                          'email' : 'tommeng@berkeley.edu',
+    #                                          }), content_type='application/json')
+    #     response = views.create_user(request);
 
-        request = self.factory.post("/api/list/create", json.dumps({
-                                             'username': '',
-                                             }), content_type='application/json')
-        response = views.create_list(request)
-        respCreateList = self.getDataFromResponse(response)
+    #     request = self.factory.post("/api/list/create", json.dumps({
+    #                                          'username': '',
+    #                                          }), content_type='application/json')
+    #     response = views.create_list(request)
+    #     respCreateList = self.getDataFromResponse(response)
 
-        self.assertEquals("username must be non-empty", respCreateList['errors'][0]) 
-        self.assertEquals("name must be non-empty", respCreateList['errors'][1]) 
+    #     self.assertEquals("username must be non-empty", respCreateList['errors'][0]) 
+    #     self.assertEquals("name must be non-empty", respCreateList['errors'][1]) 
 
 
     def testDeleteList(self):
@@ -741,6 +936,37 @@ class TestUnitViewsCarts(TestCase):
         response = views.delete_list(request)
         respDeleteList = self.getDataFromResponse(response)
         self.assertEquals(0, len(respDeleteList['errors']))  
+
+    def testDeleteListWithID(self):
+        request = self.factory.post("/api/user/create", json.dumps({ 'username' : 'Tom',
+                                             'password' : '123456',
+                                             'user_type' : 'customer',
+                                             'email' : 'tommeng@berkeley.edu',
+                                             }), content_type='application/json')
+        response = views.create_user(request);
+
+        request = self.factory.post("/api/list/create", json.dumps({
+                                             'username': 'Tom',
+                                             'name': "Tom's shopping list"
+                                             }), content_type='application/json')
+        response = views.create_list(request)
+        respCreateList = self.getDataFromResponse(response)
+        
+        request = self.factory.post("/api/list/delete", json.dumps({
+                                             'listID': respCreateList['listID']
+                                             }), content_type='application/json')
+        response = views.delete_list_with_id(request)
+        respDeleteList = self.getDataFromResponse(response)
+        self.assertEquals(0, len(respDeleteList['errors']))
+
+        arguments = { 'listID': respCreateList['listID']}
+        request = self.factory.get("/api/get/list?" + urllib.urlencode(arguments), content_type='application/json')
+
+        response = views.get_list(request)
+        respGetList = self.getDataFromResponse(response)
+        self.assertEquals(1, len(respGetList['errors'])) 
+        self.assertEquals("Can't get list from listID", respGetList['errors'][0])
+
 
     def testDeleteListUsernameNotExist(self):
         request = self.factory.post("/api/user/create", json.dumps({ 'username' : 'Tom',
@@ -786,7 +1012,7 @@ class TestUnitViewsCarts(TestCase):
         respDeleteList = self.getDataFromResponse(response)
         self.assertEquals("no list of this name exists for this username", respDeleteList['errors'][0]) 
 
-    def testDeleteListInvalidFields(self):
+    def testGetList(self):
         request = self.factory.post("/api/user/create", json.dumps({ 'username' : 'Tom',
                                              'password' : '123456',
                                              'user_type' : 'customer',
@@ -799,15 +1025,56 @@ class TestUnitViewsCarts(TestCase):
                                              'name': "Tom's shopping list"
                                              }), content_type='application/json')
         response = views.create_list(request)
-        
-        request = self.factory.post("/api/list/delete", json.dumps({
-                                             'username': '',
-                                             }), content_type='application/json')
-        response = views.delete_list(request)
-        respDeleteList = self.getDataFromResponse(response)
-        self.assertEquals("username must be non-empty", respDeleteList['errors'][0]) 
-        self.assertEquals("name must be non-empty", respDeleteList['errors'][1])   
+        respList = self.getDataFromResponse(response)
+        arguments = { 'listID': respList['listID']}
+        request = self.factory.get("/api/get/list?" + urllib.urlencode(arguments), content_type='application/json')
 
+        response = views.get_list(request)
+        respGetList = self.getDataFromResponse(response)
+        self.assertEquals(0, len(respGetList['errors']))  
+
+    def testGetListFromUser(self):
+        request = self.factory.post("/api/user/create", json.dumps({ 'username' : 'Tom',
+                                             'password' : '123456',
+                                             'user_type' : 'customer',
+                                             'email' : 'tommeng@berkeley.edu',
+                                             }), content_type='application/json')
+        response = views.create_user(request);
+
+        request = self.factory.post("/api/list/create", json.dumps({
+                                             'username': 'Tom',
+                                             'name': "Tom's shopping list"
+                                             }), content_type='application/json')
+        response = views.create_list(request)
+        respList = self.getDataFromResponse(response)
+        arguments = { 'username': 'Tom'}
+        request = self.factory.get("/api/get/list?" + urllib.urlencode(arguments), content_type='application/json')
+
+        response = views.get_user_lists(request)
+        respGetList = self.getDataFromResponse(response)
+        self.assertEquals(0, len(respGetList['errors']))
+
+    def testGetListIDsFromUser(self):
+        request = self.factory.post("/api/user/create", json.dumps({ 'username' : 'Tom',
+                                             'password' : '123456',
+                                             'user_type' : 'customer',
+                                             'email' : 'tommeng@berkeley.edu',
+                                             }), content_type='application/json')
+        response = views.create_user(request);
+
+        request = self.factory.post("/api/list/create", json.dumps({
+                                             'username': 'Tom',
+                                             'name': "Tom's shopping list"
+                                             }), content_type='application/json')
+        response = views.create_list(request)
+        respList = self.getDataFromResponse(response)
+        arguments = { 'username': 'Tom'}
+        request = self.factory.get("/api/get/list?" + urllib.urlencode(arguments), content_type='application/json')
+
+        response = views.get_listIDs(request)
+        respGetListIDs = self.getDataFromResponse(response)
+        self.assertEquals(0, len(respGetListIDs['errors']))
+        self.assertEquals(1, len(respGetListIDs['listIDs']))
 
     def testEditList(self):
         request = self.factory.post("/api/user/create", json.dumps({ 'username' : 'Tom',
@@ -975,7 +1242,57 @@ class TestUnitViewsCarts(TestCase):
     #     self.assertEquals("invalid username and password combination", respLogin['errors'][0], "")
 
 
+    def testReviewItem(self):
+        request = self.factory.post("/api/user/create", json.dumps({ 'username' : 'Tom',
+                                             'password' : '123456',
+                                             'user_type' : 'customer',
+                                             'email' : 'tommeng@berkeley.edu',
+                                             }), content_type='application/json')
+        response = views.create_user(request)
+
+        request = self.factory.post("/api/store/create", json.dumps({ 'username' : 'Tom',
+                                             'name' : 'Tom store',
+                                             'address' : '1234 12th st.\n \nBerkeley\nCA\n94704',
+                                             'phone_number' : '(510)642-6000',
+                                             #'picture' : 'pic',
+                                             #'description' : 'This is a very good store'
+                                             }), content_type='application/json')
+        response = views.create_store(request)
+        respCreateStore = self.getDataFromResponse(response)
+
+        request = self.factory.post("/api/inventory/create", json.dumps({ 'username' : 'Tom'
+                                             }), content_type='application/json')
+        response = views.get_user_inventory(request)
+        respGetInventory = self.getDataFromResponse(response)
 
 
+        request = self.factory.post("/api/inventory/add", json.dumps({ 'inventoryID' : respGetInventory['inventoryID'],
+                                             'name' : 'apple',
+                                             'description': 'Fuji',
+                                             'picture': 'the picture',
+                                             'price': '2.00'
+                                             }), content_type='application/json')
+        response = views.create_item(request)
+        respCreateItem = self.getDataFromResponse(response)
+ 
+        request = self.factory.post("/api/review/add", json.dumps({
+                                             'username': 'Tom',
+                                             'itemID' : respCreateItem['itemID'],
+                                             'storeID' : respCreateStore['storeID'],
+                                             'rating': 5,
+                                             'text': 'Very good'
+                                             }), content_type='application/json')
+        response = views.add_review(request)
+        respAddReview = self.getDataFromResponse(response)
+        self.assertEquals(0, len(respAddReview['errors']))
+
+        arguments = { 'itemID' : respCreateItem['itemID'],
+                      'storeID' : respCreateStore['storeID'],
+                      'reviewID' : respAddReview['reviewID']
+                    }
+        request = self.factory.get("/api/get/list?" + urllib.urlencode(arguments), content_type='application/json')
+        response = views.get_reviews(request)
+        respGetReview = self.getDataFromResponse(response)
+        self.assertEquals(0, len(respGetReview['errors']))
 
 
