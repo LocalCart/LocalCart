@@ -1144,7 +1144,7 @@ def import_inventory(request):
             for i in queryset:
                 counter += 1
                 items.append({
-                              'id' : i.id,
+                              'itemID' : i.id,
                               'storeName': i.store.name,
                               'index': counter,
                               'name': i.name,
