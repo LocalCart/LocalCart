@@ -244,10 +244,11 @@ def create_store(request):
     post = QueryDict('', mutable=True)
     post.update(json.loads(request.body))
     errors, user = extract_user(request, errors)
-    current_user_info = UserInfo.objects.get(user=user)
-    current_user_type = current_user_info.user_type
-    if current_user_type != "merchant":
-        errors.append('Only merchants can create stores')
+    if user:
+        current_user_info = UserInfo.objects.get(user=user)
+        current_user_type = current_user_info.user_type
+        if current_user_type != "merchant":
+            errors.append('Only merchants can create stores')
     name = post.get('name', '')
 
     # If using the address format
@@ -1100,6 +1101,7 @@ def extract_user(request, errors):
 def import_inventory(request):
     assert request.method == 'POST', 'api/inventory/import requires a POST request'
     errors = []
+    # try:
     post = request.POST
     files = request.FILES
     inventoryID = post.get('inventoryID', '')
@@ -1109,8 +1111,11 @@ def import_inventory(request):
     dataset.csv = default_storage.open(path).read()
     try:
         dataset.headers = ('id', 'name', 'description', 'price', 'picture')
-    except:
-        errors.append('File formatted incorrectly: missing column')
+    # except Exception as e:
+    #     errors.append('%s (%s)' % (e.message, type(e))) 
+    #     errors.append('File formatted incorrectly: check for dollar signs in prices or missing columns')
+    except tablib.core.InvalidDimensions:
+        errors.append('File formatted incorrectly: missing columns')
     try:
         inventoryID = int(inventoryID)
     except ValueError:
@@ -1121,7 +1126,7 @@ def import_inventory(request):
             errors.append('inventoryID is not valid')
             map_markers = []
         else:
-            storeID = Inventory.objects.get(id=inventoryID).store
+            storeID = Inventory.objects.get(id=inventoryID).store.id
             store_list = []
             inventory_list = []
             for x in xrange(dataset.height):
@@ -1132,7 +1137,7 @@ def import_inventory(request):
             item_resource = ItemResource()
             result = item_resource.import_data(dataset, dry_run=True)
             if not result.has_errors():
-                result = item_resource.import_data(dataset, dry_run=False)
+                    result = item_resource.import_data(dataset, dry_run=False)
             else:
                 errors.append('not correct')
     reponse = {
@@ -1140,6 +1145,9 @@ def import_inventory(request):
                'errors': errors,
               }
     default_storage.delete(path)
+    # except ValueError:
+    #     errors.append('%s (%s)' % (e.message, type(e))) 
+    #     errors.append('File formatted incorrectly: check for dollar signs in prices or missing columns')
     return HttpResponse(json.dumps(reponse), content_type='application/json')
 
 

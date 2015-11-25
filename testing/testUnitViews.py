@@ -197,7 +197,7 @@ class TestUnitViewsStore(TestCase):
     def testCreateStore(self):
         request = self.factory.post("/api/user/create", json.dumps({ 'username' : 'Tom',
                                              'password' : '123456',
-                                             'user_type' : 'customer',
+                                             'user_type' : 'merchant',
                                              'email' : 'tommeng@berkeley.edu',
                                              }), content_type='application/json')
         response = views.create_user(request)
@@ -214,10 +214,30 @@ class TestUnitViewsStore(TestCase):
         self.assertSuccessResponse(respCreateStore)
         self.assertEquals(0, len(respCreateStore['errors']))
 
-    def testCreateStoreUsernameNotExist(self):
+    def testCreateStoreCustomer(self):
         request = self.factory.post("/api/user/create", json.dumps({ 'username' : 'Tom',
                                              'password' : '123456',
                                              'user_type' : 'customer',
+                                             'email' : 'tommeng@berkeley.edu',
+                                             }), content_type='application/json')
+        response = views.create_user(request)
+
+        request = self.factory.post("/api/store/create", json.dumps({ 'username' : 'Tom',
+                                             'name' : 'Tom store',
+                                             'address' : '1234 12th st.\n \nBerkeley\nCA\n94704',
+                                             'phone_number' : '(510)642-6000',
+                                             #'picture' : 'pic',
+                                             #'description' : 'This is a very good store'
+                                             }), content_type='application/json')
+        response = views.create_store(request)
+        respCreateStore = self.getDataFromResponse(response)
+        self.assertSuccessResponse(respCreateStore)
+        self.assertEquals(1, len(respCreateStore['errors']))
+
+    def testCreateStoreUsernameNotExist(self):
+        request = self.factory.post("/api/user/create", json.dumps({ 'username' : 'Tom',
+                                             'password' : '123456',
+                                             'user_type' : 'merchant',
                                              'email' : 'tommeng@berkeley.edu',
                                              }), content_type='application/json')
         response = views.create_user(request)
@@ -238,7 +258,7 @@ class TestUnitViewsStore(TestCase):
     def testCreateStoreInvalidFields(self):
         request = self.factory.post("/api/user/create", json.dumps({ 'username' : 'Tom',
                                              'password' : '123456',
-                                             'user_type' : 'customer',
+                                             'user_type' : 'merchant',
                                              'email' : 'tommeng@berkeley.edu',
                                              }), content_type='application/json')
         response = views.create_user(request)
@@ -294,7 +314,7 @@ class TestUnitViewsInventory(TestCase):
     def testGetInventory(self):
         request = self.factory.post("/api/user/create", json.dumps({ 'username' : 'Tom',
                                              'password' : '123456',
-                                             'user_type' : 'customer',
+                                             'user_type' : 'merchant',
                                              'email' : 'tommeng@berkeley.edu',
                                              }), content_type='application/json')
         response = views.create_user(request)
@@ -317,7 +337,7 @@ class TestUnitViewsInventory(TestCase):
     # def testCreateInventoryWithoutStoreID(self):
     #     request = self.factory.post("/api/user/create", json.dumps({ 'username' : 'Tom',
     #                                          'password' : '123456',
-    #                                          'user_type' : 'customer',
+    #                                          'user_type' : 'merchant',
     #                                          'email' : 'tommeng@berkeley.edu',
     #                                          }), content_type='application/json')
     #     response = views.create_user(request)
@@ -341,7 +361,7 @@ class TestUnitViewsInventory(TestCase):
     # def testCreateInventoryWithStoreIDNotExist(self):
     #     request = self.factory.post("/api/user/create", json.dumps({ 'username' : 'Tom',
     #                                          'password' : '123456',
-    #                                          'user_type' : 'customer',
+    #                                          'user_type' : 'merchant',
     #                                          'email' : 'tommeng@berkeley.edu',
     #                                          }), content_type='application/json')
     #     response = views.create_user(request)
@@ -365,7 +385,7 @@ class TestUnitViewsInventory(TestCase):
     # def testCreateInventoryTwice(self):
     #     request = self.factory.post("/api/user/create", json.dumps({ 'username' : 'Tom',
     #                                          'password' : '123456',
-    #                                          'user_type' : 'customer',
+    #                                          'user_type' : 'merchant',
     #                                          'email' : 'tommeng@berkeley.edu',
     #                                          }), content_type='application/json')
     #     response = views.create_user(request)
@@ -425,7 +445,7 @@ class TestUnitViewsItem(TestCase):
     def testCreateItem(self):
         request = self.factory.post("/api/user/create", json.dumps({ 'username' : 'Tom',
                                              'password' : '123456',
-                                             'user_type' : 'customer',
+                                             'user_type' : 'merchant',
                                              'email' : 'tommeng@berkeley.edu',
                                              }), content_type='application/json')
         response = views.create_user(request)
@@ -461,7 +481,7 @@ class TestUnitViewsItem(TestCase):
     def testCreateItemWithoutInventoryID(self):
         request = self.factory.post("/api/user/create", json.dumps({ 'username' : 'Tom',
                                              'password' : '123456',
-                                             'user_type' : 'customer',
+                                             'user_type' : 'merchant',
                                              'email' : 'tommeng@berkeley.edu',
                                              }), content_type='application/json')
         response = views.create_user(request)
@@ -495,7 +515,7 @@ class TestUnitViewsItem(TestCase):
     def testCreateItemWithInventoryIDNotExist(self):
         request = self.factory.post("/api/user/create", json.dumps({ 'username' : 'Tom',
                                              'password' : '123456',
-                                             'user_type' : 'customer',
+                                             'user_type' : 'merchant',
                                              'email' : 'tommeng@berkeley.edu',
                                              }), content_type='application/json')
         response = views.create_user(request)
@@ -529,7 +549,7 @@ class TestUnitViewsItem(TestCase):
     def testCreateItemInvalidItemFields(self):
         request = self.factory.post("/api/user/create", json.dumps({ 'username' : 'Tom',
                                              'password' : '123456',
-                                             'user_type' : 'customer',
+                                             'user_type' : 'merchant',
                                              'email' : 'tommeng@berkeley.edu',
                                              }), content_type='application/json')
         response = views.create_user(request)
@@ -562,7 +582,7 @@ class TestUnitViewsItem(TestCase):
     def testImportInventory(self):
         request = self.factory.post("/api/user/create", json.dumps({ 'username' : 'Tom',
                                              'password' : '123456',
-                                             'user_type' : 'customer',
+                                             'user_type' : 'merchant',
                                              'email' : 'tommeng@berkeley.edu',
                                              }), content_type='application/json')
         response = views.create_user(request)
@@ -582,7 +602,7 @@ class TestUnitViewsItem(TestCase):
         respCreateInventory = self.getDataFromResponse(response)
 
         request = self.factory.post("/api/inventory/import", { 'inventoryID' : respCreateInventory['inventoryID'],
-                                             'dataset' : open('DummyDB.csv'),
+                                             'dataset' : open('DummyDBPerfect.csv'),
                                              })
         response = views.import_inventory(request)
         respCreateItem = self.getDataFromResponse(response)
@@ -593,7 +613,7 @@ class TestUnitViewsItem(TestCase):
     def testImportInventoryNoID(self):
         request = self.factory.post("/api/user/create", json.dumps({ 'username' : 'Tom',
                                              'password' : '123456',
-                                             'user_type' : 'customer',
+                                             'user_type' : 'merchant',
                                              'email' : 'tommeng@berkeley.edu',
                                              }), content_type='application/json')
         response = views.create_user(request)
@@ -619,12 +639,43 @@ class TestUnitViewsItem(TestCase):
         respCreateItem = self.getDataFromResponse(response)
         self.assertSuccessResponse(respCreateItem)
         self.assertEquals(1, len(respCreateItem['errors']))
+
+        ###TODO
+    # def testImportInventoryDollarSigns(self):
+    #     request = self.factory.post("/api/user/create", json.dumps({ 'username' : 'Tom',
+    #                                          'password' : '123456',
+    #                                          'user_type' : 'merchant',
+    #                                          'email' : 'tommeng@berkeley.edu',
+    #                                          }), content_type='application/json')
+    #     response = views.create_user(request)
+
+    #     request = self.factory.post("/api/store/create", json.dumps({ 'username' : 'Tom',
+    #                                          'name' : 'Tom store',
+    #                                          'address' : '1234 12th st.\n \nBerkeley\nCA\n94704',
+    #                                          'phone_number' : '(510)642-6000',
+    #                                          #'picture' : 'pic',
+    #                                          #'description' : 'This is a very good store'
+    #                                          }), content_type='application/json')
+    #     response = views.create_store(request)
+    #     respCreateStore = self.getDataFromResponse(response)
+
+    #     request = self.factory.get("/api/inventory/getUser?" + urllib.urlencode({'username' : 'Tom'}), content_type='application/json')
+    #     response = views.get_user_inventory(request)
+    #     respCreateInventory = self.getDataFromResponse(response)
+
+    #     request = self.factory.post("/api/inventory/import", { 'inventoryID' : respCreateInventory['inventoryID'],
+    #                                          'dataset' : open('DummyDBDollarSign.csv'),
+    #                                          })
+    #     response = views.import_inventory(request)
+    #     respCreateItem = self.getDataFromResponse(response)
+    #     self.assertSuccessResponse(respCreateItem)
+    #     self.assertEquals(1, len(respCreateItem['errors']), respCreateItem['errors'][0])
 # #######################################################################################################
 
     def testEditItem(self):
         request = self.factory.post("/api/user/create", json.dumps({ 'username' : 'Tom',
                                              'password' : '123456',
-                                             'user_type' : 'customer',
+                                             'user_type' : 'merchant',
                                              'email' : 'tommeng@berkeley.edu',
                                              }), content_type='application/json')
         response = views.create_user(request)
@@ -667,7 +718,7 @@ class TestUnitViewsItem(TestCase):
     def testEditItemWithoutItemID(self):
         request = self.factory.post("/api/user/create", json.dumps({ 'username' : 'Tom',
                                              'password' : '123456',
-                                             'user_type' : 'customer',
+                                             'user_type' : 'merchant',
                                              'email' : 'tommeng@berkeley.edu',
                                              }), content_type='application/json')
         response = views.create_user(request)
@@ -709,7 +760,7 @@ class TestUnitViewsItem(TestCase):
     def testEditItemWithItemIDNotExist(self):
         request = self.factory.post("/api/user/create", json.dumps({ 'username' : 'Tom',
                                              'password' : '123456',
-                                             'user_type' : 'customer',
+                                             'user_type' : 'merchant',
                                              'email' : 'tommeng@berkeley.edu',
                                              }), content_type='application/json')
         response = views.create_user(request)
@@ -756,7 +807,7 @@ class TestUnitViewsItem(TestCase):
     def testSearchItem(self):
         request = self.factory.post("/api/user/create", json.dumps({ 'username' : 'Tom',
                                              'password' : '123456',
-                                             'user_type' : 'customer',
+                                             'user_type' : 'merchant',
                                              'email' : 'tommeng@berkeley.edu',
                                              }), content_type='application/json')
         response = views.create_user(request)

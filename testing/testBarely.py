@@ -100,8 +100,27 @@ class TestCarts(testLib.CartTestCase):
         self.assertFailResponse(respLogin)
         self.assertEquals("invalid username and password combination", respLogin['errors'][0], "")
 
-
     def testCreateStore(self):
+        respCreate = self.makeRequest("/api/user/create", method="POST",
+                                    data = { 'username' : 'Tom',
+                                             'password' : '123456',
+                                             'user_type' : 'merchant',
+                                             'email' : 'tommeng@berkeley.edu'
+                                             })
+
+        self.assertSuccessResponse(respCreate)
+
+        respCreateStore = self.makeRequest("/api/store/create", method="POST",
+                                    data = { 'username' : 'Tom',
+                                             'name' : 'Tom store',
+                                             'address' : '1234 12th st.\n\nBerkeley\nCA\n94704',
+                                             'phone_number' : '(510)642-6000',
+                                             #'picture' : 'pic',
+                                             #'description' : 'This is a very good store'
+                                             })
+        self.assertSuccessResponse(respCreateStore)
+
+    def testCreateStoreCustomer(self):
         respCreate = self.makeRequest("/api/user/create", method="POST",
                                     data = { 'username' : 'Tom',
                                              'password' : '123456',
@@ -119,33 +138,33 @@ class TestCarts(testLib.CartTestCase):
                                              #'picture' : 'pic',
                                              #'description' : 'This is a very good store'
                                              })
-        self.assertSuccessResponse(respCreateStore)
-
-    def testCreateStoreNoUserName(self):
-        respCreate = self.makeRequest("/api/user/create", method="POST",
-                                    data = { 'username' : 'Tom',
-                                             'password' : '123456',
-                                             'user_type' : 'customer',
-                                             'email' : 'tommeng@berkeley.edu'
-                                             })
-
-        self.assertSuccessResponse(respCreate)
-
-        respCreateStore = self.makeRequest("/api/store/create", method="POST",
-                                    data = { 'username' : '',
-                                             'name' : 'Tom Store',
-                                             'address' : '1234 12th st.\n\nBerkeley\nCA\n94704',
-                                             'phone_number' : '(510)642-6000',
-                                             #'picture' : 'pic',
-                                             #'description' : 'This is a very good store'
-                                             })
         self.assertFailResponse(respCreateStore)
+
+    # def testCreateStoreNoUserName(self):
+    #     respCreate = self.makeRequest("/api/user/create", method="POST",
+    #                                 data = { 'username' : 'Tom',
+    #                                          'password' : '123456',
+    #                                          'user_type' : 'merchant',
+    #                                          'email' : 'tommeng@berkeley.edu'
+    #                                          })
+
+    #     self.assertSuccessResponse(respCreate)
+
+    #     respCreateStore = self.makeRequest("/api/store/create", method="POST",
+    #                                 data = { 'username' : '',
+    #                                          'name' : 'Tom Store',
+    #                                          'address' : '1234 12th st.\n\nBerkeley\nCA\n94704',
+    #                                          'phone_number' : '(510)642-6000',
+    #                                          #'picture' : 'pic',
+    #                                          #'description' : 'This is a very good store'
+    #                                          })
+    #     self.assertFailResponse(respCreateStore)
 
     def testCreateStoreUserNameNotExist(self):
         respCreate = self.makeRequest("/api/user/create", method="POST",
                                     data = { 'username' : 'Tom',
                                              'password' : '123456',
-                                             'user_type' : 'customer',
+                                             'user_type' : 'merchant',
                                              'email' : 'tommeng@berkeley.edu'
                                              })
 
@@ -166,7 +185,7 @@ class TestCarts(testLib.CartTestCase):
         respCreate = self.makeRequest("/api/user/create", method="POST",
                                     data = { 'username' : 'Tom',
                                              'password' : '123456',
-                                             'user_type' : 'customer',
+                                             'user_type' : 'merchant',
                                              'email' : 'tommeng@berkeley.edu'
                                              })
 
@@ -188,7 +207,7 @@ class TestCarts(testLib.CartTestCase):
         respCreate = self.makeRequest("/api/user/create", method="POST",
                                     data = { 'username' : 'Tom',
                                              'password' : '123456',
-                                             'user_type' : 'customer',
+                                             'user_type' : 'merchant',
                                              'email' : 'tommeng@berkeley.edu'
                                              })
 
@@ -208,7 +227,7 @@ class TestCarts(testLib.CartTestCase):
         respCreate = self.makeRequest("/api/user/create", method="POST",
                                     data = { 'username' : 'Tom',
                                              'password' : '123456',
-                                             'user_type' : 'customer',
+                                             'user_type' : 'merchant',
                                              'email' : 'tommeng@berkeley.edu'
                                              })
 
@@ -228,7 +247,7 @@ class TestCarts(testLib.CartTestCase):
         respCreate = self.makeRequest("/api/user/create", method="POST",
                                     data = { 'username' : 'Tom',
                                              'password' : '123456',
-                                             'user_type' : 'customer',
+                                             'user_type' : 'merchant',
                                              'email' : 'tommeng@berkeley.edu'
                                              })
 
@@ -258,11 +277,11 @@ class TestCarts(testLib.CartTestCase):
 #################################################################################################
         
 
-    def testCreateInventory(self):
+    def testGetInventory(self):
         respCreate = self.makeRequest("/api/user/create", method="POST",
                                     data = { 'username' : 'Tom',
                                              'password' : '123456',
-                                             'user_type' : 'customer',
+                                             'user_type' : 'merchant',
                                              'email' : 'tommeng@berkeley.edu'
                                              })
 
@@ -283,7 +302,7 @@ class TestCarts(testLib.CartTestCase):
     #     respCreate = self.makeRequest("/api/user/create", method="POST",
     #                                 data = { 'username' : 'Tom',
     #                                          'password' : '123456',
-    #                                          'user_type' : 'customer',
+    #                                          'user_type' : 'merchant',
     #                                          'email' : 'tommeng@berkeley.edu'
     #                                          })
 
@@ -305,7 +324,7 @@ class TestCarts(testLib.CartTestCase):
     #     respCreate = self.makeRequest("/api/user/create", method="POST",
     #                                 data = { 'username' : 'Tom',
     #                                          'password' : '123456',
-    #                                          'user_type' : 'customer',
+    #                                          'user_type' : 'merchant',
     #                                          'email' : 'tommeng@berkeley.edu'
     #                                          })
 
@@ -329,7 +348,7 @@ class TestCarts(testLib.CartTestCase):
         respCreate = self.makeRequest("/api/user/create", method="POST",
                                     data = { 'username' : 'Tom',
                                              'password' : '123456',
-                                             'user_type' : 'customer',
+                                             'user_type' : 'merchant',
                                              'email' : 'tommeng@berkeley.edu'
                                              })
 
@@ -360,7 +379,7 @@ class TestCarts(testLib.CartTestCase):
         respCreate = self.makeRequest("/api/user/create", method="POST",
                                     data = { 'username' : 'Tom',
                                              'password' : '123456',
-                                             'user_type' : 'customer',
+                                             'user_type' : 'merchant',
                                              'email' : 'tommeng@berkeley.edu'
                                              })
 
@@ -390,7 +409,7 @@ class TestCarts(testLib.CartTestCase):
         respCreate = self.makeRequest("/api/user/create", method="POST",
                                     data = { 'username' : 'Tom',
                                              'password' : '123456',
-                                             'user_type' : 'customer',
+                                             'user_type' : 'merchant',
                                              'email' : 'tommeng@berkeley.edu'
                                              })
 
@@ -420,7 +439,7 @@ class TestCarts(testLib.CartTestCase):
         respCreate = self.makeRequest("/api/user/create", method="POST",
                                     data = { 'username' : 'Tom',
                                              'password' : '123456',
-                                             'user_type' : 'customer',
+                                             'user_type' : 'merchant',
                                              'email' : 'tommeng@berkeley.edu'
                                              })
 
@@ -450,7 +469,7 @@ class TestCarts(testLib.CartTestCase):
         respCreate = self.makeRequest("/api/user/create", method="POST",
                                     data = { 'username' : 'Tom',
                                              'password' : '123456',
-                                             'user_type' : 'customer',
+                                             'user_type' : 'merchant',
                                              'email' : 'tommeng@berkeley.edu'
                                              })
 
@@ -480,7 +499,7 @@ class TestCarts(testLib.CartTestCase):
         respCreate = self.makeRequest("/api/user/create", method="POST",
                                     data = { 'username' : 'Tom',
                                              'password' : '123456',
-                                             'user_type' : 'customer',
+                                             'user_type' : 'merchant',
                                              'email' : 'tommeng@berkeley.edu'
                                              })
 
@@ -510,7 +529,7 @@ class TestCarts(testLib.CartTestCase):
         respCreate = self.makeRequest("/api/user/create", method="POST",
                                     data = { 'username' : 'Tom',
                                              'password' : '123456',
-                                             'user_type' : 'customer',
+                                             'user_type' : 'merchant',
                                              'email' : 'tommeng@berkeley.edu'
                                              })
 
@@ -543,7 +562,7 @@ class TestCarts(testLib.CartTestCase):
         respCreate = self.makeRequest("/api/user/create", method="POST",
                                     data = { 'username' : 'Tom',
                                              'password' : '123456',
-                                             'user_type' : 'customer',
+                                             'user_type' : 'merchant',
                                              'email' : 'tommeng@berkeley.edu'
                                              })
 
@@ -582,7 +601,7 @@ class TestCarts(testLib.CartTestCase):
         respCreate = self.makeRequest("/api/user/create", method="POST",
                                     data = { 'username' : 'Tom',
                                              'password' : '123456',
-                                             'user_type' : 'customer',
+                                             'user_type' : 'merchant',
                                              'email' : 'tommeng@berkeley.edu'
                                              })
 
@@ -621,7 +640,7 @@ class TestCarts(testLib.CartTestCase):
         respCreate = self.makeRequest("/api/user/create", method="POST",
                                     data = { 'username' : 'Tom',
                                              'password' : '123456',
-                                             'user_type' : 'customer',
+                                             'user_type' : 'merchant',
                                              'email' : 'tommeng@berkeley.edu'
                                              })
 
@@ -661,7 +680,7 @@ class TestCarts(testLib.CartTestCase):
         respCreate = self.makeRequest("/api/user/create", method="POST",
                                     data = { 'username' : 'Tom',
                                              'password' : '123456',
-                                             'user_type' : 'customer',
+                                             'user_type' : 'merchant',
                                              'email' : 'tommeng@berkeley.edu'
                                              })
 
@@ -700,7 +719,7 @@ class TestCarts(testLib.CartTestCase):
         respCreate = self.makeRequest("/api/user/create", method="POST",
                                     data = { 'username' : 'Tom',
                                              'password' : '123456',
-                                             'user_type' : 'customer',
+                                             'user_type' : 'merchant',
                                              'email' : 'tommeng@berkeley.edu'
                                              })
 
@@ -739,7 +758,7 @@ class TestCarts(testLib.CartTestCase):
         respCreate = self.makeRequest("/api/user/create", method="POST",
                                     data = { 'username' : 'Tom',
                                              'password' : '123456',
-                                             'user_type' : 'customer',
+                                             'user_type' : 'merchant',
                                              'email' : 'tommeng@berkeley.edu'
                                              })
 
@@ -779,7 +798,7 @@ class TestCarts(testLib.CartTestCase):
         respCreate = self.makeRequest("/api/user/create", method="POST",
                                     data = { 'username' : 'Tom',
                                              'password' : '123456',
-                                             'user_type' : 'customer',
+                                             'user_type' : 'merchant',
                                              'email' : 'tommeng@berkeley.edu'
                                              })
 
@@ -821,7 +840,7 @@ class TestCarts(testLib.CartTestCase):
         respCreate = self.makeRequest("/api/user/create", method="POST",
                                     data = { 'username' : 'Tom',
                                              'password' : '123456',
-                                             'user_type' : 'customer',
+                                             'user_type' : 'merchant',
                                              'email' : 'tommeng@berkeley.edu'
                                              })
 
