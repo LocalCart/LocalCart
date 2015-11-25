@@ -240,7 +240,10 @@ def create_store(request):
     post = QueryDict('', mutable=True)
     post.update(json.loads(request.body))
     errors, user = extract_user(request, errors)
-    
+    current_user_info = UserInfo.objects.get(user=user)
+    current_user_type = current_user_info.user_type
+    if current_user_type != "merchant":
+        errors.append('Only merchants can create stores')
     name = post.get('name', '')
 
     # If using the address format
