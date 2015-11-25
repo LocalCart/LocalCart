@@ -7,6 +7,10 @@ import time
 from django import forms
 from django.contrib.auth import authenticate, login, logout
 from django.core.exceptions import ValidationError, ObjectDoesNotExist, MultipleObjectsReturned
+import tablib
+from admin import *
+from django.core.files.storage import default_storage
+from django.core.files.base import ContentFile
 
     # Use this code if the POST request sends parameters
     # post = request.POST
@@ -39,6 +43,10 @@ def search_render(request):
 @csrf_exempt
 def inventory_render(request):
     return render(request, 'inventory.html', context={})
+
+@csrf_exempt
+def store_render(request):
+    return render(request, 'store.html', context={})
 
 @csrf_exempt
 def empty_db(request):
@@ -116,7 +124,7 @@ def create_user(request):
     if user_type not in ['merchant', 'customer']:
         errors.append('user_type must be either merchant or customer')
     email = post.get('email', '')
-    picture = post.get('picture', 'images/default_user_image') # Make this default
+    picture = post.get('picture', default_image) # Make this default
     fields = [
               'username',
               'password',
@@ -166,7 +174,7 @@ def edit_user(request):
     if (password is not None) and not password:
         errors.append('password must not be empty')
     if (picture is not None) and not picture:
-        picture = 'images/default_user_image'
+        picture = default_image
     if len(errors) == 0:
         try:
             current_user_info = UserInfo.edit_user_info(username=username, first_name=first_name, 
@@ -235,9 +243,12 @@ def create_store(request):
     errors = []
     post = QueryDict('', mutable=True)
     post.update(json.loads(request.body))
-
     errors, user = extract_user(request, errors)
-    
+    if user:
+        current_user_info = UserInfo.objects.get(user=user)
+        current_user_type = current_user_info.user_type
+        if current_user_type != "merchant":
+            errors.append('Only merchants can create stores')
     name = post.get('name', '')
 
     # If using the address format
@@ -254,29 +265,30 @@ def create_store(request):
         errors.append('address not correctly formatted')
 
     phone_number = post.get('phone_number', '')
-    description = post.get('description', 'Good Store') #default
+    description = post.get('description', '') #default
     picture = post.get('picture', '') #default
     if not picture:
-        picture = 'images/default_user_image'
+        picture = default_image
     fields = [
               'name',
               'address',
               'phone_number',
              ]
     errors = check_empty(fields, post, errors)
-    if len(errors) > 0:
-        return return_error(errors)
-    try:
-        new_store = Store.create_new_store(user=user, name=name, description=description, picture=picture,
-                          address_street=address_street, address_city=address_city,
-                          address_state=address_state, address_zip = address_zip,
-                          phone_number=phone_number)
-    except ValidationError as e:
-        errors.append(e)
-        return return_error(errors)
+    storeID = -1
+    if len(errors) == 0:
+        try:
+            new_store = Store.create_new_store(user=user, name=name, description=description, picture=picture,
+                              address_street=address_street, address_city=address_city,
+                              address_state=address_state, address_zip = address_zip,
+                              phone_number=phone_number)
+        except ValidationError as e:
+            errors.append(e)
+        else:
+            storeID = new_store.id
     reponse = {
                'status': 200,
-               'storeID': new_store.id,
+               'storeID': storeID,
                'errors': errors
               }
     return HttpResponse(json.dumps(reponse), content_type='application/json')
@@ -388,9 +400,9 @@ def get_store(request):
                 "status": 200,
                 "errors": []
                 }
-    get = QueryDict('', mutable=True)
-    get.update(json.loads(request.body))
-    storeID = get.get('storeID', '')
+    post = QueryDict('', mutable=True)
+    post.update(json.loads(request.body))
+    storeID = post.get('storeID', '')
     if storeID == "":
         retData["errors"].append("storeID must be non-empty")
         hasError = True
@@ -458,9 +470,38 @@ def get_inventory(request):
         retData["inventory"] = inventory
     return HttpResponse(json.dumps(retData), content_type='application/json', status=200)
 
+@csrf_exempt
+def get_inventory_store(request):
+    errors = []
+    post = QueryDict('', mutable=True)
+    post.update(json.loads(request.body))
+    storeID = post.get('storeID', '')
+    hasError = False
+    inventory_list = []
+    inventoryID = -1
+    if storeID == "":
+        errors.append("store must be non-empty")
+        hasError = True
+    if not hasError:
+        if not Store.objects.filter(id=storeID).exists():
+          errors.append("StoreID doesn't exist")
+          store = None
+        else:
+          store = Store.objects.get(id=storeID)
+          inventory = Inventory.objects.get(store=store)
+          inventoryID = inventory.id
+          hasError, inventory_list = Inventory.get_inventory(inventory.id)
+    response = {
+       'status': 200,
+       'inventoryID': inventoryID,
+       'contents': inventory_list,
+       'errors': errors
+      }
+    return HttpResponse(json.dumps(response), content_type='application/json', status=200)
 
 @csrf_exempt
 def get_user_inventory(request):
+    assert request.method == 'GET', 'api/inventory/getUser requires a GET request'
     errors = []
     errors, user = extract_user(request, errors)
     inventory_list = []
@@ -478,6 +519,7 @@ def get_user_inventory(request):
             inventory = Inventory.objects.get(store=store)
             inventoryID = inventory.id
             hasError, inventory_list = Inventory.get_inventory(inventory.id)
+    print errors
     response = {
                'status': 200,
                'inventoryID': inventoryID,
@@ -524,11 +566,13 @@ def create_item(request):
         errors.append('price must be a positive number')
     picture = post.get('picture', '')
     if not picture:
-        picture = 'images/default_user_image'
+        picture = default_image
     if len(errors) > 0:
+        print errors
         return return_error(errors)
     if Item.objects.filter(name=name, inventory_id=inventoryID).exists():
         errors.append('items in inventory must have unique names')
+        print errors
         return return_error(errors)       
     try:
         new_item = Item(store=store, inventory=inventory, name=name,
@@ -537,12 +581,15 @@ def create_item(request):
         new_item.save()
     except ValidationError as e:
         errors.append(str(e))
+        print errors
         return return_error(errors)
     reponse = {
                'status': 200,
                'itemID': new_item.id,
                'errors': errors
               }
+    print new_item.id
+    print 200
     return HttpResponse(json.dumps(reponse), content_type='application/json')
 
 @csrf_exempt
@@ -622,6 +669,7 @@ def delete_item(request):
     post = QueryDict('', mutable=True)
     post.update(json.loads(request.body))
     itemID = post.get('itemID', '')
+    index = post.get('index', '')
     try:
         itemID = int(itemID)
     except ValueError:
@@ -636,52 +684,13 @@ def delete_item(request):
         Item.objects.filter(id=itemID).delete()
     reponse = {
                'status': 200,
+               'index': index,
                'errors': errors,
               }
     return HttpResponse(json.dumps(reponse), content_type='application/json')
 
 def getZip(address):
     return address.split('\n')[4]
-
-# Basic version of search checks if item name contains
-@csrf_exempt
-def search_items(request):
-    assert request.method == 'GET', 'search requires a GET request'
-    errors = []
-    # get = QueryDict('', mutable=True)
-    # get.update(json.loads(request.body))
-    get = request.GET
-    query = get.get('query', '')
-    if not query:
-        errors.append('query must be non-empty')
-    location = get.get('location', '')
-    #Line1\nLine2\nCity\nState\n94704
-    if len(location.split('\n')) != 5:
-        errors.append('location incorrectly formatted')
-        address_zip = '!!!!!'
-    else:
-        address_zip = getZip(location)
-    if len(address_zip) != 5:
-        errors.append('zip code must be 5 characters')
-    if len(errors) > 0:
-        return return_error(errors)
-    items = Item.objects.filter(name__icontains=query, store__address_zip=address_zip)
-    if not items.exists():
-        errors.append('empty query')
-        return return_error(errors)
-
-    json_items = [i for i in items.values('store', 'inventory', 'name', 'description',
-                                        'price', 'picture', 'store__user', 'store__name',
-                                        'store__address_street','store__address_city',
-                                        'store__address_state',  'store__address_zip',
-                                        'store__phone_number',  'store__description',
-                                        'store__picture',)]
-    reponse = {
-               'status': 200,
-               'items': json_items,
-               'errors': errors
-              }
-    return HttpResponse(json.dumps(reponse), content_type='application/json')
 
 @csrf_exempt
 def create_list(request):
@@ -871,8 +880,24 @@ def edit_list(request):
             errors.append('Invalid listID')
         elif refill == 'VE':
             errors.append('List could not be entered into the database, reverted to previous state')
-    return return_error(errors)
-
+    entry = None
+    if len(errors) == 0:
+        hasError, cartlist = CartList.get_cartlist(listID)
+        if hasError:
+            errors.append("Can't get list from listID")
+        else:
+            name = CartList.objects.get(id=listID).name
+            entry = {
+                     'listName': name, 
+                     'listID': listID,
+                     'contents': cartlist
+                    }
+    reponse = {
+               'status': 200,
+               'entry': entry,
+               'errors': errors,
+              }
+    return HttpResponse(json.dumps(reponse), content_type='application/json')
 
 @csrf_exempt
 def map_list(request):
@@ -1016,24 +1041,186 @@ def get_reviews(request):
 
 
 
-def extract_user(request, errors):
-    post = QueryDict('', mutable=True)
-    user = None
-    if request.method == 'POST' and request.body:
-        post.update(json.loads(request.body))
-        username = post.get('username', '')
-    elif request.method == 'GET':
-        username = request.GET.get('username', '')
+@csrf_exempt
+def search_items(request):
+    assert request.method == 'GET', 'search requires a GET request'
+    errors = []
+    # get = QueryDict('', mutable=True)
+    # get.update(json.loads(request.body))
+    get = request.GET
+    query = get.get('query', '')
+    if not query:
+        errors.append('query must be non-empty')
+    location = get.get('location', '')
+    if not location.strip():
+        errors.append('location must be non-empty')
+        location_coord = (0, 0)
     else:
-        username = ''
+        location_coord = lat_lon(location)
+        if not location_coord:
+            location_coord = (0, 0)
+    json_items = []
+    if len(errors) == 0:
+        items, search_errors = Item.search_items(query, location)
+        if len(errors) > 0:
+            errors += search_errors
+        elif len(items) == 0:
+            errors.append('query returned no results')
+        else:
+            i = 0
+            for current_item in items:
+                i += 1
+                store = current_item.store
+                item = {
+                        'itemID': current_item.id,
+                        'storeID': store.id,
+                        'storeName': store.name,
+                        'name': current_item.name,
+                        'description': current_item.description,
+                        'picture': current_item.picture,
+                        'price': current_item.price,
+                        'address_street': store.address_street,
+                        'address_city': store.address_city,
+                        'address_state': store.address_state,
+                        'address_zip': store.address_zip,
+                        'index': i,
+                        }
+                address_list = [
+                                item['address_street'],
+                                item['address_city'],
+                                item['address_state'],
+                                item['address_zip'],
+                               ]
+                address = ' '.join(address_list)
+                # Google geo-caching is limited to 10 per second without a paid API key
+                if ((i + 1) % 10) == 0:
+                    time.sleep(1)
+                coord = lat_lon(address)
+                if coord:
+                    item['latitude'] = coord[0]
+                    item['longitude'] = coord[1]
+                    item['coordinates'] = 1
+                else:
+                    item['latitude'] = 0
+                    item['longitude'] = 0
+                    item['coordinates'] = 0
 
+                json_items.append(item)
+    response = {
+               'status': 200,
+               'items': json_items,
+               'latitude': location_coord[0],
+               'longitude': location_coord[1],
+               'errors': errors
+              }
+    return HttpResponse(json.dumps(response), content_type='application/json')
+
+
+def extract_user(request, errors):
+# <<<<<<< HEAD
+#     post = QueryDict('', mutable=True)
+#     user = None
+#     if request.method == 'POST' and request.body:
+#         post.update(json.loads(request.body))
+#         username = post.get('username', '')
+#     elif request.method == 'GET':
+#         username = request.GET.get('username', '')
+#     else:
+#         username = ''
+
+# =======
+    user = None
+    if request.method == 'POST':
+        if request.body:
+            post = QueryDict('', mutable=True)
+            post.update(json.loads(request.body))
+            username = post.get('username', '')
+        else:
+            username = ''
+    else:
+        get = request.GET
+        username = get.get('username', '')
+# >>>>>>> 4c09812d1c53fc96d3042b4f7ce82ef651611a1d
     if username:
         if User.objects.filter(username=username).exists():
             user = User.objects.get(username=username)
         else:
+            user = None
             errors.append('username does not exist')
     else:
         user = request.user
         if not user.is_authenticated():
             errors.append('user not logged in')
     return errors, user
+
+
+def import_inventory(request):
+    assert request.method == 'POST', 'api/inventory/import requires a POST request'
+    errors = []
+    # try:
+    post = request.POST
+    files = request.FILES
+    inventoryID = post.get('inventoryID', '')
+    imported_file = files['dataset']
+    path = default_storage.save('temporary.csv', ContentFile(imported_file.read()))
+    dataset = tablib.Dataset()
+    dataset.csv = default_storage.open(path).read()
+    try:
+        dataset.headers = ('id', 'name', 'description', 'price', 'picture')
+    # except Exception as e:
+    #     errors.append('%s (%s)' % (e.message, type(e))) 
+    #     errors.append('File formatted incorrectly: check for dollar signs in prices or missing columns')
+    except tablib.core.InvalidDimensions:
+        errors.append('File formatted incorrectly: missing columns')
+    try:
+        inventoryID = int(inventoryID)
+    except ValueError:
+        inventoryID = None
+        errors.append('inventoryID must be integers')
+    items = []
+    if len(errors) == 0:
+        if not Inventory.objects.filter(id=inventoryID).exists():
+            errors.append('inventoryID is not valid')
+            map_markers = []
+        else:
+            storeID = Inventory.objects.get(id=inventoryID).store.id
+            store_list = []
+            inventory_list = []
+            for x in xrange(dataset.height):
+                store_list.append(storeID)
+                inventory_list.append(inventoryID)
+            dataset.append_col(col=store_list, header='store')
+            dataset.append_col(col=inventory_list, header='inventory')
+            item_resource = ItemResource()
+            result = item_resource.import_data(dataset, dry_run=True)
+            if not result.has_errors():
+                    result = item_resource.import_data(dataset, dry_run=False)
+            else:
+                errors.append('not correct')
+            queryset = Item.objects.filter(inventory=inventoryID)
+            counter = 0
+            for i in queryset:
+                counter += 1
+                items.append({
+                              'itemID' : i.id,
+                              'storeName': i.store.name,
+                              'index': counter,
+                              'name': i.name,
+                              'description': i.description,
+                              'price': i.price,
+                              'picture': i.picture,
+                              })
+    reponse = {
+               'status': 200,
+               'items': items,
+               'errors': errors,
+              }
+    default_storage.delete(path)
+    # except ValueError:
+    #     errors.append('%s (%s)' % (e.message, type(e))) 
+    #     errors.append('File formatted incorrectly: check for dollar signs in prices or missing columns')
+    return HttpResponse(json.dumps(reponse), content_type='application/json')
+
+
+
+

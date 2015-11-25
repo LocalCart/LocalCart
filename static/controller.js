@@ -1,26 +1,37 @@
 var app = angular.module('LocalCart', []);
-
+var defaultImage = "data:image/svg+xml;base64,PD94bWwgdmVyc2lvbj0iMS4wIiBlbmNvZGluZz0iVVRGLTgiIHN0YW5kYWxvbmU9InllcyI/PjxzdmcgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIiB3aWR0aD0iNjQiIGhlaWdodD0iNjQiIHZpZXdCb3g9IjAgMCA2NCA2NCIgcHJlc2VydmVBc3BlY3RSYXRpbz0ibm9uZSI+PGRlZnMvPjxyZWN0IHdpZHRoPSI2NCIgaGVpZ2h0PSI2NCIgZmlsbD0iI0VFRUVFRSIvPjxnPjx0ZXh0IHg9IjEzLjQ2MDkzNzUiIHk9IjMyIiBzdHlsZT0iZmlsbDojQUFBQUFBO2ZvbnQtd2VpZ2h0OmJvbGQ7Zm9udC1mYW1pbHk6QXJpYWwsIEhlbHZldGljYSwgT3BlbiBTYW5zLCBzYW5zLXNlcmlmLCBtb25vc3BhY2U7Zm9udC1zaXplOjEwcHQ7ZG9taW5hbnQtYmFzZWxpbmU6Y2VudHJhbCI+NjR4NjQ8L3RleHQ+PC9nPjwvc3ZnPg==";
 app.config(function($interpolateProvider) {
   $interpolateProvider.startSymbol('[[');
   $interpolateProvider.endSymbol(']]');
 });
+
+app.config(function($locationProvider) {
+  $locationProvider.html5Mode({
+    enabled: true,
+    requireBase: false
+  });
+});
+
 
 app.controller('IndexController', function($http, $window) {
   var vm = this;
   vm.User = {};
   vm.searchQuery = "";
   vm.query = "";
+  vm.searchLocation = "";
   // add link get request
   // vm.searchResults = [];
   vm.tab = 0; // ListIDs index
   vm.listIDs = [];
   vm.currentListID = -1;
-  vm.searchResults = results;
+  vm.searchResults = [];
   vm.shoppingLists = shoppingLists;
   vm.newItemName = "";
   vm.current_user = "";
   vm.current_user_type = "";
   vm.mapped = "list" // search or list
+  vm.searchMarkers = [];
+  vm.listMarkers = [];
   $http.get("api/user/get").then(
       function successCallBack(response) {
         var data = response.data;
@@ -41,53 +52,69 @@ app.controller('IndexController', function($http, $window) {
                 if (data.errors.length == 0) {
                   vm.listIDs = data.listIDs;
                   vm.tab = 0;
-                  vm.currentListID = vm.listIDs[vm.tab];
+                  if (vm.listIDs.length > 0) {
+                    vm.currentListID = vm.listIDs[vm.tab];
+                  } else {
+                    vm.currentListID = -1
+                  }
+                  
                   vm.shoppingLists = data.allLists;
                 } else {
                   vm.currentListID = -1;
                 }
+                
+                if ((vm.current_user_type == "customer") && (vm.currentListID != -1)) {
+                  vm.mapList();
+                }
               }, errorCallBackGeneral);
         } else {
           // for (var i = 0; i < data.errors.length; i++) {
-            // alert(e);
             // $window.alert(data.errors[i]);
-            // console.error(e);
           // }
         }
       }, errorCallBackGeneral);
-
-
-  vm.search = function() {
-    vm.query = vm.searchQuery;
-  }
 
   vm.remove = function(index) {
     vm.shoppingLists[vm.tab].contents.splice(index, 1);
     if (vm.current_user != "") {
       vm.updateList();
     }
+    if (vm.currentDirections == "list") {
+      vm.directionsDisplay.setMap(null);
+      vm.directionsDisplay.setPanel(null);
+      vm.directionsDisplay = new google.maps.DirectionsRenderer({preserveViewport: true});
+      vm.directionsDisplay.setMap(vm.map);
+      vm.directionsDisplay.setPanel(document.getElementById("DirectionsPanel"));
+    }
   }
 
   vm.addItem = function(index) {
-    vm.searchResults[index].type = "id"
-    vm.shoppingLists[vm.tab].contents.push(vm.searchResults[index]);
-    if (vm.current_user != "") {
-      vm.updateList();
-    }
-    if (vm.mapped == "list") {
-      vm.mapList()
+    if (vm.listIDs.length == 0) {
+      alert("Cannot add item until a list has been created. Create a list in the View Shopping List menu.");
+    } else {
+      var addItem = {};
+      addItem.type = "id";
+      addItem.name = vm.searchResults[index].itemID;
+      vm.shoppingLists[vm.tab].contents.push(vm.searchResults[index]);
+      if (vm.current_user != "") {
+        vm.updateList();
+      }
     }
   }
 
   vm.addTextItem = function() {
-    var addText = {};
-    addText.type = "name";
-    addText.name = vm.newItemName;
-    vm.shoppingLists[vm.tab].contents.push(addText);
-    if (vm.current_user != "") {
-      vm.updateList();
+    if (vm.listIDs.length == 0) {
+      alert("Cannot add item until a list has been created. Create a list in the View Shopping List menu.");
+    } else {
+      var addText = {};
+      addText.type = "name";
+      addText.name = vm.newItemName;
+      vm.shoppingLists[vm.tab].contents.push(addText);
+      if (vm.current_user != "") {
+        vm.updateList();
+      }
+      vm.newItemName = "";
     }
-    vm.newItemName = "";
   }
 
   vm.updateList = function() {
@@ -109,49 +136,202 @@ app.controller('IndexController', function($http, $window) {
       var editData = {};
       editData.listID = vm.currentListID; //CURRENT LIST ID
       editData.contents = contents;
-      $http.post("api/list/edit", editData).then(successListError, errorCallBackGeneral);
-    }
-  }
-  vm.mapList = function() {
-    vm.mapped = "list"
-    var listData = {};
-    listData.listID = vm.currentListID; //CURRENT LIST ID
-    $http.post("api/list/map", listData).then(successListError, errorCallBackGeneral).then(
+      $http.post("api/list/edit", editData).then(
       function successCallBack(response) {
-        var data = response.data;
-        if (data.errors.length == 0) {
-          var mapMarkers = response.data.mapMarkers;
-          var bounds = google.maps.LatLngBounds();
-          var infowindow = new google.maps.InfoWindow();
-          vm.map = new google.maps.Map(document.getElementById('list_map'), {
-            zoom: 4,
-            center: new google.maps.LatLng(mapMarkers[0].latitude, mapMarkers[0].longitude),
-            mapTypeId: google.maps.MapTypeId.ROADMAP
-          });
-
-          for (var i = 0; i < mapMarkers.length; i++) {
-            var marker = new google.maps.Marker({
-              position: new google.maps.LatLng(mapMarkers[i].latitude, mapMarkers[i].longitude),
-              map: vm.map
-            });
-            bounds.extend(marker.position);
-            google.maps.event.addListener(marker, 'click', (function(marker, i) {
-              return function() {
-                infowindow.setContent(locations[i].pin_name);
-                infowindow.open(vm.map, marker);
-              }
-            })(marker, i));
-          }
-          vm.map.fitBounds(bounds);
-        } else {
-          for (var i = 0; i < data.errors.length; i++) {
-            alert(e);
-            $window.alert(data.errors[i]);
-            console.error(e);
+        if (response.data.errors.length == 0){
+          var currentTab = vm.listIDs.indexOf(response.data.entry.listID);
+          vm.shoppingLists[currentTab].contents = response.data.entry.contents;
+          if (vm.mapped == "list") {
+            vm.mapList()
           }
         }
-      }, errorCallBackGeneral)
+      }, errorCallBackGeneral);
+    }
   }
+
+  vm.bounds = new google.maps.LatLngBounds();
+  vm.infowindow = new google.maps.InfoWindow();
+  vm.map = new google.maps.Map(document.getElementById('LocalCartMap'), {
+    zoom: 17,
+    center: new google.maps.LatLng(37.8723917, -122.2661629),
+    mapTypeId: google.maps.MapTypeId.ROADMAP
+  });
+  vm.directionsDisplay = new google.maps.DirectionsRenderer({preserveViewport: true});
+  vm.directionsDisplay.setMap(vm.map);
+  vm.directionsDisplay.setPanel(document.getElementById("DirectionsPanel"));
+  vm.directionsService = new google.maps.DirectionsService();
+  vm.currentDirections = "search";
+  vm.searchCoord = null;
+
+  vm.calcRoute = function(start, dest) {
+    var request = {
+      origin: start,
+      destination: dest,
+      travelMode: google.maps.TravelMode.DRIVING,
+    };
+    vm.directionsService.route(request, function(response, status) {
+      if (status == google.maps.DirectionsStatus.OK) {
+        vm.directionsDisplay.setDirections(response);
+        vm.map.fitBounds(vm.bounds);
+      }
+    });
+
+  }
+
+
+  vm.mapList = function() {
+    for (var i = 0; i < vm.listMarkers.length; i++) {
+      vm.listMarkers[i].setMap(null);
+    }
+    vm.listMarkers = [];
+    if (vm.shoppingLists.length > 0) {
+      vm.mapped = "list"
+      var listData = {};
+      listData.listID = vm.currentListID; //CURRENT LIST ID
+      $http.post("api/list/map", listData).then(
+        function successCallBack(response) {
+          var data = response.data;
+          if (data.errors.length == 0) {
+            console.log(data)
+            var mapMarkers = response.data.map_markers;
+            for (var i = 0; i < mapMarkers.length; i++) {
+              var pos = mapMarkers[i].position;
+              var pinColor = "4E9F35";
+              var pinImage = new google.maps.MarkerImage("http://chart.apis.google.com/chart?chst=d_map_pin_letter&chld=" + pos + "|" + pinColor,
+                new google.maps.Size(21, 34),
+                new google.maps.Point(0,0),
+                new google.maps.Point(10, 34));
+              var pinShadow = new google.maps.MarkerImage("http://chart.apis.google.com/chart?chst=d_map_pin_shadow",
+                new google.maps.Size(40, 37),
+                new google.maps.Point(0, 0),
+                new google.maps.Point(12, 35));
+              var marker = new google.maps.Marker({
+                position: new google.maps.LatLng(mapMarkers[i].latitude, mapMarkers[i].longitude),
+                icon: pinImage,
+                shadow: pinShadow,
+                map: vm.map
+              });
+              vm.bounds.extend(marker.position);
+              google.maps.event.addListener(marker, 'click', (function(marker, i) {
+                return function() {
+                  vm.infowindow.setContent(mapMarkers[i].pin_name);
+                  vm.infowindow.open(vm.map, marker);
+                  vm.currentDirections = "list";
+                  if (vm.searchCoord == null) {
+                    vm.currentDirections = "search";
+                  } else {
+                    vm.calcRoute(vm.searchCoord, marker.position);
+                  }
+                }
+              })(marker, i));
+              vm.listMarkers.push(marker);
+            }
+            vm.map.fitBounds(vm.bounds);
+          } else {
+            for (var i = 0; i < data.errors.length; i++) {
+              $window.alert(data.errors[i]);
+            }
+          }
+        }, errorCallBackGeneral)
+      }
+  }
+
+
+
+  vm.search = function() {
+    vm.query = vm.searchQuery;
+    var searchData = {};
+    searchData.query = vm.searchQuery;
+    searchData.location = vm.searchLocation;
+    vm.searchResults = [];
+    if (vm.currentDirections == "search") {
+      vm.directionsDisplay.setMap(null);
+      vm.directionsDisplay.setPanel(null);
+      vm.directionsDisplay = new google.maps.DirectionsRenderer({preserveViewport: true});
+      vm.directionsDisplay.setMap(vm.map);
+      vm.directionsDisplay.setPanel(document.getElementById("DirectionsPanel"));
+    }
+    if ((vm.searchQuery != "") && (vm.searchLocation != "")) {
+      $http.get("api/search/items", {params: searchData}).then(
+          function successCallBack(response) {
+            var data = response.data;
+            if (data.errors.length == 0) {
+              vm.searchResults = data.items;
+              for (var i = 0; i < vm.searchMarkers.length; i++) {
+                vm.searchMarkers[i].setMap(null);
+              }
+              vm.searchMarkers = [];
+              vm.searchCoord = new google.maps.LatLng(data.latitude, data.longitude);
+              var pinColorLoc = "4375A3";
+              var pinImageLoc = new google.maps.MarkerImage("http://chart.apis.google.com/chart?chst=d_map_pin_letter&chld=%E2%80%A2|" + pinColorLoc,
+                new google.maps.Size(21, 34),
+                new google.maps.Point(0,0),
+                new google.maps.Point(10, 34));
+              var pinShadow = new google.maps.MarkerImage("http://chart.apis.google.com/chart?chst=d_map_pin_shadow",
+                new google.maps.Size(40, 37),
+                new google.maps.Point(0, 0),
+                new google.maps.Point(12, 35));
+              var markerLoc = new google.maps.Marker({
+                position: vm.searchCoord,
+                icon: pinImageLoc,
+                shadow: pinShadow,
+                map: vm.map
+              });
+              vm.bounds.extend(markerLoc.position);
+              google.maps.event.addListener(markerLoc, 'click', (function() {
+                  vm.infowindow.setContent("Location");
+                  vm.infowindow.open(vm.map, markerLoc);
+                }));
+              vm.searchMarkers.push(markerLoc);
+
+
+              var alreadyMarked = [] // Done store IDs
+              for (var i = 0; i < vm.searchResults.length; i++) {
+                if ((vm.searchResults[i].coordinates == 1) && (alreadyMarked.indexOf(vm.searchResults[i].storeID) == -1)) {
+                  var pos = vm.searchResults[i].index;
+                  var pinColor = "FE6256";
+                  var pinImage = new google.maps.MarkerImage("http://chart.apis.google.com/chart?chst=d_map_pin_letter&chld=" + pos + "|" + pinColor,
+                    new google.maps.Size(21, 34),
+                    new google.maps.Point(0,0),
+                    new google.maps.Point(10, 34));
+                  var marker = new google.maps.Marker({
+                    position: new google.maps.LatLng(vm.searchResults[i].latitude, vm.searchResults[i].longitude),
+                    icon: pinImage,
+                    shadow: pinShadow,
+                    map: vm.map
+                  });
+                  vm.bounds.extend(marker.position);
+                  google.maps.event.addListener(marker, 'click', (function(marker, i) {
+                    return function() {
+                      vm.infowindow.setContent(vm.searchResults[i].storeName);
+                      vm.infowindow.open(vm.map, marker);
+                      vm.currentDirections = "search";
+                      vm.calcRoute(vm.searchCoord, marker.position);
+                    }
+                  })(marker, i));
+                  vm.searchMarkers.push(marker);
+                  alreadyMarked.push(vm.searchResults[i].storeID);
+                }
+              }
+              vm.map.fitBounds(vm.bounds);
+
+
+            } else {
+              for (var i = 0; i < data.errors.length; i++) {
+                $window.alert(data.errors[i]);
+              }
+            }
+          }, function successCallBack(response) {
+              for (var i = 0; i < vm.searchMarkers.length; i++) {
+                vm.searchMarkers[i].setMap(null);
+              }
+              vm.searchMarkers = [];
+          });
+    } else {
+      alert("Must provide search query and location")
+    }
+  }
+
   vm.loginAttempt = function() {
     $http.post("/api/user/login", vm.User).then(
         function successCallBack(response) {
@@ -164,14 +344,10 @@ app.controller('IndexController', function($http, $window) {
             }
           } else {
             for (var i = 0; i < data.errors.length; i++) {
-              // alert(e);
               $window.alert(data.errors[i]);
-              // console.error(e);
             }
           }
         }, errorCallBackGeneral)
-      // $http.post("api/user/login", vm.User);
-      // console.log("yolo");
   }
   vm.logout = function() {
     $http.post("api/user/logout");
@@ -187,6 +363,7 @@ app.controller('IndexController', function($http, $window) {
   vm.setTab = function(setTab) {
     vm.tab = setTab;
     vm.currentListID = vm.listIDs[vm.tab];
+    vm.mapList();
   };
   // vm.addItem = function(itemToAdd) {
   //   var item = {};
@@ -206,16 +383,17 @@ app.controller('IndexController', function($http, $window) {
           var data = response.data;
           if (data.errors.length == 0) {
             vm.listIDs.push(data.listID);
-            vm.shoppingLists.push({listName: vm.newListName, contents: []});
+            vm.shoppingLists.push({
+              listName: vm.newListName,
+              contents: []
+            });
             vm.newListName = "";
           } else {
             for (var i = 0; i < data.errors.length; i++) {
-              // alert(e);
               $window.alert(data.errors[i]);
-              // console.error(e);
             }
           }
-          
+
         }, errorCallBackGeneral);
     }
 
@@ -233,6 +411,13 @@ app.controller('IndexController', function($http, $window) {
     }
     vm.tab = 0;
     vm.currentListID = vm.listIDs[vm.tab];
+    if (vm.currentDirections == "list") {
+      vm.directionsDisplay.setMap(null);
+      vm.directionsDisplay.setPanel(null);
+      vm.directionsDisplay = new google.maps.DirectionsRenderer({preserveViewport: true});
+      vm.directionsDisplay.setMap(vm.map);
+      vm.directionsDisplay.setPanel(document.getElementById("DirectionsPanel"));
+    }
   }
 
 });
@@ -272,15 +457,12 @@ app.controller('MerchantController', function($http, $window) {
           vm.noStore = false;
         } else {
           for (var i = 0; i < data.errors.length; i++) {
-            // alert(e);
             $window.alert(data.errors[i]);
-            // console.error(e);
           }
         }
       }, errorCallBackGeneral)
   }
   vm.editStore = function() {
-    console.log(vm.storeInfo)
     $http.post("/api/store/edit", vm.storeInfo).then(
       function successCallBack(response) {
         var data = response.data;
@@ -294,19 +476,22 @@ app.controller('MerchantController', function($http, $window) {
           // }
         } else {
           for (var i = 0; i < data.errors.length; i++) {
-            // alert(e);
             $window.alert(data.errors[i]);
-            // console.error(e);
           }
         }
       }, errorCallBackGeneral)
   }
   vm.current_user = "";
+  vm.current_user_type = "";
   $http.get("api/user/get").then(
     function successCallBack(response) {
       var data = response.data;
       if (data.errors.length == 0) {
         vm.current_user = data.username;
+        vm.current_user_type = data.user_type;
+        if (vm.current_user_type != "merchant") {
+          $window.location.href = "home";
+        }
         console.log(data.username);
       } else {
         $window.location.href = "home";
@@ -359,9 +544,7 @@ app.controller('RegisterController', function($http, $window) {
             // }
           } else {
             for (var i = 0; i < data.errors.length; i++) {
-              // alert(e);
               $window.alert(data.errors[i]);
-              // console.error(e);
             }
           }
         }, errorCallBackGeneral)
@@ -385,9 +568,7 @@ app.controller('RegisterController', function($http, $window) {
             }
           } else {
             for (var i = 0; i < data.errors.length; i++) {
-              // alert(e);
               $window.alert(data.errors[i]);
-              // console.error(e);
             }
           }
         }, errorCallBackGeneral)
@@ -416,9 +597,7 @@ app.controller('RegisterController', function($http, $window) {
         // }
       } else {
         // for (var i = 0; i < data.errors.length; i++) {
-        // alert(e);
         // $window.alert(data.errors[i]);
-        // console.error(e);
         // }
       }
     },
@@ -428,29 +607,33 @@ app.controller('RegisterController', function($http, $window) {
   )
 });
 
-app.controller('InventoryController', function($http) {
+app.controller('InventoryController', function($http, $window, $scope) {
   var vm = this;
   vm.inventory = [];
   vm.inventoryID = -1;
   vm.tempItem = {}
-  vm.count = 0
   vm.current_user = "";
+  vm.current_user_type = "";
   $http.get("api/user/get").then(
     function successCallBack(response) {
       var data = response.data;
       if (data.errors.length == 0) {
         vm.current_user = data.username;
+        vm.current_user_type = data.user_type;
         console.log(data.username);
-        $http.get("api/inventory/getUser").then(
+        if (vm.current_user_type == "merchant") {
+          $http.get("api/inventory/getUser").then(
             function successCallBack2(response) {
               var data2 = response.data;
               if (data2.errors.length == 0) {
                 vm.inventory = data2.contents;
-                vm.count = vm.inventory.length;
                 vm.inventoryID = data2.inventoryID;
                 vm.tempItem.inventoryID = vm.inventoryID;
               }
             }, errorCallBackGeneral)
+        } else {
+          $window.location.href = "home";
+        }
       } else {
         $window.location.href = "home";
       }
@@ -458,22 +641,37 @@ app.controller('InventoryController', function($http) {
   vm.remove = function(index) {
     var removedID = {};
     removedID.itemID = vm.inventory[index].itemID;
+    removedID.index = index;
     $http.post("api/item/delete", removedID).then(
       function successCallBack(response) {
         var data = response.data;
         if (data.errors.length == 0) {
-          vm.inventory.splice(index, 1);
-          for (var i = index; i < vm.inventory.length; i++) {
-            vm.inventory[index].index -= 1;
-          }
-          count -= 1;
+          vm.inventory.splice(data.index, 1);
         } else {
           for (var i = 0; i < data.errors.length; i++) {
             $window.alert(data.errors[i]);
-            console.error(e);
           }
         }
       }, errorCallBackGeneral)
+  }
+  vm.removeAll = function() {
+    var len = vm.inventory.length;
+    for (var index = len - 1; index >= 0; index--) {
+      var removedID = {};
+      removedID.itemID = vm.inventory[index].itemID;
+      removedID.index = index;
+      $http.post("api/item/delete", removedID).then(
+        function successCallBack(response) {
+          var data = response.data;
+          if (data.errors.length == 0) {
+            vm.inventory.splice(data.index, 1);
+          } else {
+            for (var i = 0; i < data.errors.length; i++) {
+              $window.alert(data.errors[i]);
+            }
+          }
+        }, errorCallBackGeneral)
+    }
   }
   vm.addItem = function() {
     vm.tempItem.inventoryID = vm.inventoryID;
@@ -482,19 +680,64 @@ app.controller('InventoryController', function($http) {
         var data = response.data;
         if (data.errors.length == 0) {
           vm.tempItem.itemID = data.itemID;
-          vm.count += 1;
-          vm.tempItem.index = vm.count;
           vm.inventory.push(vm.tempItem);
           vm.tempItem = {}
           vm.tempItem.inventoryID = vm.inventoryID;
         } else {
           for (var i = 0; i < data.errors.length; i++) {
-          $window.alert(data.errors[i]);
-          console.error(e);
+            $window.alert(data.errors[i]);
           }
         }
       }, errorCallBackGeneral)
   }
+  $scope.importInventory = function(files) {
+    var form = new FormData();
+    form.append("dataset", files[0]);
+    form.append("inventoryID", vm.inventoryID);
+
+    $http.post("api/inventory/import", form, {
+      headers: {'Content-Type': undefined},
+      transformRequest: angular.identity
+    }).then(
+          function successCallBack(response) {
+
+            var data = response.data;
+            if (data.errors.length == 0) {
+              vm.inventory = data.items
+            } else {
+              for (var i = 0; i < data.errors.length; i++) {
+                $window.alert(data.errors[i]);
+              }
+            }
+          }, errorCallBackGeneral);
+  }
+
+  // vm.importInventory = function() {
+  //   vm.tempItem.inventoryID = vm.inventoryID;
+  //     var f = document.getElementById('csv-file').files[0],
+  //         r = new FileReader();
+  //     r.onloadend = function(e){
+  //       var dataset = e.target.result;
+  //       //send you binary data via $http or $resource or do anything else with it
+  //       $http.post("api/inventory/import", dataset, '').then(
+  //         function successCallBack(response) {
+  //           var data = response.data;
+  //           if (data.errors.length == 0) {
+  //             for (var i = 0; i < data.items.length; i++) {
+  //               vm.tempItem.itemID = data.items[i].id;
+  //               vm.inventory.push(vm.tempItem);
+  //               vm.tempItem = {}
+  //               vm.tempItem.inventoryID = vm.inventoryID;
+  //             }
+  //           } else {
+  //             for (var i = 0; i < data.errors.length; i++) {
+  //               $window.alert(data.errors[i]);
+  //             }
+  //           }
+  //         }, errorCallBackGeneral)
+  //     }
+  //     r.readAsBinaryString(f);
+  // }
   vm.logout = function() {
     $http.post("api/user/logout");
     $window.location.href = "home";
@@ -502,51 +745,126 @@ app.controller('InventoryController', function($http) {
 
 });
 
+
+app.controller('StoreController', function($http, $location, $window) {
+  var vm = this;
+  vm.current_user = "";
+  vm.current_user_type = "";
+  // populate store info
+  vm.storeInfo = {}
+  console.log($location.search());
+  var queryParam = $location.search();
+  vm.products = results;
+
+  $http.post("api/store/storeID", queryParam).then(
+    function successCallBack(response) {
+      // console.log(response.data);
+      var data = response.data;
+      if (data.errors.length == 0) {
+        vm.storeInfo = data.store;
+      }
+    }, errorCallBackGeneral)
+
+  $http.post("api/inventory/store", queryParam).then(
+    function successCallBack(response) {
+      var data = response.data;
+      if (data.errors.length == 0) {
+        vm.products = data.contents;
+      }
+    }, errorCallBackGeneral)
+    // mocked inventory items, look at results
+  $http.get("api/user/get").then(
+    function successCallBack(response) {
+      var data = response.data;
+      console.log(data);
+      if (data.errors.length == 0) {
+        vm.current_user = data.username;
+        vm.current_user_type = data.user_type;
+        console.log(vm.current_user_type);
+      } 
+    })
+  vm.logout = function() {
+    $http.post("api/user/logout");
+    $window.location.href = "home";
+  }
+  vm.tab = 0
+  vm.isSet = function(checkTab) {
+    return vm.tab === checkTab;
+  };
+
+  vm.setTab = function(setTab) {
+    vm.tab = setTab;
+  };
+  // get request for reviews for store
+  vm.reviews = [];
+
+  vm.review = {};
+
+  //need to add post request 
+  vm.addReview = function(product) {
+    vm.review.user = vm.current_user;
+    console.log(vm.review.user);
+    vm.reviews.push(vm.review);
+    vm.review = {};
+  };
+
+});
+
+
 var results = [{
   storeName: "GameStop",
   name: "Halo 5",
   description: "A first person shooter video game",
-  price: "80.00"
+  price: 80.00,
+  picture: "http://www.geekwire.com/wp-content/uploads/2015/04/Halo5_KeyArt_Horiz_Final.jpg"
 }, {
   storeName: "Target",
   name: "Shampoo",
   description: "New shampoo for dry hair",
-  price: "5.00"
+  price: 5.00,
+  picture: defaultImage
 }, {
   storeName: "Costco",
   name: "Deodorant",
   description: "Use this to tackle body odor!",
-  price: "7.00"
+  price: 7.00,
+  picture: defaultImage
 }, {
   storeName: "GameStop",
-  name: "Halo 5",
+  name: "yolo",
   description: "A first person shooter video game",
-  price: "80.00"
+  price: 80.00,
+  picture: defaultImage
 }, {
   storeName: "Target",
   name: "Shampoo",
   description: "New shampoo for dry hair",
-  price: "5.00"
+  price: 5.00,
+  picture: defaultImage
 }, {
   storeName: "Costco",
   name: "Deodorant",
   description: "Use this to tackle body odor!",
-  price: "7.00"
+  price: 7.00,
+  picture: defaultImage
 }, {
   storeName: "GameStop",
-  name: "Halo 5",
+  name: "Rolo",
   description: "A first person shooter video game",
-  price: "80.00"
+  price: 80.00,
+  picture: defaultImage
 }, {
   storeName: "Target",
   name: "Shampoo",
   description: "New shampoo for dry hair",
-  price: "5.00"
+  price: 5.00,
+  picture: defaultImage
 }, {
   storeName: "Costco",
   name: "Deodorant",
   description: "Use this to tackle body odor!",
-  price: "7.00"
+  price: 7.00,
+  picture: defaultImage
 }, ];
 
 var inventory = [{
@@ -611,9 +929,7 @@ successListError = function(response) {
   var data = response.data;
   if (data.errors.length > 0) {
     for (var i = 0; i < data.errors.length; i++) {
-      // alert(e);
-      $window.alert(data.errors[i]);
-      // console.error(e);
+      alert(data.errors[i]);
     }
   }
 };
