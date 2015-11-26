@@ -894,6 +894,46 @@ def edit_list(request):
     return HttpResponse(json.dumps(reponse), content_type='application/json')
 
 @csrf_exempt
+def resolve_list(request):
+    assert request.method == 'POST', 'api/list/resolve requires a POST request'
+    errors = []
+    post = QueryDict('', mutable=True)
+    post.update(json.loads(request.body))
+    listID = post.get('listID', '')
+    try:
+        listID = int(listID)
+    except ValueError:
+        listID = None
+        errors.append('listID must be an integer')
+    location = post.get('location', '')
+    if not location:
+        errors.append('Must provide location')
+    if len(errors) == 0:
+        try:
+            errors = CartList.resolve_list(listID, location)
+        except (ValidationError, ObjectDoesNotExist, MultipleObjectsReturned) as e:
+            errors = ['Search has failed', e]
+    if len(errors) == 0:
+        hasError, cartlist = CartList.get_cartlist(listID)
+        if hasError:
+            errors.append("Can't get list from listID")
+        else:
+            name = CartList.objects.get(id=listID).name
+            entry = {
+                     'listName': name, 
+                     'listID': listID,
+                     'contents': cartlist
+                    }
+    reponse = {
+               'status': 200,
+               'entry': entry,
+               'errors': errors,
+              }
+    return HttpResponse(json.dumps(reponse), content_type='application/json')
+
+
+
+@csrf_exempt
 def map_list(request):
     assert request.method == 'POST', 'api/list/map requires a POST request'
     errors = []
@@ -926,22 +966,10 @@ def add_review(request):
     errors, user = extract_user(request, errors)
     post = QueryDict('', mutable=True)
     post.update(json.loads(request.body))
-    itemID = post.get('itemID', '')
     storeID = post.get('storeID', '')
     rating = post.get('rating', '')
     text = post.get('text', '')
     item = None
-    if itemID:
-        try:
-            itemID = int(itemID)
-            if Item.objects.filter(id=itemID):
-                item = Item.objects.get(id=itemID)
-            else:
-                item = None
-                errors.append('itemID not valid')
-        except ValueError:
-            item = None
-            errors.append('itemID must be an integer')
     if storeID:
         try:
             storeID = int(storeID)
@@ -959,7 +987,7 @@ def add_review(request):
         errors.append('must provide valid storeID or itemID')
     try:
         rating = int(rating)
-    except ValueError:
+    except TypeError:
         errors.append('rating must be an integer')
     else:
         if (rating < 1) or (rating > 5):
@@ -969,6 +997,7 @@ def add_review(request):
             new_review = Review.create_new_review(user, item, store, rating, text)
         except ValidationError as e:
             new_review = None
+            
             errors.append(e)
     if len(errors) == 0:
         reponse = {
@@ -978,6 +1007,7 @@ def add_review(request):
             }
         return HttpResponse(json.dumps(reponse), content_type='application/json')
     return return_error(errors)
+
 
 
 @csrf_exempt
@@ -1111,18 +1141,6 @@ def search_items(request):
 
 
 def extract_user(request, errors):
-# <<<<<<< HEAD
-#     post = QueryDict('', mutable=True)
-#     user = None
-#     if request.method == 'POST' and request.body:
-#         post.update(json.loads(request.body))
-#         username = post.get('username', '')
-#     elif request.method == 'GET':
-#         username = request.GET.get('username', '')
-#     else:
-#         username = ''
-
-# =======
     user = None
     if request.method == 'POST':
         if request.body:
@@ -1134,7 +1152,6 @@ def extract_user(request, errors):
     else:
         get = request.GET
         username = get.get('username', '')
-# >>>>>>> 4c09812d1c53fc96d3042b4f7ce82ef651611a1d
     if username:
         if User.objects.filter(username=username).exists():
             user = User.objects.get(username=username)

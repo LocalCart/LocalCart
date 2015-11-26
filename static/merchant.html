@@ -53,7 +53,7 @@
       <div class="jumbotron">
         <h2>Welcome [[merchantController.current_user]]</h2>
         <div ng-hide="merchantController.editable">
-          <h2>Store Name:[[merchantController.storeInfo.name]]</h2>
+          <h2>Store Name: [[merchantController.storeInfo.name]]</h2>
         </div>
         <div ng-show="merchantController.editable">
           <h2>Store Name:<input ng-model="merchantController.tempStoreInfo.name" ng-show="merchantController.editable"></h2>

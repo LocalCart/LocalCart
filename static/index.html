@@ -12,7 +12,7 @@
   <script src="https://code.jquery.com/jquery-2.1.4.min.js"></script>
   <script src="static/js/bootstrap.js"></script>
   <script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/angularjs/1.4.7/angular.min.js"></script>
-  <script <script language="javascript" src="https://maps.googleapis.com/maps/api/js?v=3"></script>></script>
+  <script language="javascript" src="https://maps.googleapis.com/maps/api/js?v=3"></script>
   <script type="text/javascript" src="static/controller.js"></script>
 </head>
 
@@ -51,15 +51,20 @@
             <a ng-click="indexController.loginAttempt()" class="btn btn-success">Login</a>
             <a href="register" class="btn btn-success">Register</a>
           </div>
-          <!-- <a href="store" class="btn btn-success">store placeholder</a> -->
         </form>
       </div>
       <!--/.navbar-collapse -->
     </div>
   </nav>
   <hr>
+  <div class="container col-sm-offset-2 col-sm-5">
+    <h2>Welcome [[indexController.current_user]]!</h2>
+  </div>
   <div class="col-sm-12">
     <div class="row">
+      <div class="container col-sm-offset-2" ng-hide="indexController.query != ''">
+        <h2>Enter a search query and location to continue!</h2>
+      </div>
       <div class="container col-sm-offset-2 col-sm-5">
         <input ng-model="indexController.searchQuery" type="text" placeholder="Search for item!" class="form-control">
         <input ng-model="indexController.searchLocation" type="text" placeholder="Enter Location" class="form-control">
@@ -70,9 +75,6 @@
       </div>
     </div>
     <br>
-    <div class="container col-sm-offset-2" ng-hide="indexController.query != ''">
-      <h2>Welcome back [[indexController.current_user]]. Enter a search query and location to continue!</h2>
-    </div>
     <div ng-show="indexController.query != ''">
       <div class="container col-sm-5">
         <h2>Search Results for [[indexController.query]]</h2>
@@ -166,6 +168,10 @@
         <div class="modal-footer">
           <input placeholder="Item Name" type="text" ng-model="indexController.newItemName">
           <button type="button" class="btn btn-default" ng-click="indexController.addTextItem()">Add Item</button>
+          
+        </div>
+        <div class="modal-footer">
+          <input placeholder="Location" type="text" ng-model="indexController.resolveLocation">
           <button type="button" class="btn btn-default" ng-click="indexController.resolveList()">Resolve List</button>
           <button type="button" class="btn btn-danger" ng-click="indexController.removeList()">Delete List</button>
           <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
