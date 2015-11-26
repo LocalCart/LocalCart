@@ -29,6 +29,7 @@ app.controller('IndexController', function($http, $window) {
   vm.newItemName = "";
   vm.current_user = "";
   vm.current_user_type = "";
+  vm.resolveLocation = "";
   vm.mapped = "list" // search or list
   vm.searchMarkers = [];
   vm.listMarkers = [];
@@ -143,6 +144,33 @@ app.controller('IndexController', function($http, $window) {
           vm.shoppingLists[currentTab].contents = response.data.entry.contents;
           if (vm.mapped == "list") {
             vm.mapList()
+          }
+        }
+      }, errorCallBackGeneral);
+    }
+  }
+
+  vm.resolveList = function() {
+    if (vm.listIDs.length == 0) {
+      alert("Cannot resolve. No lists exist. Build a list using the below Item Name field.");
+    } else if (vm.resolveLocation == "") {
+      alert("Must enter location to resolve list.");
+
+    } else {
+      var listData = {};
+      listData.listID = vm.currentListID;
+      listData.location = vm.resolveLocation;  //CURRENT LIST ID
+      $http.post("api/list/resolve", listData).then(
+      function successCallBack(response) {
+        if (response.data.errors.length == 0) {
+          var currentTab = vm.listIDs.indexOf(response.data.entry.listID);
+          vm.shoppingLists[currentTab].contents = response.data.entry.contents;
+          if (vm.mapped == "list") {
+            vm.mapList()
+          }
+        } else {
+          for (var i = 0; i < data.errors.length; i++) {
+            $window.alert(data.errors[i]);
           }
         }
       }, errorCallBackGeneral);

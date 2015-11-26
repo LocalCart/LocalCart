@@ -893,6 +893,46 @@ def edit_list(request):
     return HttpResponse(json.dumps(reponse), content_type='application/json')
 
 @csrf_exempt
+def resolve_list(request):
+    assert request.method == 'POST', 'api/list/resolve requires a POST request'
+    errors = []
+    post = QueryDict('', mutable=True)
+    post.update(json.loads(request.body))
+    listID = post.get('listID', '')
+    try:
+        listID = int(listID)
+    except ValueError:
+        listID = None
+        errors.append('listID must be an integer')
+    location = post.get('location', '')
+    if not location:
+        errors.append('Must provide location')
+    if len(errors) == 0:
+        try:
+            errors = CartList.resolve_list(listID, location)
+        except (ValidationError, ObjectDoesNotExist, MultipleObjectsReturned) as e:
+            errors = ['Search has failed', e]
+    if len(errors) == 0:
+        hasError, cartlist = CartList.get_cartlist(listID)
+        if hasError:
+            errors.append("Can't get list from listID")
+        else:
+            name = CartList.objects.get(id=listID).name
+            entry = {
+                     'listName': name, 
+                     'listID': listID,
+                     'contents': cartlist
+                    }
+    reponse = {
+               'status': 200,
+               'entry': entry,
+               'errors': errors,
+              }
+    return HttpResponse(json.dumps(reponse), content_type='application/json')
+
+
+
+@csrf_exempt
 def map_list(request):
     assert request.method == 'POST', 'api/list/map requires a POST request'
     errors = []
