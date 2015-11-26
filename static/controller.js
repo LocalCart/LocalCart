@@ -279,12 +279,12 @@ app.controller('IndexController', function($http, $window) {
       vm.directionsDisplay.setPanel(document.getElementById("DirectionsPanel"));
     }
     if ((vm.searchQuery != "") && (vm.searchLocation != "")) {
-      vm.query = vm.searchQuery;
       $http.get("api/search/items", {params: searchData}).then(
           function successCallBack(response) {
             var data = response.data;
             if (data.errors.length == 0) {
               vm.searchResults = data.items;
+              vm.query = vm.searchQuery;
               for (var i = 0; i < vm.searchMarkers.length; i++) {
                 vm.searchMarkers[i].setMap(null);
               }
@@ -368,7 +368,7 @@ app.controller('IndexController', function($http, $window) {
             if (data.user_type == 'merchant') {
               $window.location.href = 'merchant';
             } else {
-              $window.location.href = 'home';
+              $window.location.reload();
             }
           } else {
             for (var i = 0; i < data.errors.length; i++) {
@@ -379,7 +379,7 @@ app.controller('IndexController', function($http, $window) {
   }
   vm.logout = function() {
     $http.post("api/user/logout");
-    $window.location.href = "home";
+    $window.location.reload();
   }
 
   vm.isSet = function(checkTab) {
@@ -597,9 +597,7 @@ app.controller('RegisterController', function($http, $window) {
               $window.alert(data.errors[i]);
             }
           }
-        }, errorCallBackGeneral)
-      // $http.post("api/user/login", vm.User);
-      // console.log("yolo");
+        }, errorCallBackGeneral);
   }
   vm.logout = function() {
     $http.post("api/user/logout");
@@ -765,6 +763,8 @@ app.controller('StoreController', function($http, $location, $window) {
   // get request for reviews for store
   vm.reviews = [];
   vm.review = {};
+  vm.review.rating = -1;
+  vm.review.text = '';
   $http.post("api/store/storeID", curr_storeID).then(
     function successCallBack(response) {
       // console.log(response.data);
@@ -808,7 +808,7 @@ app.controller('StoreController', function($http, $location, $window) {
         function successCallBack(response) {
           var data = response.data;
           if (data.errors.length == 0) {
-            $window.location.href = 'store';
+            $window.location.reload();
           } else {
             for (var i = 0; i < data.errors.length; i++) {
               $window.alert(data.errors[i]);
@@ -819,7 +819,7 @@ app.controller('StoreController', function($http, $location, $window) {
 
   vm.logout = function() {
     $http.post("api/user/logout");
-    $window.location.href = "home";
+    $window.location.reload();
   }
   vm.storeTab = 0
   vm.isTabSet = function(checkTab) {
@@ -834,16 +834,23 @@ app.controller('StoreController', function($http, $location, $window) {
   //need to add post request 
   vm.addReview = function(product) {
     vm.review.user = vm.current_user;
+    vm.review.username = vm.current_user;
     vm.review.storeID = curr_storeID.storeID;
-    $http.post("api/review/add", vm.review).then(
-    function successCallBack(response) {
-      var data = response.data;
-      console.log(data);
-      if (data.errors.length == 0) {
-        vm.reviews.push(vm.review);
-        vm.review = {};
-      }
-    }, errorCallBackGeneral)
+    if (vm.review.rating == -1) {
+      alert("Must provide a rating");
+    } else if (vm.current_user == "") {
+      alert("Must be logged in to leave a review");
+    } else {
+      $http.post("api/review/add", vm.review).then(
+      function successCallBack(response) {
+        var data = response.data;
+        console.log(data);
+        if (data.errors.length == 0) {
+          vm.reviews.push(vm.review);
+          vm.review = {};
+        }
+      }, errorCallBackGeneral);
+    }
   };
 
 
