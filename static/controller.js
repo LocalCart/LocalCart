@@ -169,8 +169,16 @@ app.controller('IndexController', function($http, $window) {
             vm.mapList()
           }
         } else {
-          for (var i = 0; i < data.errors.length; i++) {
-            $window.alert(data.errors[i]);
+          var check = true;
+          for (var i = 0; i < response.data.errors.length; i++) {
+            $window.alert(response.data.errors[i]);
+            if (response.data.errors[i].indexOf("Item ") == -1) {
+              check = false;
+            }
+          }
+          if (check) {
+            var currentTab = vm.listIDs.indexOf(response.data.entry.listID);
+            vm.shoppingLists[currentTab].contents = response.data.entry.contents;
           }
         }
       }, errorCallBackGeneral);
@@ -413,6 +421,7 @@ app.controller('IndexController', function($http, $window) {
               listName: vm.newListName,
               contents: []
             });
+            vm.currentListID = vm.listIDs[vm.tab];
             vm.newListName = "";
           } else {
             for (var i = 0; i < data.errors.length; i++) {
@@ -433,6 +442,7 @@ app.controller('IndexController', function($http, $window) {
     vm.shoppingLists.splice(vm.tab, 1);
     $http.post("api/list/deleteid", listData);
     if (vm.listIDs.length == 0) {
+      vm.tab = 0;
       vm.addList();
     }
     vm.tab = 0;
@@ -981,6 +991,7 @@ app.controller('StoreController', function($http, $location, $window) {
               contents: []
             });
             vm.newListName = "";
+            vm.currentListID = vm.listIDs[vm.tab];
           } else {
             for (var i = 0; i < data.errors.length; i++) {
               $window.alert(data.errors[i]);
@@ -999,6 +1010,7 @@ app.controller('StoreController', function($http, $location, $window) {
     vm.shoppingLists.splice(vm.tab, 1);
     $http.post("api/list/deleteid", listData);
     if (vm.listIDs.length == 0) {
+      vm.tab = 0;
       vm.addList();
     }
     vm.tab = 0;
@@ -1021,8 +1033,16 @@ app.controller('StoreController', function($http, $location, $window) {
           var currentTab = vm.listIDs.indexOf(response.data.entry.listID);
           vm.shoppingLists[currentTab].contents = response.data.entry.contents;
         } else {
-          for (var i = 0; i < data.errors.length; i++) {
-            $window.alert(data.errors[i]);
+          var check = true;
+          for (var i = 0; i < response.data.errors.length; i++) {
+            $window.alert(response.data.errors[i]);
+            if (response.data.errors[i].indexOf("Item ") == -1) {
+              check = false;
+            }
+          }
+          if (check) {
+            var currentTab = vm.listIDs.indexOf(response.data.entry.listID);
+            vm.shoppingLists[currentTab].contents = response.data.entry.contents;
           }
         }
       }, errorCallBackGeneral);
