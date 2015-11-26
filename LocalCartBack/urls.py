@@ -33,6 +33,8 @@ urlpatterns = [
     url(r'^api/list/getID$', views.get_listIDs),
     url(r'^api/list/getUser', views.get_user_lists),
     url(r'^api/search/items$', views.search_items),
+    url(r'^api/review/storeID$', views.get_reviews),
+    url(r'^api/review/add$', views.add_review),
     url(r'^merchant$', views.merchant_render),
     url(r'^home$', views.home),
     url(r'^register$', views.register_render),

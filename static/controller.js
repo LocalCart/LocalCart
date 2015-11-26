@@ -780,11 +780,13 @@ app.controller('StoreController', function($http, $location, $window) {
   vm.current_user_type = "";
   // populate store info
   vm.storeInfo = {}
-  console.log($location.search());
-  var queryParam = $location.search();
+  var curr_storeID = $location.search();
   vm.products = results;
+  // get request for reviews for store
+  vm.reviews = [];
 
-  $http.post("api/store/storeID", queryParam).then(
+  vm.review = {};
+  $http.post("api/store/storeID", curr_storeID).then(
     function successCallBack(response) {
       // console.log(response.data);
       var data = response.data;
@@ -793,11 +795,12 @@ app.controller('StoreController', function($http, $location, $window) {
       }
     }, errorCallBackGeneral)
 
-  $http.post("api/inventory/store", queryParam).then(
+  $http.post("api/inventory/store", curr_storeID).then(
     function successCallBack(response) {
       var data = response.data;
       if (data.errors.length == 0) {
         vm.products = data.contents;
+        console.log(vm.products)
       }
     }, errorCallBackGeneral)
     // mocked inventory items, look at results
@@ -809,32 +812,233 @@ app.controller('StoreController', function($http, $location, $window) {
         vm.current_user = data.username;
         vm.current_user_type = data.user_type;
         console.log(vm.current_user_type);
-      } 
+      }
     })
+  $http.get("api/review/storeID", {params: curr_storeID}).then(
+    function successCallBack(response) {
+      var data = response.data;
+      console.log("storereview");
+      if (data.errors.length == 0) {
+        vm.reviews = data.reviews
+        console.log(vm.current_user_type);
+      }
+    })
+
+  vm.loginAttempt = function() {
+    $http.post("/api/user/login", vm.User).then(
+        function successCallBack(response) {
+          var data = response.data;
+          if (data.errors.length == 0) {
+            $window.location.href = 'store';
+          } else {
+            for (var i = 0; i < data.errors.length; i++) {
+              // alert(e);
+              $window.alert(data.errors[i]);
+              // console.error(e);
+            }
+          }
+        }, errorCallBackGeneral)
+  }
+
   vm.logout = function() {
     $http.post("api/user/logout");
     $window.location.href = "home";
   }
-  vm.tab = 0
+  vm.storeTab = 0
+  vm.isTabSet = function(checkTab) {
+    return vm.storeTab === checkTab;
+  };
+
+  vm.setStoreTab = function(setTab) {
+    vm.storeTab = setTab;
+  };
+
+
+  //need to add post request 
+  vm.addReview = function(product) {
+    vm.review.user = vm.current_user;
+    vm.review.storeID = curr_storeID.storeID;
+    $http.post("api/review/add", vm.review).then(
+    function successCallBack(response) {
+      var data = response.data;
+      console.log(data);
+      if (data.errors.length == 0) {
+        vm.reviews.push(vm.review);
+        vm.review = {};
+      }
+    }, errorCallBackGeneral)
+  };
+
+  vm.tab = 0;
+
   vm.isSet = function(checkTab) {
     return vm.tab === checkTab;
   };
 
   vm.setTab = function(setTab) {
     vm.tab = setTab;
+    vm.currentListID = vm.listIDs[vm.tab];
   };
-  // get request for reviews for store
-  vm.reviews = [];
 
-  vm.review = {};
+  $http.get("api/user/get").then(
+      function successCallBack(response) {
+        var data = response.data;
+        if (data.errors.length == 0) {
+          // if (data.user_type == 'merchant'){
+          //   $window.location.href = 'merchant';
+          // }
+          // hide login, register buttons
+          vm.current_user = data.username;
+          vm.current_user_type = data.user_type;
+          console.log(data.username);
+          // if (data.user_type == "merchant") {
+          //  $window.location.href = "merchant";
+          // }
+          $http.get("api/list/getUser").then(
+              function successCallBack(response) {
+                var data = response.data;
+                if (data.errors.length == 0) {
+                  vm.listIDs = data.listIDs;
+                  vm.tab = 0;
+                  if (vm.listIDs.length > 0) {
+                    vm.currentListID = vm.listIDs[vm.tab];
+                  } else {
+                    vm.currentListID = -1
+                  }
+                  
+                  vm.shoppingLists = data.allLists;
+                } else {
+                  vm.currentListID = -1;
+                }
+                
+              }, errorCallBackGeneral);
+        } else {
+          // for (var i = 0; i < data.errors.length; i++) {
+            // alert(e);
+            // $window.alert(data.errors[i]);
+            // console.error(e);
+          // }
+        }
+      }, errorCallBackGeneral);
 
-  //need to add post request 
-  vm.addReview = function(product) {
-    vm.review.user = vm.current_user;
-    console.log(vm.review.user);
-    vm.reviews.push(vm.review);
-    vm.review = {};
-  };
+  vm.remove = function(index) {
+    vm.shoppingLists[vm.tab].contents.splice(index, 1);
+    if (vm.current_user != "") {
+      vm.updateList();
+    }
+    if (vm.currentDirections == "list") {
+      vm.directionsDisplay.setMap(null);
+      vm.directionsDisplay.setPanel(null);
+      vm.directionsDisplay = new google.maps.DirectionsRenderer({preserveViewport: true});
+      vm.directionsDisplay.setMap(vm.map);
+      vm.directionsDisplay.setPanel(document.getElementById("DirectionsPanel"));
+    }
+  }
+
+  vm.addProduct = function(index) {
+    if (vm.listIDs.length == 0) {
+      alert("Cannot add item until a list has been created. Create a list in the View Shopping List menu.");
+    } else {
+      var addItem = {};
+      addItem.type = "id";
+      addItem.name = vm.products[index].itemID;
+      vm.shoppingLists[vm.tab].contents.push(vm.products[index]);
+      if (vm.current_user != "") {
+        vm.updateList();
+      }
+    }
+  }
+
+  vm.addTextItem = function() {
+    if (vm.listIDs.length == 0) {
+      alert("Cannot add item until a list has been created. Create a list in the View Shopping List menu.");
+    } else {
+      var addText = {};
+      addText.type = "name";
+      addText.name = vm.newItemName;
+      vm.shoppingLists[vm.tab].contents.push(addText);
+      if (vm.current_user != "") {
+        vm.updateList();
+      }
+      vm.newItemName = "";
+    }
+  }
+
+  vm.updateList = function() {
+    if (vm.current_user != "") {
+      var contents = [];
+
+      for (var i = 0; i < vm.shoppingLists[vm.tab].contents.length; i++) {
+        var entry = {};
+        var item = vm.shoppingLists[vm.tab].contents[i];
+        if (item.type == "name") {
+          entry.type = "name";
+          entry.name = item.name;
+        } else {
+          entry.type = "id";
+          entry.name = item.itemID;
+        }
+        contents.push(entry)
+      }
+      var editData = {};
+      editData.listID = vm.currentListID; //CURRENT LIST ID
+      editData.contents = contents;
+      $http.post("api/list/edit", editData).then(
+      function successCallBack(response) {
+        if (response.data.errors.length == 0){
+          var currentTab = vm.listIDs.indexOf(response.data.entry.listID);
+          vm.shoppingLists[currentTab].contents = response.data.entry.contents;
+          if (vm.mapped == "list") {
+            vm.mapList()
+          }
+        }
+      }, errorCallBackGeneral);
+    }
+  }
+
+    vm.addList = function() {
+    var listData = {};
+    listData.name = vm.newListName;
+    if (vm.newListName != "") {
+      $http.post("api/list/create", listData).then(
+        function successCallBack(response) {
+          var data = response.data;
+          if (data.errors.length == 0) {
+            vm.listIDs.push(data.listID);
+            vm.shoppingLists.push({
+              listName: vm.newListName,
+              contents: []
+            });
+            vm.newListName = "";
+          } else {
+            for (var i = 0; i < data.errors.length; i++) {
+              // alert(e);
+              $window.alert(data.errors[i]);
+              // console.error(e);
+            }
+          }
+
+        }, errorCallBackGeneral);
+    }
+
+  }
+
+
+  vm.removeList = function() {
+    var listData = {};
+    listData.listID = vm.currentListID;
+    vm.listIDs.splice(vm.tab, 1);
+    vm.shoppingLists.splice(vm.tab, 1);
+    $http.post("api/list/deleteid", listData);
+    if (vm.listIDs.length == 0) {
+      vm.addList();
+    }
+    vm.tab = 0;
+    vm.currentListID = vm.listIDs[vm.tab];
+  }
+
+
+
 
 });
 

@@ -972,22 +972,10 @@ def add_review(request):
     errors, user = extract_user(request, errors)
     post = QueryDict('', mutable=True)
     post.update(json.loads(request.body))
-    itemID = post.get('itemID', '')
     storeID = post.get('storeID', '')
     rating = post.get('rating', '')
     text = post.get('text', '')
     item = None
-    if itemID:
-        try:
-            itemID = int(itemID)
-            if Item.objects.filter(id=itemID):
-                item = Item.objects.get(id=itemID)
-            else:
-                item = None
-                errors.append('itemID not valid')
-        except ValueError:
-            item = None
-            errors.append('itemID must be an integer')
     if storeID:
         try:
             storeID = int(storeID)
@@ -1005,7 +993,7 @@ def add_review(request):
         errors.append('must provide valid storeID or itemID')
     try:
         rating = int(rating)
-    except ValueError:
+    except TypeError:
         errors.append('rating must be an integer')
     else:
         if (rating < 1) or (rating > 5):
@@ -1015,6 +1003,7 @@ def add_review(request):
             new_review = Review.create_new_review(user, item, store, rating, text)
         except ValidationError as e:
             new_review = None
+            
             errors.append(e)
     if len(errors) == 0:
         reponse = {
@@ -1024,6 +1013,7 @@ def add_review(request):
             }
         return HttpResponse(json.dumps(reponse), content_type='application/json')
     return return_error(errors)
+
 
 
 @csrf_exempt
