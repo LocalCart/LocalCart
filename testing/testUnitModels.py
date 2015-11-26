@@ -1,52 +1,14 @@
 from django.test import TestCase
-from LocalCartBack import models, views
+from LocalCartBack import models
 from django.http import QueryDict
 import json
 from django.contrib.auth import authenticate
+import factory
 
 """
 To test all tests: ./manage.py test
 To test specific file: ./manage.py test testing.file_name
 """
-
-class ViewHelperTestCase(TestCase):
-
-    def test_check_empty(self):
-        fields = ['a', 'b']
-        post = QueryDict('', mutable=True)
-        body = '''
-              {
-               "a": "test",
-               "b": "test"
-              }
-              '''
-        post.update(json.loads(body))
-        errors = views.check_empty(fields, post, [])
-        self.assertTrue(len(errors) ==  0)
-
-    def test_check_empty_missing(self):
-        fields = ['a', 'b']
-        post = QueryDict('', mutable=True)
-        body = '''
-              {
-               "a": "test"
-              }
-              '''
-        post.update(json.loads(body))
-        errors = views.check_empty(fields, post, [])
-        self.assertTrue(len(errors) >= 1)
-        post = QueryDict('', mutable=True)
-        body = '''
-              {
-               "a": "test",
-               "b": ""
-              }
-              '''
-        post.update(json.loads(body))
-        errors = views.check_empty(fields, post, [])
-        self.assertTrue(len(errors) >= 1)
-
-
 
 
 class CustomerMocker:
