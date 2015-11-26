@@ -12,7 +12,7 @@
   <script src="https://code.jquery.com/jquery-2.1.4.min.js"></script>
   <script src="static/js/bootstrap.js"></script>
   <script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/angularjs/1.4.7/angular.min.js"></script>
-  <script <script language="javascript" src="https://maps.googleapis.com/maps/api/js?v=3"></script>></script>
+  <script language="javascript" src="https://maps.googleapis.com/maps/api/js?v=3"></script>
   <script type="text/javascript" src="static/controller.js"></script>
 </head>
 
@@ -34,14 +34,12 @@
 
           <!-- merchant toolbar -->
           <div ng-show="indexController.current_user_type == 'merchant'">
-            <a href="" class="btn btn-info">Welcome [[indexController.current_user]]!</a>
             <a href="merchant" class="btn btn-info">View Profile</a>
             <a href="inventory" class="btn btn-info">View Inventory</a>
             <a ng-click="indexController.logout()" class="btn btn-success">Logout</a>
           </div>
           <!-- customer toolbar -->
           <div ng-show="indexController.current_user_type == 'customer'">
-            <a href="" class="btn btn-info">Welcome [[indexController.current_user]]!</a>
             <a href="" class="btn btn-info" data-toggle="modal" data-target="#myModal">View Shopping Lists</a>
             <a ng-click="indexController.logout()" class="btn btn-success">Logout</a>
           </div>

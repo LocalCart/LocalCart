@@ -1157,18 +1157,6 @@ def search_items(request):
 
 
 def extract_user(request, errors):
-# <<<<<<< HEAD
-#     post = QueryDict('', mutable=True)
-#     user = None
-#     if request.method == 'POST' and request.body:
-#         post.update(json.loads(request.body))
-#         username = post.get('username', '')
-#     elif request.method == 'GET':
-#         username = request.GET.get('username', '')
-#     else:
-#         username = ''
-
-# =======
     user = None
     if request.method == 'POST':
         if request.body:
@@ -1180,7 +1168,6 @@ def extract_user(request, errors):
     else:
         get = request.GET
         username = get.get('username', '')
-# >>>>>>> 4c09812d1c53fc96d3042b4f7ce82ef651611a1d
     if username:
         if User.objects.filter(username=username).exists():
             user = User.objects.get(username=username)
