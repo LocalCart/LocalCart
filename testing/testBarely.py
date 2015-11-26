@@ -121,26 +121,6 @@ class TestCarts(testLib.CartTestCase):
                                              })
         self.assertSuccessResponse(respCreateStore)
 
-    def testCreateStoreNoUserName(self):
-        respCreate = self.makeRequest("/api/user/create", method="POST",
-                                    data = { 'username' : 'Tom',
-                                             'password' : '123456',
-                                             'user_type' : 'merchant',
-                                             'email' : 'tommeng@berkeley.edu'
-                                             })
-
-        self.assertSuccessResponse(respCreate)
-
-        respCreateStore = self.makeRequest("/api/store/create", method="POST",
-                                    data = { 'username' : '',
-                                             'name' : 'Tom Store',
-                                             'address' : '1234 12th st.\n\nBerkeley\nCA\n94704',
-                                             'phone_number' : '(510)642-6000',
-                                             #'picture' : 'pic',
-                                             #'description' : 'This is a very good store'
-                                             })
-        self.assertFailResponse(respCreateStore)
-
     def testCreateStoreUserNameNotExist(self):
         respCreate = self.makeRequest("/api/user/create", method="POST",
                                     data = { 'username' : 'Tom',
@@ -254,78 +234,7 @@ class TestCarts(testLib.CartTestCase):
                                              })
         self.assertFailResponse(respCreateStore)
         self.assertEquals(respCreateStore['errors'][0], 'store already exists at this address')
-
-#################################################################################################
         
-
-    # def testCreateInventory(self):
-    #     respCreate = self.makeRequest("/api/user/create", method="POST",
-    #                                 data = { 'username' : 'Tom',
-    #                                          'password' : '123456',
-    #                                          'user_type' : 'merchant',
-    #                                          'email' : 'tommeng@berkeley.edu'
-    #                                          })
-
-    #     self.assertSuccessResponse(respCreate)
-
-    #     respCreateStore = self.makeRequest("/api/store/create", method="POST",
-    #                                 data = { 'username' : 'Tom',
-    #                                          'name' : 'Tom store',
-    #                                          'address' : '1234 12th st.\n\nBerkeley\nCA\n94704',
-    #                                          'phone_number' : '(510)642-6000'
-    #                                          })
-    #     self.assertSuccessResponse(respCreateStore)
-
-    #     respCreateInventory = self.makeRequest("/api/inventory/create", method="POST",
-    #                                 data = { 'storeID' : respCreateStore['storeID']
-    #                                          })
-    #     self.assertSuccessResponse(respCreateInventory)
-
-    # def testCreateInventoryWithoutStoreID(self):
-    #     respCreate = self.makeRequest("/api/user/create", method="POST",
-    #                                 data = { 'username' : 'Tom',
-    #                                          'password' : '123456',
-    #                                          'user_type' : 'merchant',
-    #                                          'email' : 'tommeng@berkeley.edu'
-    #                                          })
-
-    #     self.assertSuccessResponse(respCreate)
-
-    #     respCreateStore = self.makeRequest("/api/store/create", method="POST",
-    #                                 data = { 'username' : 'Tom',
-    #                                          'name' : 'Tom store',
-    #                                          'address' : '1234 12th st.\n\nBerkeley\nCA\n94704',
-    #                                          'phone_number' : '(510)642-6000'
-    #                                          })
-    #     self.assertSuccessResponse(respCreateStore)
-
-    #     respCreateInventory = self.makeRequest("/api/inventory/create", method="POST",
-    #                                 data = { 'storeID' : ''                                             })
-    #     self.assertFailResponse(respCreateInventory)
-
-    # def testCreateInventoryWithStoreIDNotExist(self):
-    #     respCreate = self.makeRequest("/api/user/create", method="POST",
-    #                                 data = { 'username' : 'Tom',
-    #                                          'password' : '123456',
-    #                                          'user_type' : 'merchant',
-    #                                          'email' : 'tommeng@berkeley.edu'
-    #                                          })
-
-    #     self.assertSuccessResponse(respCreate)
-
-    #     respCreateStore = self.makeRequest("/api/store/create", method="POST",
-    #                                 data = { 'username' : 'Tom',
-    #                                          'name' : 'Tom store',
-    #                                          'address' : '1234 12th st.\n\nBerkeley\nCA\n94704',
-    #                                          'phone_number' : '(510)642-6000'
-    #                                          })
-    #     self.assertSuccessResponse(respCreateStore)
-
-    #     respCreateInventory = self.makeRequest("/api/inventory/create", method="POST",
-    #                                 data = { 'storeID' : '100'
-    #                                          })
-    #     self.assertFailResponse(respCreateInventory)
-
 ###################################################################################################
     def testCreateItem(self):
         respCreate = self.makeRequest("/api/user/create", method="POST",
@@ -345,8 +254,7 @@ class TestCarts(testLib.CartTestCase):
                                              })
         self.assertSuccessResponse(respCreateStore)
 
-        respCreateInventory = self.makeRequest("/api/inventory/store?" + urllib.urlencode({'username' : 'Tom'}), method="GET")
-        print respCreateInventory['inventoryID']
+        respCreateInventory = self.makeRequest("/api/inventory/getUser?" + urllib.urlencode({'username' : 'Tom'}), method="GET")
         respCreateItem = self.makeRequest("/api/inventory/add", method="POST",
                                     data = { 'inventoryID' : respCreateInventory['inventoryID'],
                                              'name' : 'apple',
@@ -375,7 +283,7 @@ class TestCarts(testLib.CartTestCase):
                                              })
         self.assertSuccessResponse(respCreateStore)
 
-        respCreateInventory = self.makeRequest("/api/inventory/store?" + urllib.urlencode({'username' : 'Tom'}), method="GET")
+        respCreateInventory = self.makeRequest("/api/inventory/getUser?" + urllib.urlencode({'username' : 'Tom'}), method="GET")
 
         respCreateItem = self.makeRequest("/api/inventory/add", method="POST",
                                     data = { 'inventoryID' : '',
@@ -404,7 +312,7 @@ class TestCarts(testLib.CartTestCase):
                                              })
         self.assertSuccessResponse(respCreateStore)
 
-        respCreateInventory = self.makeRequest("/api/inventory/store?" + urllib.urlencode({'username' : 'Tom'}), method="GET")
+        respCreateInventory = self.makeRequest("/api/inventory/getUser?" + urllib.urlencode({'username' : 'Tom'}), method="GET")
 
         respCreateItem = self.makeRequest("/api/inventory/add", method="POST",
                                     data = { 'inventoryID' : '100',
@@ -433,7 +341,7 @@ class TestCarts(testLib.CartTestCase):
                                              })
         self.assertSuccessResponse(respCreateStore)
 
-        respCreateInventory = self.makeRequest("/api/inventory/store?" + urllib.urlencode({'username' : 'Tom'}), method="GET")
+        respCreateInventory = self.makeRequest("/api/inventory/getUser?" + urllib.urlencode({'username' : 'Tom'}), method="GET")
 
         respCreateItem = self.makeRequest("/api/inventory/add", method="POST",
                                     data = { 'inventoryID' : respCreateInventory['inventoryID'],
@@ -462,7 +370,7 @@ class TestCarts(testLib.CartTestCase):
                                              })
         self.assertSuccessResponse(respCreateStore)
 
-        respCreateInventory = self.makeRequest("/api/inventory/store?" + urllib.urlencode({'username' : 'Tom'}), method="GET")
+        respCreateInventory = self.makeRequest("/api/inventory/getUser?" + urllib.urlencode({'username' : 'Tom'}), method="GET")
 
         respCreateItem = self.makeRequest("/api/inventory/add", method="POST",
                                     data = { 'inventoryID' : respCreateInventory['inventoryID'],
@@ -491,7 +399,7 @@ class TestCarts(testLib.CartTestCase):
                                              })
         self.assertSuccessResponse(respCreateStore)
 
-        respCreateInventory = self.makeRequest("/api/inventory/store?" + urllib.urlencode({'username' : 'Tom'}), method="GET")
+        respCreateInventory = self.makeRequest("/api/inventory/getUser?" + urllib.urlencode({'username' : 'Tom'}), method="GET")
 
         respCreateItem = self.makeRequest("/api/inventory/add", method="POST",
                                     data = { 'inventoryID' : respCreateInventory['inventoryID'],
@@ -500,7 +408,7 @@ class TestCarts(testLib.CartTestCase):
                                              'picture': '',
                                              'price': '2.00'
                                              })
-        self.assertFailResponse(respCreateItem)
+        self.assertSuccessResponse(respCreateItem)
 
     def testCreateItemWithoutPrice(self):
         respCreate = self.makeRequest("/api/user/create", method="POST",
@@ -520,7 +428,7 @@ class TestCarts(testLib.CartTestCase):
                                              })
         self.assertSuccessResponse(respCreateStore)
 
-        respCreateInventory = self.makeRequest("/api/inventory/store?" + urllib.urlencode({'username' : 'Tom'}), method="GET")
+        respCreateInventory = self.makeRequest("/api/inventory/getUser?" + urllib.urlencode({'username' : 'Tom'}), method="GET")
 
         respCreateItem = self.makeRequest("/api/inventory/add", method="POST",
                                     data = { 'inventoryID' : respCreateInventory['inventoryID'],
@@ -552,7 +460,7 @@ class TestCarts(testLib.CartTestCase):
                                              })
         self.assertSuccessResponse(respCreateStore)
 
-        respCreateInventory = self.makeRequest("/api/inventory/store?" + urllib.urlencode({'username' : 'Tom'}), method="GET")
+        respCreateInventory = self.makeRequest("/api/inventory/getUser?" + urllib.urlencode({'username' : 'Tom'}), method="GET")
 
         respCreateItem = self.makeRequest("/api/inventory/add", method="POST",
                                     data = { 'inventoryID' : respCreateInventory['inventoryID'],
@@ -590,7 +498,7 @@ class TestCarts(testLib.CartTestCase):
                                              })
         self.assertSuccessResponse(respCreateStore)
 
-        respCreateInventory = self.makeRequest("/api/inventory/store?" + urllib.urlencode({'username' : 'Tom'}), method="GET")
+        respCreateInventory = self.makeRequest("/api/inventory/getUser?" + urllib.urlencode({'username' : 'Tom'}), method="GET")
 
         respCreateItem = self.makeRequest("/api/inventory/add", method="POST",
                                     data = { 'inventoryID' : respCreateInventory['inventoryID'],
@@ -628,7 +536,7 @@ class TestCarts(testLib.CartTestCase):
                                              })
         self.assertSuccessResponse(respCreateStore)
 
-        respCreateInventory = self.makeRequest("/api/inventory/store?" + urllib.urlencode({'username' : 'Tom'}), method="GET")
+        respCreateInventory = self.makeRequest("/api/inventory/getUser?" + urllib.urlencode({'username' : 'Tom'}), method="GET")
 
         respCreateItem = self.makeRequest("/api/inventory/add", method="POST",
                                     data = { 'inventoryID' : respCreateInventory['inventoryID'],
@@ -667,7 +575,7 @@ class TestCarts(testLib.CartTestCase):
                                              })
         self.assertSuccessResponse(respCreateStore)
 
-        respCreateInventory = self.makeRequest("/api/inventory/store?" + urllib.urlencode({'username' : 'Tom'}), method="GET")
+        respCreateInventory = self.makeRequest("/api/inventory/getUser?" + urllib.urlencode({'username' : 'Tom'}), method="GET")
 
         respCreateItem = self.makeRequest("/api/inventory/add", method="POST",
                                     data = { 'inventoryID' : respCreateInventory['inventoryID'],
@@ -705,7 +613,7 @@ class TestCarts(testLib.CartTestCase):
                                              })
         self.assertSuccessResponse(respCreateStore)
 
-        respCreateInventory = self.makeRequest("/api/inventory/store?" + urllib.urlencode({'username' : 'Tom'}), method="GET")
+        respCreateInventory = self.makeRequest("/api/inventory/getUser?" + urllib.urlencode({'username' : 'Tom'}), method="GET")
 
         respCreateItem = self.makeRequest("/api/inventory/add", method="POST",
                                     data = { 'inventoryID' : respCreateInventory['inventoryID'],
@@ -743,7 +651,7 @@ class TestCarts(testLib.CartTestCase):
                                              })
         self.assertSuccessResponse(respCreateStore)
 
-        respCreateInventory = self.makeRequest("/api/inventory/store?" + urllib.urlencode({'username' : 'Tom'}), method="GET")
+        respCreateInventory = self.makeRequest("/api/inventory/getUser?" + urllib.urlencode({'username' : 'Tom'}), method="GET")
 
         respCreateItem = self.makeRequest("/api/inventory/add", method="POST",
                                     data = { 'inventoryID' : respCreateInventory['inventoryID'],
@@ -782,7 +690,7 @@ class TestCarts(testLib.CartTestCase):
         self.assertSuccessResponse(respCreateStore)
 
 
-        respCreateInventory = self.makeRequest("/api/inventory/store?" + urllib.urlencode({'username' : 'Tom'}), method="GET")   
+        respCreateInventory = self.makeRequest("/api/inventory/getUser?" + urllib.urlencode({'username' : 'Tom'}), method="GET")   
 
 
         respCreateItem = self.makeRequest("/api/inventory/add", method="POST",
@@ -824,10 +732,7 @@ class TestCarts(testLib.CartTestCase):
                                              })
         self.assertSuccessResponse(respCreateStore)
 
-        respCreateInventory = self.makeRequest("/api/inventory/create", method="POST",
-                                    data = { 'storeID' : respCreateStore['storeID']
-                                             })
-        self.assertSuccessResponse(respCreateInventory)
+        respCreateInventory = self.makeRequest("/api/inventory/getUser?" + urllib.urlencode({'username' : 'Tom'}), method="GET")   
 
         respCreateItem = self.makeRequest("/api/inventory/add", method="POST",
                                     data = { 'inventoryID' : respCreateInventory['inventoryID'],
