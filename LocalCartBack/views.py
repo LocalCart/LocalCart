@@ -913,7 +913,8 @@ def resolve_list(request):
             errors = CartList.resolve_list(listID, location)
         except (ValidationError, ObjectDoesNotExist, MultipleObjectsReturned) as e:
             errors = ['Search has failed', e]
-    if len(errors) == 0:
+    entry = None
+    if listID:
         hasError, cartlist = CartList.get_cartlist(listID)
         if hasError:
             errors.append("Can't get list from listID")
