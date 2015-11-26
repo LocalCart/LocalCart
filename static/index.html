@@ -12,7 +12,7 @@
   <script src="https://code.jquery.com/jquery-2.1.4.min.js"></script>
   <script src="static/js/bootstrap.js"></script>
   <script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/angularjs/1.4.7/angular.min.js"></script>
-  <script <script language="javascript" src="https://maps.googleapis.com/maps/api/js?v=3"></script>></script>
+  <script language="javascript" src="https://maps.googleapis.com/maps/api/js?v=3"></script>
   <script type="text/javascript" src="static/controller.js"></script>
 </head>
 
@@ -27,29 +27,29 @@
           <span class="icon-bar"></span>
           <span class="icon-bar"></span>
         </button>
-        <a class="navbar-brand" href="home">Local Cart</a>
+        <a class="navbar-brand" href="home" target="_self">Local Cart</a>
       </div>
       <div id="navbar" class="navbar-collapse collapse">
         <form class="navbar-form navbar-right">
 
           <!-- merchant toolbar -->
           <div ng-show="indexController.current_user_type == 'merchant'">
-            <a href="" class="btn btn-info">Welcome [[indexController.current_user]]!</a>
-            <a href="merchant" class="btn btn-info">View Profile</a>
-            <a href="inventory" class="btn btn-info">View Inventory</a>
+            <a class="btn btn-info">Welcome [[indexController.current_user]]!</a>
+            <a href="merchant" class="btn btn-info" target="_self">View Profile</a>
+            <a href="inventory" class="btn btn-info" target="_self">View Inventory</a>
             <a ng-click="indexController.logout()" class="btn btn-success">Logout</a>
           </div>
           <!-- customer toolbar -->
           <div ng-show="indexController.current_user_type == 'customer'">
-            <a href="" class="btn btn-info">Welcome [[indexController.current_user]]!</a>
-            <a href="" class="btn btn-info" data-toggle="modal" data-target="#myModal">View Shopping Lists</a>
+            <a class="btn btn-info">Welcome [[indexController.current_user]]!</a>
+            <a class="btn btn-info" data-toggle="modal" data-target="#myModal">View Shopping Lists</a>
             <a ng-click="indexController.logout()" class="btn btn-success">Logout</a>
           </div>
           <div ng-show="indexController.current_user_type == ''">
             <input ng-model="indexController.User.username" class="form-control" placeholder="Username" required autofocus>
             <input ng-model="indexController.User.password" type="password" id="inputPassword" class="form-control" placeholder="Password" required>
             <a ng-click="indexController.loginAttempt()" class="btn btn-success">Login</a>
-            <a href="register" class="btn btn-success">Register</a>
+            <a href="register" class="btn btn-success" target="_self">Register</a>
           </div>
         </form>
       </div>
@@ -57,21 +57,23 @@
     </div>
   </nav>
   <hr>
+  <div class="container col-sm-offset-2 col-sm-5">
+    <h2>Welcome [[indexController.current_user]]!</h2>
+  </div>
   <div class="col-sm-12">
     <div class="row">
+      <div class="container col-sm-offset-2" ng-hide="indexController.query != ''">
+        <h2>Enter a search query and location to continue!</h2>
+      </div>
       <div class="container col-sm-offset-2 col-sm-5">
         <input ng-model="indexController.searchQuery" type="text" placeholder="Search for item!" class="form-control">
         <input ng-model="indexController.searchLocation" type="text" placeholder="Enter Location" class="form-control">
       </div>
       <div class="container col-sm-5">
-        <a href="" ng-click="indexController.search()" class="btn btn-primary">Search and Map Results</a>
-        <a href="" ng-click="indexController.mapList()" class="btn btn-primary">Map Current List</a>
+        <a ng-click="indexController.search()" class="btn btn-primary">Search and Map Results</a>
       </div>
     </div>
     <br>
-    <div class="container col-sm-offset-2" ng-hide="indexController.query != ''">
-      <h2>Welcome back [[indexController.current_user]]. Enter a search query and location to continue!</h2>
-    </div>
     <div ng-show="indexController.query != ''">
       <div class="container col-sm-5">
         <h2>Search Results for [[indexController.query]]</h2>
@@ -81,12 +83,12 @@
             <div class="col-sm-9">
               <div class="media-left">
                 <a href="#">
-                  <img class="media-object" src=[[result.picture]] alt="..." style="width:64px; height:auto;">
+                  <img class="media-object" ng-src=[[result.picture]] alt="..." style="width:64px; height:auto;">
                 </a>
               </div>
               <div class="media-body">
                 <h3 class="media-heading">[[result.name]]</h3>
-                <h5><a target="_blank" ng-href="store?storeID=[[result.storeID]]"> Store: [[result.storeName]]</a></h5> [[result.description]]
+                <h5><a ng-href="store?storeID=[[result.storeID]]" target="_blank"> Store: [[result.storeName]]</a></h5> [[result.description]]
                 <hr>
               </div>
             </div>
@@ -128,7 +130,7 @@
         <div class="modal-body">
           <ul class="nav nav-pills">
             <li ng-repeat="list in indexController.shoppingLists" ng-class="{active:indexController.isSet($index)}">
-              <a href ng-click="indexController.setTab($index)">[[list.listName]]</a>
+              <a ng-click="indexController.setTab($index)">[[list.listName]]</a>
             </li>
             <li>
               <input placeholder="New list name"type="text" ng-model="indexController.newListName">
@@ -156,7 +158,7 @@
                 <td>[[row.name]]</td>
                 <td>[[row.description]]</td>
                 <td>$[[row.price | number:2]]</td>
-                <td><img class="media-object" src=[[row.picture]] alt="" style="width:64px; height:auto;"></td>
+                <td><img class="media-object" ng-src=[[row.picture]] alt="" style="width:64px; height:auto;"></td>
                 <td><a ng-click="indexController.remove($index)" class="btn btn-danger">X</a></td>
               </tr>
             </tbody>

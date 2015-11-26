@@ -26,15 +26,15 @@
           <span class="icon-bar"></span>
           <span class="icon-bar"></span>
         </button>
-        <a class="navbar-brand" href="home">Local Cart</a>
+        <a class="navbar-brand" href="home" target="_self">Local Cart</a>
       </div>
       <div id="navbar" class="navbar-collapse collapse">
         <form class="navbar-form navbar-right">
           <!-- customer toolbar -->
           <div ng-show="inventoryController.current_user != ''">
-            <a href="" class="btn btn-info">Welcome [[inventoryController.current_user]]!</a>
-            <a href="merchant" class="btn btn-info">View Profile</a>
-            <a href="inventory" class="btn btn-info">View Inventory</a>
+            <a class="btn btn-info">Welcome [[inventoryController.current_user]]!</a>
+            <a href="merchant" class="btn btn-info" target="_self">View Profile</a>
+            <a href="inventory" class="btn btn-info" target="_self">View Inventory</a>
             <a ng-click="inventoryController.logout()" class="btn btn-success">Logout</a>
           </div>
           <!-- not logged in toolbar -->
@@ -42,7 +42,7 @@
             <input ng-model="inventoryController.User.username" class="form-control" placeholder="Username" required autofocus>
             <input ng-model="inventoryController.User.password" type="password" id="inputPassword" class="form-control" placeholder="Password" required>
             <a ng-click="inventoryController.loginAttempt()" class="btn btn-success">Login</a>
-            <a href="register" class="btn btn-success">Register</a>
+            <a href="register" class="btn btn-success" target="_self">Register</a>
           </div>
         </form>
       </div>
@@ -85,7 +85,7 @@
             <td>[[row.name]]</td>
             <td>[[row.description]]</td>
             <td>$[[row.price | number:2]]</td>
-            <td><img class="media-object" src=[[row.picture]] alt="..." style="width:64px; height:auto;"></td>
+            <td><img class="media-object" ng-src=[[row.picture]] alt="..." style="width:64px; height:auto;"></td>
             <td><a ng-click="inventoryController.remove([[$index]])" class="btn btn-danger">X</a></td>
           </tr>
         </tbody>

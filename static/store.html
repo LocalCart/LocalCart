@@ -26,28 +26,28 @@
           <span class="icon-bar"></span>
           <span class="icon-bar"></span>
         </button>
-        <a class="navbar-brand" href="home">Local Cart</a>
+        <a class="navbar-brand" href="home" target="_self">Local Cart</a>
       </div>
       <div id="navbar" class="navbar-collapse collapse">
         <form class="navbar-form navbar-right">
           <!-- merchant toolbar -->
           <div ng-show="storeController.current_user_type == 'merchant'">
-            <a href="" class="btn btn-info">Welcome [[storeController.current_user]]!</a>
-            <a href="merchant" class="btn btn-info">View Profile</a>
-            <a href="inventory" class="btn btn-info">View Inventory</a>
+            <a class="btn btn-info">Welcome [[storeController.current_user]]!</a>
+            <a href="merchant" class="btn btn-info" target="_self">View Profile</a>
+            <a href="inventory" class="btn btn-info" target="_self">View Inventory</a>
             <a ng-click="storeController.logout()" class="btn btn-success">Logout</a>
           </div>
           <!-- customer toolbar -->
           <div ng-show="storeController.current_user_type == 'customer'">
-            <a href="" class="btn btn-info">Welcome [[storeController.current_user]]!</a>
-            <a href="" class="btn btn-info" data-toggle="modal" data-target="#myModal">View Shopping List</a>
+            <a class="btn btn-info">Welcome [[storeController.current_user]]!</a>
+            <a class="btn btn-info" data-toggle="modal" data-target="#myModal">View Shopping List</a>
             <a ng-click="storeController.logout()" class="btn btn-success">Logout</a>
           </div>
           <div ng-show="storeController.current_user_type == ''">
             <input ng-model="storeController.User.username" class="form-control" placeholder="Username" required autofocus>
             <input ng-model="storeController.User.password" type="password" id="inputPassword" class="form-control" placeholder="Password" required>
             <a ng-click="storeController.loginAttempt()" class="btn btn-success">Login</a>
-            <a href="register" class="btn btn-success">Register</a>
+            <a href="register" class="btn btn-success" target="_self">Register</a>
           </div>
         </form>
       </div>
@@ -58,18 +58,18 @@
   <div class="container">
     <!-- Jumbotron Header -->
     <header class="jumbotron hero-spacer">
-      <h1>[[storeController.storeInfo.description]]</h1>
+      <h1>[[storeController.storeInfo.name]]</h1>
       <p>[[storeController.storeInfo.description]]</p>
-      <p>[[storeController.storeInfo.phone_number]]</p>
+      <p>Phone Number: [[storeController.storeInfo.phone_number]]</p>
     </header>
     <hr>
     <!-- Title -->
     <ul class="nav nav-pills">
       <li ng-class="{ active:storeController.isTabSet(0) }">
-        <a href ng-click="storeController.setStoreTab(0)">Available Items!</a>
+        <a ng-click="storeController.setStoreTab(0)">Available Items!</a>
       </li>
       <li ng-class="{ active:storeController.isTabSet(1) }">
-        <a href ng-click="storeController.setStoreTab(1)">Store Reviews</a>
+        <a ng-click="storeController.setStoreTab(1)">Store Reviews</a>
       </li>
     </ul>
     <div ng-show="storeController.storeTab==0">
@@ -81,39 +81,39 @@
       <div ng-repeat="product in storeController.products" ng-if="$index % 3 == 0" class="row text-center">
         <div class="col-md-4 hero-feature">
           <div class="thumbnail">
-            <img src="storeController.products[$index].picture " alt="No Picture Available">
+            <img ng-src=[[storeController.products[$index].picture]] alt="No Picture Available" style="width:200px; height:auto;">
             <div class="caption">
               <h3>[[storeController.products[$index].name ]] </h3>
-              <h3>[[storeController.products[$index].description ]] </h3>
-              <h3>[[storeController.products[$index].price ]] </h3>
+              <h4>[[storeController.products[$index].description ]] </h3>
+              <h4>$[[storeController.products[$index].price | number:2]] </h3>
               <p>
                 <a ng-click="storeController.addProduct($index)" class="btn btn-primary">Add to shopping list!</a>
               </p>
             </div>
           </div>
         </div>
-        <div class="col-md-4 hero-feature">
+        <div class="col-md-4 hero-feature" ng-if="($index + 1) < storeController.products.length">
           <div class="thumbnail">
-            <img src="storeController.products[$index + 1].picture " alt="No Picture Available">
+            <img ng-src=[[storeController.products[$index+1].picture]] alt="No Picture Available" style="width:200px; height:auto;">
             <div class="caption">
               <h3>[[storeController.products[$index + 1].name ]] </h3>
-              <h3>[[storeController.products[$index + 1].description ]] </h3>
-              <h3>[[storeController.products[$index + 1].price ]] </h3>
+              <h4>[[storeController.products[$index + 1].description ]] </h3>
+              <h4>$[[storeController.products[$index + 1].price | number:2]] </h3>
               <p>
-                <a ng-click="storeController.addProduct($index)" class="btn btn-primary">Add to shopping list!</a>
+                <a ng-click="storeController.addProduct($index + 1)" class="btn btn-primary">Add to shopping list!</a>
               </p>
             </div>
           </div>
         </div>
-        <div class="col-md-4 hero-feature">
+        <div class="col-md-4 hero-feature" ng-if="($index + 2) < storeController.products.length">
           <div class="thumbnail">
-            <img src="storeController.products[$index + 2].picture " alt="No Picture Available">
+            <img ng-src=[[storeController.products[$index+2].picture]] alt="No Picture Available" style="width:200px; height:auto;">
             <div class="caption">
               <h3>[[storeController.products[$index + 2].name ]] </h3>
-              <h3>[[storeController.products[$index + 2].description ]] </h3>
-              <h3>[[storeController.products[$index + 2].price ]] </h3>
+              <h4>[[storeController.products[$index + 2].description ]] </h3>
+              <h4>$[[storeController.products[$index + 2].price | number:2]] </h3>
               <p>
-                <a ng-click="storeController.addProduct($index)" class="btn btn-primary">Add to shopping list!</a>
+                <a ng-click="storeController.addProduct($index + 2)" class="btn btn-primary">Add to shopping list!</a>
               </p>
             </div>
           </div>
@@ -126,9 +126,9 @@
       <ul>
         <li ng-repeat="review in storeController.reviews">
           <blockquote>
-            <strong>[[review.rating]] Rating</strong>
+            <strong>Rating: [[review.rating]]</strong>
             <p>[[review.text]]</p>
-            <cite class="clearfix">- [[review.user]]</cite>
+            <cite class="clearfix">- [[review.username]]</cite>
           </blockquote>
         </li>
       </ul>
@@ -195,7 +195,7 @@
                 <td>[[row.name]]</td>
                 <td>[[row.description]]</td>
                 <td>$[[row.price | number:2]]</td>
-                <td><img class="media-object" src=[[row.picture]] alt="" style="width:64px; height:auto;"></td>
+                <td><img class="media-object" ng-src=[[row.picture]] alt="" style="width:64px; height:auto;"></td>
                 <td><a ng-click="storeController.remove($index)" class="btn btn-danger">X</a></td>
               </tr>
             </tbody>
@@ -204,6 +204,10 @@
         <div class="modal-footer">
           <input placeholder="Item Name" type="text" ng-model="storeController.newItemName">
           <button type="button" class="btn btn-default" ng-click="storeController.addTextItem()">Add Item</button>
+          
+        </div>
+        <div class="modal-footer">
+          <input placeholder="Location" type="text" ng-model="storeController.resolveLocation">
           <button type="button" class="btn btn-default" ng-click="storeController.resolveList()">Resolve List</button>
           <button type="button" class="btn btn-danger" ng-click="storeController.removeList()">Delete List</button>
           <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>

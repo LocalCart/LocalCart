@@ -65,7 +65,6 @@ class UserInfo(models.Model):
 
 class Store(models.Model):
 
-    # inventoryID = models.ForeignKey(Inventory)
     user = models.OneToOneField(User)
     name = models.CharField(max_length=64)
     address_street = models.CharField(max_length=64)
@@ -73,11 +72,10 @@ class Store(models.Model):
     address_state = models.CharField(max_length=32)
     address_zip = models.CharField(max_length=16)
     phone_number = models.CharField(max_length=16)
-    description = models.CharField(max_length=4096, blank=True) # Allowed to be empty?
+    description = models.CharField(max_length=4096, blank=True)
     picture = models.CharField(max_length=4096, default=default_image, null=True) # A url
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
-    # Add hours
 
     @staticmethod
     def get_store(store_id):
@@ -589,22 +587,7 @@ class ListItem(models.Model):
     item = models.ForeignKey(Item, null=True, default=None)
     item_name = models.CharField(max_length=64)
     list_position = models.PositiveSmallIntegerField()
-
-    @staticmethod
-    def get_list_item(list_item_id):
-        if not ListItem.objects.filter(id=list_item_id).exists():
-            return True, {}
-        list_item = ListItem.objects.get(id=list_item_id)
-        item_in_dic = {
-        #"store": item.store,
-        #"inventory": item.inventory,
-        "name": list_item.name,
-        "list_position": list_item.list_position
-        # "description": item.description,
-        # "price": item.price,
-        # "picture": item.picture
-        }
-        return False, item_in_dic
+    
 
 def lat_lon(address):
     gm_url = 'http://maps.googleapis.com/maps/api/geocode/json?'
