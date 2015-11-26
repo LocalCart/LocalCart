@@ -735,7 +735,7 @@ class TestUnitViewsItem(TestCase):
         respCreateInventory = self.getDataFromResponse(response)
 
         request = self.factory.post("/api/inventory/import", { 'inventoryID' : respCreateInventory['inventoryID'],
-                                             'dataset' : open('DummyDBPerfect.csv'),
+                                             'dataset' : open('static/DummyDBPerfect.csv'),
                                              })
         response = views.import_inventory(request)
         respCreateItem = self.getDataFromResponse(response)
@@ -766,7 +766,7 @@ class TestUnitViewsItem(TestCase):
         respCreateInventory = self.getDataFromResponse(response)
 
         request = self.factory.post("/api/inventory/import", { 'inventoryID' : respCreateInventory['inventoryID'],
-                                             'dataset' : open('DummyDBNoID.csv'),
+                                             'dataset' : open('static/DummyDBNoID.csv'),
                                              })
         response = views.import_inventory(request)
         respCreateItem = self.getDataFromResponse(response)
