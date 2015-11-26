@@ -244,6 +244,75 @@ class ItemTestCase(TestCase):
 		items, errors = models.Item.basic_search_items('apple','940')
 		self.assertEqual(1, len(errors))
 		self.assertFalse(items)
+
+	def testRelevantItemsFujiApple(self):
+		"""
+		Make a query with fuji apple. Should succeed and return item.
+		"""
+		items = models.Item.relevant_items('fuji apple')
+		self.assertEqual(1, len(items))
+
+	def testRelevantItemsFujiAppleDelicious(self):
+		"""
+		Make a query with fuji apple delicious. Should succeed and return no item.
+		"""
+		items = models.Item.relevant_items('fuji apple delicious')
+		self.assertEqual(0, len(items))
+
+	def testRelevantItemsFujiAppleDeliciousWithOneQuote(self):
+		"""
+		Create another apple. Make a query with fuji "apple. Should succeed and return item.
+		"""
+		items = models.Item.relevant_items('fuji "apple')
+		self.assertEqual(1, len(items))
+
+	def testRelevantItemsFujiAppleDeliciousWithOneQuoteAndPeriod(self):
+		"""
+		Create another apple. Make a query with fuji ."apple. Should succeed and return no item.
+		"""
+		items = models.Item.relevant_items('fuji ."apple')
+		self.assertEqual(0, len(items))
+
+	def testRelevantItemsApple(self):
+		"""
+		Create another apple. Make a query with apple. Should succeed and return 2 item.
+		"""
+		inventory = models.Item.objects.all()[0].inventory
+		item = ItemFactory(inventory=inventory, store=inventory.store, name="granny apple", description="delicious")
+		items = models.Item.relevant_items('apple')
+		self.assertEqual(2, len(items))
+
+	def testSearchItems(self):
+		"""
+		Search apple in 94709. Should succeed and return 1 item.
+		"""
+		items, errors = models.Item.search_items('apple', '94709')
+		self.assertEqual(0, len(errors))
+		self.assertEqual(1, len(items))
+
+	def testSearchItemsEmptyName(self):
+		"""
+		Search in 94709. Should fail and return 1 error.
+		"""
+		items, errors = models.Item.search_items('', '94709')
+		self.assertEqual(1, len(errors), errors)
+		self.assertEqual(0, len(items))
+
+	def testSearchItemsEmptyLocation(self):
+		"""
+		Search apple. Should fail and return 1 error.
+		"""
+		items, errors = models.Item.search_items('apple', '')
+		self.assertEqual(1, len(errors), errors)
+		self.assertEqual(0, len(items))
+
+	def testSearchItemsInvalidLocation(self):
+		"""
+		Search apple in 938a.... Should fail and return 1 error.
+		"""
+		items, errors = models.Item.search_items('apple', '938aqweporiuasl;dkfjasl;kdjqowepiruoiasdjfl;kajsdklfjkaldjfklas;dfklajsdklfjqweirqwueoipruioqpweuifjasjf;lksdjfklnvklasdkfjadk;j')
+		self.assertEqual(1, len(errors), errors)
+		self.assertEqual(0, len(items))
 #######################################################################################
 
 class ReviewFactory(factory.django.DjangoModelFactory):
