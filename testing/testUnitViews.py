@@ -6,11 +6,51 @@ from django.test import TestCase
 from django.test import RequestFactory
 from LocalCartBack import views
 from LocalCartBack import models
+from django.http import QueryDict
 import json
 import urllib
 import os
 import csv
 #import testLib
+
+
+class ViewHelperTestCase(TestCase):
+
+    def test_check_empty(self):
+        fields = ['a', 'b']
+        post = QueryDict('', mutable=True)
+        body = '''
+              {
+               "a": "test",
+               "b": "test"
+              }
+              '''
+        post.update(json.loads(body))
+        errors = views.check_empty(fields, post, [])
+        self.assertTrue(len(errors) ==  0)
+
+    def test_check_empty_missing(self):
+        fields = ['a', 'b']
+        post = QueryDict('', mutable=True)
+        body = '''
+              {
+               "a": "test"
+              }
+              '''
+        post.update(json.loads(body))
+        errors = views.check_empty(fields, post, [])
+        self.assertTrue(len(errors) >= 1)
+        post = QueryDict('', mutable=True)
+        body = '''
+              {
+               "a": "test",
+               "b": ""
+              }
+              '''
+        post.update(json.loads(body))
+        errors = views.check_empty(fields, post, [])
+        self.assertTrue(len(errors) >= 1)
+
 
 class TestUnitViewsUser(TestCase):
 

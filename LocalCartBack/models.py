@@ -199,12 +199,12 @@ class Item(models.Model):
         errors = []
         if len(query.strip()) == 0:
             errors.append('query empty')
-        elif len(location.strip()) == 0:
+        if len(location.strip()) == 0:
             errors.append('location empty')
         elif location_coord is None:
             location_coord = lat_lon(location)
-        if location_coord is None:
-            errors.append('location not found')
+            if location_coord is None:
+                errors.append('location not found')
         counter = 1
         items = []
         if len(errors) == 0:
