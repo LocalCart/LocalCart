@@ -327,6 +327,7 @@ class Review(models.Model):
                                 rating=rating, text=text)
         new_review.full_clean()
         new_review.save()
+        return new_review
 
     @staticmethod
     def get_review(reviewID):

@@ -285,7 +285,7 @@ def create_store(request):
         except ValidationError as e:
             errors.append(e)
         else:
-            storeID = new_store.id,
+            storeID = new_store.id
     reponse = {
                'status': 200,
                'storeID': storeID,
@@ -519,6 +519,7 @@ def get_user_inventory(request):
             inventory = Inventory.objects.get(store=store)
             inventoryID = inventory.id
             hasError, inventory_list = Inventory.get_inventory(inventory.id)
+    print errors
     response = {
                'status': 200,
                'inventoryID': inventoryID,
@@ -567,9 +568,11 @@ def create_item(request):
     if not picture:
         picture = default_image
     if len(errors) > 0:
+        print errors
         return return_error(errors)
     if Item.objects.filter(name=name, inventory_id=inventoryID).exists():
         errors.append('items in inventory must have unique names')
+        print errors
         return return_error(errors)       
     try:
         new_item = Item(store=store, inventory=inventory, name=name,
@@ -578,12 +581,15 @@ def create_item(request):
         new_item.save()
     except ValidationError as e:
         errors.append(str(e))
+        print errors
         return return_error(errors)
     reponse = {
                'status': 200,
                'itemID': new_item.id,
                'errors': errors
               }
+    print new_item.id
+    print 200
     return HttpResponse(json.dumps(reponse), content_type='application/json')
 
 @csrf_exempt
@@ -594,8 +600,8 @@ def get_item(request):
                 "status": 200,
                 "errors": []
                 }
-
-    itemID = request.GET.get('itemID', '')    
+    get = request.GET         
+    itemID = get.get('itemID', '')   
     if itemID == "":
         retData["errors"].append("itemID must be non-empty")
         hasError = True
@@ -725,8 +731,8 @@ def get_list(request):
                 "status": 200,
                 "errors": []
                 }
-
-    listID = request.GET.get('listID', '')    
+    get = request.GET
+    listID = get.get('listID', '')
     if listID == "":
         retData["errors"].append("listID must be non-empty")
         hasError = True
@@ -772,11 +778,12 @@ def get_user_lists(request):
 def get_listIDs(request):
     assert request.method == 'GET', 'api/list/getID requires a GET request'
     errors = []
+    listIDs = []
     errors, user = extract_user(request, errors)
-    if len(errors) > 0:
-        listIDs = []
-    else:
-        listIDs = CartList.objects.filter(user=user).order_by('id').values_list('id', flat=True)
+    if len(errors) == 0:
+        values = CartList.objects.filter(user=user).order_by('id').values_list('id', flat=True)
+        for v in values:
+            listIDs.append(v)
     response = { 
                 "status": 200,
                 "listIDs": listIDs,
@@ -966,7 +973,7 @@ def add_review(request):
     post = QueryDict('', mutable=True)
     post.update(json.loads(request.body))
     itemID = post.get('itemID', '')
-    storeID = post.get('itemID', '')
+    storeID = post.get('storeID', '')
     rating = post.get('rating', '')
     text = post.get('text', '')
     item = None
@@ -1009,6 +1016,13 @@ def add_review(request):
         except ValidationError as e:
             new_review = None
             errors.append(e)
+    if len(errors) == 0:
+        reponse = {
+            'status': 200,
+            'reviewID': new_review.id,
+            'errors': errors
+            }
+        return HttpResponse(json.dumps(reponse), content_type='application/json')
     return return_error(errors)
 
 
@@ -1143,6 +1157,18 @@ def search_items(request):
 
 
 def extract_user(request, errors):
+# <<<<<<< HEAD
+#     post = QueryDict('', mutable=True)
+#     user = None
+#     if request.method == 'POST' and request.body:
+#         post.update(json.loads(request.body))
+#         username = post.get('username', '')
+#     elif request.method == 'GET':
+#         username = request.GET.get('username', '')
+#     else:
+#         username = ''
+
+# =======
     user = None
     if request.method == 'POST':
         if request.body:
@@ -1154,6 +1180,7 @@ def extract_user(request, errors):
     else:
         get = request.GET
         username = get.get('username', '')
+# >>>>>>> 4c09812d1c53fc96d3042b4f7ce82ef651611a1d
     if username:
         if User.objects.filter(username=username).exists():
             user = User.objects.get(username=username)
