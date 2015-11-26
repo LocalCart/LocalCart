@@ -25,7 +25,7 @@ app.controller('IndexController', function($http, $window) {
   vm.listIDs = [];
   vm.currentListID = -1;
   vm.searchResults = [];
-  vm.shoppingLists = shoppingLists;
+  vm.shoppingLists = [];
   vm.newItemName = "";
   vm.current_user = "";
   vm.current_user_type = "";
@@ -267,7 +267,6 @@ app.controller('IndexController', function($http, $window) {
 
 
   vm.search = function() {
-    vm.query = vm.searchQuery;
     var searchData = {};
     searchData.query = vm.searchQuery;
     searchData.location = vm.searchLocation;
@@ -280,6 +279,7 @@ app.controller('IndexController', function($http, $window) {
       vm.directionsDisplay.setPanel(document.getElementById("DirectionsPanel"));
     }
     if ((vm.searchQuery != "") && (vm.searchLocation != "")) {
+      vm.query = vm.searchQuery;
       $http.get("api/search/items", {params: searchData}).then(
           function successCallBack(response) {
             var data = response.data;
@@ -381,8 +381,6 @@ app.controller('IndexController', function($http, $window) {
     $http.post("api/user/logout");
     $window.location.href = "home";
   }
-
-  vm.tab = 0;
 
   vm.isSet = function(checkTab) {
     return vm.tab === checkTab;
@@ -740,32 +738,6 @@ app.controller('InventoryController', function($http, $window, $scope) {
           }, errorCallBackGeneral);
   }
 
-  // vm.importInventory = function() {
-  //   vm.tempItem.inventoryID = vm.inventoryID;
-  //     var f = document.getElementById('csv-file').files[0],
-  //         r = new FileReader();
-  //     r.onloadend = function(e){
-  //       var dataset = e.target.result;
-  //       //send you binary data via $http or $resource or do anything else with it
-  //       $http.post("api/inventory/import", dataset, '').then(
-  //         function successCallBack(response) {
-  //           var data = response.data;
-  //           if (data.errors.length == 0) {
-  //             for (var i = 0; i < data.items.length; i++) {
-  //               vm.tempItem.itemID = data.items[i].id;
-  //               vm.inventory.push(vm.tempItem);
-  //               vm.tempItem = {}
-  //               vm.tempItem.inventoryID = vm.inventoryID;
-  //             }
-  //           } else {
-  //             for (var i = 0; i < data.errors.length; i++) {
-  //               $window.alert(data.errors[i]);
-  //             }
-  //           }
-  //         }, errorCallBackGeneral)
-  //     }
-  //     r.readAsBinaryString(f);
-  // }
   vm.logout = function() {
     $http.post("api/user/logout");
     $window.location.href = "home";
@@ -776,15 +748,22 @@ app.controller('InventoryController', function($http, $window, $scope) {
 
 app.controller('StoreController', function($http, $location, $window) {
   var vm = this;
-  vm.current_user = "";
-  vm.current_user_type = "";
   // populate store info
   vm.storeInfo = {}
   var curr_storeID = $location.search();
-  vm.products = results;
+  vm.products = [];
+  vm.tab = 0;
+  vm.listIDs = [];
+  vm.currentListID = -1;
+  vm.shoppingLists = [];
+  vm.newItemName = "";
+  vm.current_user = "";
+  vm.current_user_type = "";
+  vm.resolveLocation = "";
+
+
   // get request for reviews for store
   vm.reviews = [];
-
   vm.review = {};
   $http.post("api/store/storeID", curr_storeID).then(
     function successCallBack(response) {
@@ -832,9 +811,7 @@ app.controller('StoreController', function($http, $location, $window) {
             $window.location.href = 'store';
           } else {
             for (var i = 0; i < data.errors.length; i++) {
-              // alert(e);
               $window.alert(data.errors[i]);
-              // console.error(e);
             }
           }
         }, errorCallBackGeneral)
@@ -869,7 +846,6 @@ app.controller('StoreController', function($http, $location, $window) {
     }, errorCallBackGeneral)
   };
 
-  vm.tab = 0;
 
   vm.isSet = function(checkTab) {
     return vm.tab === checkTab;
@@ -914,9 +890,7 @@ app.controller('StoreController', function($http, $location, $window) {
               }, errorCallBackGeneral);
         } else {
           // for (var i = 0; i < data.errors.length; i++) {
-            // alert(e);
             // $window.alert(data.errors[i]);
-            // console.error(e);
           // }
         }
       }, errorCallBackGeneral);
@@ -925,13 +899,6 @@ app.controller('StoreController', function($http, $location, $window) {
     vm.shoppingLists[vm.tab].contents.splice(index, 1);
     if (vm.current_user != "") {
       vm.updateList();
-    }
-    if (vm.currentDirections == "list") {
-      vm.directionsDisplay.setMap(null);
-      vm.directionsDisplay.setPanel(null);
-      vm.directionsDisplay = new google.maps.DirectionsRenderer({preserveViewport: true});
-      vm.directionsDisplay.setMap(vm.map);
-      vm.directionsDisplay.setPanel(document.getElementById("DirectionsPanel"));
     }
   }
 
@@ -988,9 +955,6 @@ app.controller('StoreController', function($http, $location, $window) {
         if (response.data.errors.length == 0){
           var currentTab = vm.listIDs.indexOf(response.data.entry.listID);
           vm.shoppingLists[currentTab].contents = response.data.entry.contents;
-          if (vm.mapped == "list") {
-            vm.mapList()
-          }
         }
       }, errorCallBackGeneral);
     }
@@ -1012,15 +976,12 @@ app.controller('StoreController', function($http, $location, $window) {
             vm.newListName = "";
           } else {
             for (var i = 0; i < data.errors.length; i++) {
-              // alert(e);
               $window.alert(data.errors[i]);
-              // console.error(e);
             }
           }
 
         }, errorCallBackGeneral);
     }
-
   }
 
 
@@ -1037,125 +998,32 @@ app.controller('StoreController', function($http, $location, $window) {
     vm.currentListID = vm.listIDs[vm.tab];
   }
 
+  vm.resolveList = function() {
+    if (vm.listIDs.length == 0) {
+      alert("Cannot resolve. No lists exist. Build a list using the below Item Name field.");
+    } else if (vm.resolveLocation == "") {
+      alert("Must enter location to resolve list.");
 
+    } else {
+      var listData = {};
+      listData.listID = vm.currentListID;
+      listData.location = vm.resolveLocation;  //CURRENT LIST ID
+      $http.post("api/list/resolve", listData).then(
+      function successCallBack(response) {
+        if (response.data.errors.length == 0) {
+          var currentTab = vm.listIDs.indexOf(response.data.entry.listID);
+          vm.shoppingLists[currentTab].contents = response.data.entry.contents;
+        } else {
+          for (var i = 0; i < data.errors.length; i++) {
+            $window.alert(data.errors[i]);
+          }
+        }
+      }, errorCallBackGeneral);
+    }
+  }
 
 
 });
-
-
-var results = [{
-  storeName: "GameStop",
-  name: "Halo 5",
-  description: "A first person shooter video game",
-  price: 80.00,
-  picture: "http://www.geekwire.com/wp-content/uploads/2015/04/Halo5_KeyArt_Horiz_Final.jpg"
-}, {
-  storeName: "Target",
-  name: "Shampoo",
-  description: "New shampoo for dry hair",
-  price: 5.00,
-  picture: defaultImage
-}, {
-  storeName: "Costco",
-  name: "Deodorant",
-  description: "Use this to tackle body odor!",
-  price: 7.00,
-  picture: defaultImage
-}, {
-  storeName: "GameStop",
-  name: "yolo",
-  description: "A first person shooter video game",
-  price: 80.00,
-  picture: defaultImage
-}, {
-  storeName: "Target",
-  name: "Shampoo",
-  description: "New shampoo for dry hair",
-  price: 5.00,
-  picture: defaultImage
-}, {
-  storeName: "Costco",
-  name: "Deodorant",
-  description: "Use this to tackle body odor!",
-  price: 7.00,
-  picture: defaultImage
-}, {
-  storeName: "GameStop",
-  name: "Rolo",
-  description: "A first person shooter video game",
-  price: 80.00,
-  picture: defaultImage
-}, {
-  storeName: "Target",
-  name: "Shampoo",
-  description: "New shampoo for dry hair",
-  price: 5.00,
-  picture: defaultImage
-}, {
-  storeName: "Costco",
-  name: "Deodorant",
-  description: "Use this to tackle body odor!",
-  price: 7.00,
-  picture: defaultImage
-}, ];
-
-var inventory = [{
-  storeName: "GameStop1",
-  index: "1",
-  name: "Halo 5",
-  description: "A first person shooter video game",
-  price: "80.00"
-}, {
-  storeName: "GameStop1",
-  index: "2",
-  name: "Shampoo",
-  description: "New shampoo for dry hair",
-  price: "5.50"
-}, {
-  storeName: "GameStop1",
-  index: "3",
-  name: "Deodorant",
-  description: "Use this to tackle body odor!",
-  price: "7.00"
-}]
-
-var shoppingLists = [{
-  listName: 'listName0',
-  contents: [{
-    storeName: "GameStop1",
-    itemID: "1",
-    name: "Halo 5",
-    description: "A first person shooter video game",
-    price: "80.00"
-  }, {
-    storeName: "GameStop1",
-    itemID: "2",
-    name: "Shampoo",
-    description: "New shampoo for dry hair",
-    price: "5.50"
-  }, {
-    storeName: "GameStop1",
-    itemID: "3",
-    name: "Deodorant",
-    description: "Use this to tackle body odor!",
-    price: "7.00"
-  }]
-}, {
-  listName: 'listName1',
-  contents: [{
-    storeName: "GameStop2",
-    itemID: "1",
-    name: "Halo 5",
-    description: "A first person shooter video game",
-    price: "80.00"
-  }, {
-    storeName: "GameStop2",
-    itemID: "2",
-    name: "Shampoo",
-    description: "New shampoo for dry hair",
-    price: "5.50"
-  }]
-}];
 
 successListError = function(response) {
   var data = response.data;

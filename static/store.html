@@ -39,7 +39,7 @@
           </div>
           <!-- customer toolbar -->
           <div ng-show="storeController.current_user_type == 'customer'">
-            <a href="" class="btn btn-info">Welcome [[storeController.current_user]]!</a>
+            <a href="" class="btn btn-info">Logged in as: [[indexController.current_user]]</a>
             <a href="" class="btn btn-info" data-toggle="modal" data-target="#myModal">View Shopping List</a>
             <a ng-click="storeController.logout()" class="btn btn-success">Logout</a>
           </div>
@@ -58,9 +58,9 @@
   <div class="container">
     <!-- Jumbotron Header -->
     <header class="jumbotron hero-spacer">
-      <h1>[[storeController.storeInfo.description]]</h1>
+      <h1>[[storeController.storeInfo.name]]</h1>
       <p>[[storeController.storeInfo.description]]</p>
-      <p>[[storeController.storeInfo.phone_number]]</p>
+      <p>Phone Number: [[storeController.storeInfo.phone_number]]</p>
     </header>
     <hr>
     <!-- Title -->
@@ -81,39 +81,39 @@
       <div ng-repeat="product in storeController.products" ng-if="$index % 3 == 0" class="row text-center">
         <div class="col-md-4 hero-feature">
           <div class="thumbnail">
-            <img src="storeController.products[$index].picture " alt="No Picture Available">
+            <img src=[[storeController.products[$index].picture]] alt="No Picture Available" style="width:200px; height:auto;">
             <div class="caption">
               <h3>[[storeController.products[$index].name ]] </h3>
-              <h3>[[storeController.products[$index].description ]] </h3>
-              <h3>[[storeController.products[$index].price ]] </h3>
+              <h4>[[storeController.products[$index].description ]] </h3>
+              <h4>$[[storeController.products[$index].price | number:2]] </h3>
               <p>
                 <a ng-click="storeController.addProduct($index)" class="btn btn-primary">Add to shopping list!</a>
               </p>
             </div>
           </div>
         </div>
-        <div class="col-md-4 hero-feature">
+        <div class="col-md-4 hero-feature" ng-if="($index + 1) < storeController.products.length">
           <div class="thumbnail">
-            <img src="storeController.products[$index + 1].picture " alt="No Picture Available">
+            <img src=[[storeController.products[$index+1].picture]] alt="No Picture Available" style="width:200px; height:auto;">
             <div class="caption">
               <h3>[[storeController.products[$index + 1].name ]] </h3>
-              <h3>[[storeController.products[$index + 1].description ]] </h3>
-              <h3>[[storeController.products[$index + 1].price ]] </h3>
+              <h4>[[storeController.products[$index + 1].description ]] </h3>
+              <h4>$[[storeController.products[$index + 1].price | number:2]] </h3>
               <p>
-                <a ng-click="storeController.addProduct($index)" class="btn btn-primary">Add to shopping list!</a>
+                <a ng-click="storeController.addProduct($index + 1)" class="btn btn-primary">Add to shopping list!</a>
               </p>
             </div>
           </div>
         </div>
-        <div class="col-md-4 hero-feature">
+        <div class="col-md-4 hero-feature" ng-if="($index + 2) < storeController.products.length">
           <div class="thumbnail">
-            <img src="storeController.products[$index + 2].picture " alt="No Picture Available">
+            <img src=[[storeController.products[$index+2].picture]] alt="No Picture Available" style="width:200px; height:auto;">
             <div class="caption">
               <h3>[[storeController.products[$index + 2].name ]] </h3>
-              <h3>[[storeController.products[$index + 2].description ]] </h3>
-              <h3>[[storeController.products[$index + 2].price ]] </h3>
+              <h4>[[storeController.products[$index + 2].description ]] </h3>
+              <h4>$[[storeController.products[$index + 2].price | number:2]] </h3>
               <p>
-                <a ng-click="storeController.addProduct($index)" class="btn btn-primary">Add to shopping list!</a>
+                <a ng-click="storeController.addProduct($index + 2)" class="btn btn-primary">Add to shopping list!</a>
               </p>
             </div>
           </div>
@@ -126,9 +126,9 @@
       <ul>
         <li ng-repeat="review in storeController.reviews">
           <blockquote>
-            <strong>[[review.rating]] Rating</strong>
+            <strong>Rating: [[review.rating]]</strong>
             <p>[[review.text]]</p>
-            <cite class="clearfix">- [[review.user]]</cite>
+            <cite class="clearfix">- [[review.username]]</cite>
           </blockquote>
         </li>
       </ul>
@@ -204,6 +204,10 @@
         <div class="modal-footer">
           <input placeholder="Item Name" type="text" ng-model="storeController.newItemName">
           <button type="button" class="btn btn-default" ng-click="storeController.addTextItem()">Add Item</button>
+          
+        </div>
+        <div class="modal-footer">
+          <input placeholder="Location" type="text" ng-model="storeController.resolveLocation">
           <button type="button" class="btn btn-default" ng-click="storeController.resolveList()">Resolve List</button>
           <button type="button" class="btn btn-danger" ng-click="storeController.removeList()">Delete List</button>
           <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
