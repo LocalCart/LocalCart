@@ -1,0 +1,3 @@
+@param method
+    0 = lowest price, 1 = smallest distance, 2 = smallest number of stores
+def resolve(list, method)

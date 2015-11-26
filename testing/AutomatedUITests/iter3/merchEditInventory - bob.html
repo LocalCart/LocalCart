@@ -1,0 +1,171 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head profile="http://selenium-ide.openqa.org/profiles/test-case">
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+<link rel="selenium.base" href="https://fierce-island-3989.herokuapp.com/" />
+<title>merchEditInventory - bob</title>
+</head>
+<body>
+<table cellpadding="1" cellspacing="1" border="1">
+<thead>
+<tr><td rowspan="1" colspan="3">merchEditInventory - bob</td></tr>
+</thead><tbody>
+<tr>
+	<td>open</td>
+	<td>/home</td>
+	<td></td>
+</tr>
+<tr>
+	<td>click</td>
+	<td>//div[@id='navbar']/form/div[3]/input</td>
+	<td></td>
+</tr>
+<tr>
+	<td>type</td>
+	<td>//div[@id='navbar']/form/div[3]/input</td>
+	<td>bob.merchant</td>
+</tr>
+<tr>
+	<td>type</td>
+	<td>id=inputPassword</td>
+	<td>123</td>
+</tr>
+<tr>
+	<td>click</td>
+	<td>link=Login</td>
+	<td></td>
+</tr>
+<tr>
+	<td>clickAndWait</td>
+	<td>xpath=(//a[contains(text(),'View Inventory')])[2]</td>
+	<td></td>
+</tr>
+<tr>
+	<td>type</td>
+	<td>//div/div/input</td>
+	<td>Computer chair</td>
+</tr>
+<tr>
+	<td>type</td>
+	<td>//div/div/input[2]</td>
+	<td>Black with adjustable height and adjustable armrests</td>
+</tr>
+<tr>
+	<td>type</td>
+	<td>//input[3]</td>
+	<td>110</td>
+</tr>
+<tr>
+	<td>click</td>
+	<td>link=Add Item</td>
+	<td></td>
+</tr>
+<tr>
+	<td>type</td>
+	<td>//div/div/input</td>
+	<td>Desk</td>
+</tr>
+<tr>
+	<td>type</td>
+	<td>//div/div/input[2]</td>
+	<td>Beige, made of real wood, with a keyboard tray</td>
+</tr>
+<tr>
+	<td>type</td>
+	<td>//input[3]</td>
+	<td>180</td>
+</tr>
+<tr>
+	<td>click</td>
+	<td>link=Add Item</td>
+	<td></td>
+</tr>
+<tr>
+	<td>type</td>
+	<td>//div/div/input</td>
+	<td>Sofa</td>
+</tr>
+<tr>
+	<td>type</td>
+	<td>//div/div/input[2]</td>
+	<td>Red and gray, microfiber, three seats</td>
+</tr>
+<tr>
+	<td>type</td>
+	<td>//input[3]</td>
+	<td>600</td>
+</tr>
+<tr>
+	<td>click</td>
+	<td>link=Add Item</td>
+	<td></td>
+</tr>
+<tr>
+	<td>assertText</td>
+	<td>css=td.ng-binding</td>
+	<td>1</td>
+</tr>
+<tr>
+	<td>assertText</td>
+	<td>//td[2]</td>
+	<td>Computer chair</td>
+</tr>
+<tr>
+	<td>assertText</td>
+	<td>//td[3]</td>
+	<td>Black with adjustable height and adjustable armrests</td>
+</tr>
+<tr>
+	<td>assertText</td>
+	<td>//tr[2]/td</td>
+	<td>2</td>
+</tr>
+<tr>
+	<td>assertText</td>
+	<td>//tr[2]/td[2]</td>
+	<td>Desk</td>
+</tr>
+<tr>
+	<td>assertText</td>
+	<td>//tr[2]/td[3]</td>
+	<td>Beige, made of real wood, with a keyboard tray</td>
+</tr>
+<tr>
+	<td>assertText</td>
+	<td>//tr[2]/td[4]</td>
+	<td>$180.00</td>
+</tr>
+<tr>
+	<td>assertText</td>
+	<td>//tr[3]/td</td>
+	<td>3</td>
+</tr>
+<tr>
+	<td>assertText</td>
+	<td>//tr[3]/td[2]</td>
+	<td>Sofa</td>
+</tr>
+<tr>
+	<td>assertText</td>
+	<td>//tr[3]/td[3]</td>
+	<td>Red and gray, microfiber, three seats</td>
+</tr>
+<tr>
+	<td>assertText</td>
+	<td>//tr[3]/td[4]</td>
+	<td>$600.00</td>
+</tr>
+<tr>
+	<td>click</td>
+	<td>link=Remove All</td>
+	<td></td>
+</tr>
+<tr>
+	<td>click</td>
+	<td>link=Logout</td>
+	<td></td>
+</tr>
+</tbody></table>
+</body>
+</html>

@@ -1,0 +1,91 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head profile="http://selenium-ide.openqa.org/profiles/test-case">
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+<link rel="selenium.base" href="https://fierce-island-3989.herokuapp.com/" />
+<title>merchEditInfo - bob</title>
+</head>
+<body>
+<table cellpadding="1" cellspacing="1" border="1">
+<thead>
+<tr><td rowspan="1" colspan="3">merchEditInfo - bob</td></tr>
+</thead><tbody>
+<tr>
+	<td>open</td>
+	<td>/home</td>
+	<td></td>
+</tr>
+<tr>
+	<td>type</td>
+	<td>//div[@id='navbar']/form/div[3]/input</td>
+	<td>bob.merchant</td>
+</tr>
+<tr>
+	<td>type</td>
+	<td>id=inputPassword</td>
+	<td>123</td>
+</tr>
+<tr>
+	<td>click</td>
+	<td>link=Login</td>
+	<td></td>
+</tr>
+<tr>
+	<td>click</td>
+	<td>link=Edit Store Info</td>
+	<td></td>
+</tr>
+<tr>
+	<td>click</td>
+	<td>link=Save</td>
+	<td></td>
+</tr>
+<tr>
+	<td>assertText</td>
+	<td>css=h2.ng-binding</td>
+	<td>Welcome bob.merchant</td>
+</tr>
+<tr>
+	<td>assertText</td>
+	<td>css=div.jumbotron &gt; div &gt; h2.ng-binding</td>
+	<td>Store Name: Bob's Amazing Furniture</td>
+</tr>
+<tr>
+	<td>assertText</td>
+	<td>css=h4.ng-binding</td>
+	<td>exact:Address: 2607 Hearst Ave</td>
+</tr>
+<tr>
+	<td>assertText</td>
+	<td>//div[5]/h4</td>
+	<td>exact:City: Berkeley</td>
+</tr>
+<tr>
+	<td>assertText</td>
+	<td>//div[7]/h4</td>
+	<td>exact:State: CA</td>
+</tr>
+<tr>
+	<td>assertText</td>
+	<td>//div[9]/h4</td>
+	<td>Zip Code: 94720</td>
+</tr>
+<tr>
+	<td>assertText</td>
+	<td>//div[11]/h4</td>
+	<td>Phone Number: (510) 111-1111</td>
+</tr>
+<tr>
+	<td>assertText</td>
+	<td>//div[13]/h4</td>
+	<td>exact:Description: We sell quality furniture at affordable prices.</td>
+</tr>
+<tr>
+	<td>click</td>
+	<td>link=Logout</td>
+	<td></td>
+</tr>
+</tbody></table>
+</body>
+</html>

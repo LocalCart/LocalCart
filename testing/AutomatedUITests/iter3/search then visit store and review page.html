@@ -1,0 +1,151 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head profile="http://selenium-ide.openqa.org/profiles/test-case">
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+<link rel="selenium.base" href="https://fierce-island-3989.herokuapp.com/" />
+<title>search then visit store and review page</title>
+</head>
+<body>
+<table cellpadding="1" cellspacing="1" border="1">
+<thead>
+<tr><td rowspan="1" colspan="3">search then visit store and review page</td></tr>
+</thead><tbody>
+<tr>
+	<td>open</td>
+	<td>/home</td>
+	<td></td>
+</tr>
+<tr>
+	<td>type</td>
+	<td>//div[@id='navbar']/form/div[3]/input</td>
+	<td>john.doe</td>
+</tr>
+<tr>
+	<td>type</td>
+	<td>id=inputPassword</td>
+	<td>123</td>
+</tr>
+<tr>
+	<td>click</td>
+	<td>link=Login</td>
+	<td></td>
+</tr>
+<tr>
+	<td>type</td>
+	<td>//input[@type='text']</td>
+	<td>sandpaper</td>
+</tr>
+<tr>
+	<td>type</td>
+	<td>xpath=(//input[@type='text'])[2]</td>
+	<td>berkeley</td>
+</tr>
+<tr>
+	<td>click</td>
+	<td>link=Search and Map Results</td>
+	<td></td>
+</tr>
+<tr>
+	<td>assertText</td>
+	<td>//div[2]/div/h2</td>
+	<td>Search Results for sandpaper</td>
+</tr>
+<tr>
+	<td>assertText</td>
+	<td>css=h3.media-heading.ng-binding</td>
+	<td>Sandpaper</td>
+</tr>
+<tr>
+	<td>assertText</td>
+	<td>link=exact:Store: Millenium Hardware</td>
+	<td>exact:Store: Millenium Hardware</td>
+</tr>
+<tr>
+	<td>assertText</td>
+	<td>css=h4.media-heading.ng-binding</td>
+	<td>$20.49</td>
+</tr>
+<tr>
+	<td>assertText</td>
+	<td>css=div.media-body.ng-binding</td>
+	<td>Sandpaper Store: Millenium Hardware Coarse grain, 2x2', pack of 10. Use this to make wood smooth.</td>
+</tr>
+<tr>
+	<td>open</td>
+	<td>https://fierce-island-3989.herokuapp.com/store?storeID=6</td>
+	<td>https://fierce-island-3989.herokuapp.com/store?storeID=6</td>
+</tr>
+<tr>
+	<td>selectWindow</td>
+	<td>null</td>
+	<td></td>
+</tr>
+<tr>
+	<td>assertText</td>
+	<td>css=h4.ng-binding</td>
+	<td>1-inch diameter, 7 feet long. Pack of 6. Makes wires less messy.</td>
+</tr>
+<tr>
+	<td>assertText</td>
+	<td>//div[2]/div/div/h4</td>
+	<td>Coarse grain, 2x2', pack of 10. Use this to make wood smooth.</td>
+</tr>
+<tr>
+	<td>assertText</td>
+	<td>//div[3]/div/div/h4</td>
+	<td>Use this to shape wood.</td>
+</tr>
+<tr>
+	<td>assertText</td>
+	<td>css=h3</td>
+	<td>Available Items!</td>
+</tr>
+<tr>
+	<td>assertText</td>
+	<td>link=Available Items!</td>
+	<td>Available Items!</td>
+</tr>
+<tr>
+	<td>assertText</td>
+	<td>link=Store Reviews</td>
+	<td>Store Reviews</td>
+</tr>
+<tr>
+	<td>click</td>
+	<td>link=Store Reviews</td>
+	<td></td>
+</tr>
+<tr>
+	<td>assertText</td>
+	<td>//div[2]/h4</td>
+	<td>Reviews</td>
+</tr>
+<tr>
+	<td>assertText</td>
+	<td>css=blockquote &gt; p.ng-binding</td>
+	<td>Great selection, but prices are on the high side.</td>
+</tr>
+<tr>
+	<td>assertText</td>
+	<td>css=form[name=&quot;reviewForm&quot;] &gt; h4</td>
+	<td>Submit a Review</td>
+</tr>
+<tr>
+	<td>assertText</td>
+	<td>document.reviewForm.elements[1]</td>
+	<td>Rate this store54321</td>
+</tr>
+<tr>
+	<td>assertText</td>
+	<td>//input[@value='Submit Review']</td>
+	<td></td>
+</tr>
+<tr>
+	<td>click</td>
+	<td>link=Logout</td>
+	<td></td>
+</tr>
+</tbody></table>
+</body>
+</html>
