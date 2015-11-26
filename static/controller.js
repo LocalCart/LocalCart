@@ -996,7 +996,7 @@ app.controller('StoreController', function($http, $location, $window) {
     }
   }
 
-    vm.addList = function() {
+  vm.addList = function() {
     var listData = {};
     listData.name = vm.newListName;
     if (vm.newListName != "") {
