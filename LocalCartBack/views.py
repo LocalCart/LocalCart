@@ -519,7 +519,6 @@ def get_user_inventory(request):
             inventory = Inventory.objects.get(store=store)
             inventoryID = inventory.id
             hasError, inventory_list = Inventory.get_inventory(inventory.id)
-    print errors
     response = {
                'status': 200,
                'inventoryID': inventoryID,
@@ -568,11 +567,9 @@ def create_item(request):
     if not picture:
         picture = default_image
     if len(errors) > 0:
-        print errors
         return return_error(errors)
     if Item.objects.filter(name=name, inventory_id=inventoryID).exists():
         errors.append('items in inventory must have unique names')
-        print errors
         return return_error(errors)       
     try:
         new_item = Item(store=store, inventory=inventory, name=name,
@@ -581,15 +578,12 @@ def create_item(request):
         new_item.save()
     except ValidationError as e:
         errors.append(str(e))
-        print errors
         return return_error(errors)
     reponse = {
                'status': 200,
                'itemID': new_item.id,
                'errors': errors
               }
-    print new_item.id
-    print 200
     return HttpResponse(json.dumps(reponse), content_type='application/json')
 
 @csrf_exempt
