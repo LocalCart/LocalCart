@@ -197,16 +197,16 @@ class Item(models.Model):
 
 
     @staticmethod
-    def search_items(query, location):
+    def search_items(query, location, location_coord=None, keep_n=20, max_dist=40000):
         errors = []
         if len(query.strip()) == 0:
             errors.append('query empty')
         elif len(location.strip()) == 0:
             errors.append('location empty')
-        else:
+        elif location_coord is None:
             location_coord = lat_lon(location)
-            if location_coord is None:
-                errors.append('location not found')
+        if location_coord is None:
+            errors.append('location not found')
         counter = 1
         items = []
         if len(errors) == 0:
@@ -240,11 +240,11 @@ class Item(models.Model):
                 destinations += [value_dict['address'] for value_dict in chunk]
                 distances += one_to_many_distance_matrix(location, destinations)
             zipped = zip(distances, ids, prices, destinations)
-            zipped = filter(lambda x: x[0] < 40000, zipped)
+            zipped = filter(lambda x: x[0] < max_dist, zipped)
             heuristics = map(Item.heur_func, zipped)
             sorted_tuples = sorted(heuristics)
             final_ids = [s[1] for s in sorted_tuples]
-            final_ids = final_ids[:20]
+            final_ids = final_ids[:keep_n]
             items_qs = Item.objects.filter(id__in=final_ids)
             items_dict = dict([(i.id, i) for i in items_qs])
             items = [items_dict[fid] for fid in final_ids]
@@ -261,8 +261,7 @@ class Item(models.Model):
         if price > 10.00:
             price_adder = 1.00
         heur = ((distance + 1) * ((price + price_adder) ** 0.5))
-        print(distance, price, heur, curr_id, x[3])
-
+        # print(distance, price, heur, curr_id, x[3]) #Print for debugging heuristic
         return (heur, curr_id)
 
 
@@ -311,23 +310,20 @@ class Item(models.Model):
 class Review(models.Model):
 
     user = models.ForeignKey(User)
+    item = models.ForeignKey(Item, null=True, blank=True)
     store = models.ForeignKey(Store)
-    item = models.ForeignKey(Item, null=True)
     rating = models.PositiveSmallIntegerField()
-    text = models.CharField(max_length=4096, null=True)
+    text = models.CharField(max_length=4096, null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
     @staticmethod
     def create_new_review(user, item, store, rating, text):
-        if item:
-            new_review = Review(user=user, item=item, store=store, 
-                                rating=rating, text=text)
-        else:
-            new_review = Review(user=user, store=store, 
+        new_review = Review(user=user, item=item, store=store, 
                                 rating=rating, text=text)
         new_review.full_clean()
         new_review.save()
+        return new_review
 
     @staticmethod
     def get_review(reviewID):
@@ -444,18 +440,43 @@ class CartList(models.Model):
                 new_list_item = ListItem(cartlist=current_list, item=items[i], 
                                          item_name=item_names[i], list_position=i)
                 new_list_item.save()
-        except ValidationError as e:
-            ListItem.objects.filter(cartlist=current_list).delete()
-            ListItem.objects.filter(cartlist=temp).update(cartlist=current_list)
-            temp.delete()
-            return 'VE'
-        except IntegrityError as e:
+        except (ValidationError, IntegrityError) as e:
             ListItem.objects.filter(cartlist=current_list).delete()
             ListItem.objects.filter(cartlist=temp).update(cartlist=current_list)
             temp.delete()
             return 'VE'
         temp.delete()
         return 'Success'
+
+    @staticmethod
+    def resolve_list(listID, location):
+        errors = []
+        location_coord = lat_lon(location)
+        if location_coord is None:
+            errors.append('location not found')
+        elif not CartList.objects.filter(id=listID).exists():
+            errors.append('Invalid listID')
+        else:
+            current_list = CartList.objects.get(id=listID)
+            list_items = ListItem.objects.filter(cartlist=current_list, item__isnull=True)
+            for li in list_items:
+                li_items, li_errors = Item.search_items(query=li.item_name, location=location, 
+                                                        location_coord=location_coord,
+                                                        keep_n=1, max_dist=40000)
+                if len(li_errors) > 0:
+                    errors.append('Item ' + li.item_name + ' was not successfully resolved')
+                elif len(li_items) == 0:
+                    errors.append('Item ' + li.item_name + ' could not be found locally')
+                else:
+                    try:
+                        li.item = li_items[0]
+                        li.item_name = li_items[0].name
+                        li.full_clean()
+                        li.save()
+                    except (ValidationError, IntegrityError) as e:
+                        errors.append('Item ' + li.item_name + ' caused an error')
+        return errors
+
 
 
     @staticmethod

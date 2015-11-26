@@ -51,10 +51,6 @@
             <a ng-click="indexController.loginAttempt()" class="btn btn-success">Login</a>
             <a href="register" class="btn btn-success">Register</a>
           </div>
-<<<<<<< HEAD
-=======
-          <!-- <a href="store" class="btn btn-success">store placeholder</a> -->
->>>>>>> 0ea7282390e80e4cfcf6917521c820506fe0b815
         </form>
       </div>
       <!--/.navbar-collapse -->
@@ -90,7 +86,7 @@
               </div>
               <div class="media-body">
                 <h3 class="media-heading">[[result.name]]</h3>
-                <h5><a ng-href="store?storeID=[[result.storeID]]"> Store: [[result.storeName]]</a></h5> [[result.description]]
+                <h5><a target="_blank" ng-href="store?storeID=[[result.storeID]]"> Store: [[result.storeName]]</a></h5> [[result.description]]
                 <hr>
               </div>
             </div>
@@ -169,6 +165,10 @@
         <div class="modal-footer">
           <input placeholder="Item Name" type="text" ng-model="indexController.newItemName">
           <button type="button" class="btn btn-default" ng-click="indexController.addTextItem()">Add Item</button>
+          
+        </div>
+        <div class="modal-footer">
+          <input placeholder="Location" type="text" ng-model="indexController.resolveLocation">
           <button type="button" class="btn btn-default" ng-click="indexController.resolveList()">Resolve List</button>
           <button type="button" class="btn btn-danger" ng-click="indexController.removeList()">Delete List</button>
           <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>

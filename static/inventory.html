@@ -86,11 +86,11 @@
             <td>[[row.description]]</td>
             <td>$[[row.price | number:2]]</td>
             <td><img class="media-object" src=[[row.picture]] alt="..." style="width:64px; height:auto;"></td>
-            <td><a ng-click="inventoryController.edit([[row]])" class="btn btn-warning">Edit</a></td>
             <td><a ng-click="inventoryController.remove([[$index]])" class="btn btn-danger">X</a></td>
           </tr>
         </tbody>
       </table>
+      <a ng-click="inventoryController.removeAll()" class="btn btn-danger">Remove All</a>
       <hr>
     </div>
   </div>
