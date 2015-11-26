@@ -203,9 +203,6 @@ class ItemTestCase(TestCase):
 	                  models.Store, 
 	                  models.Inventory, 
 	                  models.Item, 
-	                  # Review,
-	                  # CartList,
-	                  # ListItem,
 	                  ]
 	        for m in model:
 	            m.objects.all().delete()
@@ -313,6 +310,23 @@ class ItemTestCase(TestCase):
 		items, errors = models.Item.search_items('apple', '938aqweporiuasl;dkfjasl;kdjqowepiruoiasdjfl;kajsdklfjkaldjfklas;dfklajsdklfjqweirqwueoipruioqpweuifjasjf;lksdjfklnvklasdkfjadk;j')
 		self.assertEqual(1, len(errors), errors)
 		self.assertEqual(0, len(items))
+
+	def testGetItem(self):
+		"""
+		Get item with correct ID. Should succeed.
+		"""
+		itemID = models.Item.objects.all()[0].id
+		hasError, item = models.Item.get_item(itemID)
+		self.assertFalse(hasError)
+
+	def testGetItemWrongID(self):
+		"""
+		Get item with ID too big. Should fail.
+		"""
+		itemID = models.Item.objects.all()[0].id + 1
+		hasError, item = models.Item.get_item(itemID)
+		self.assertTrue(hasError)
+
 #######################################################################################
 
 class ReviewFactory(factory.django.DjangoModelFactory):
@@ -324,6 +338,49 @@ class ReviewFactory(factory.django.DjangoModelFactory):
 	store = factory.SubFactory(StoreFactory)
 	rating = 5
 	text = "This store is great."
+
+class ReviewTestCase(TestCase):
+
+	def setUp(self):
+		inventory = InventoryFactory()
+		item = ItemFactory(inventory=inventory, store=inventory.store)
+		review = ReviewFactory(user=inventory.store.user, item=item, store=inventory.store)
+		self.assertTrue(review.id is not None)
+
+	def tearDown(self):
+	    errors = []
+	    try:
+	        model = [
+	                  models.User, 
+	                  models.UserInfo, 
+	                  models.Store, 
+	                  models.Inventory, 
+	                  models.Item, 
+	                  models.Review,
+	                  ]
+	        for m in model:
+	            m.objects.all().delete()
+	    except Exception as e:
+	        errors.append(e)
+	    self.assertEqual(0, len(errors))
+
+	def testGetReview(self):
+		"""
+		Get review with correct ID. Should succeed.
+		"""
+		reviewID = models.Review.objects.all()[0].id
+		hasError, review = models.Review.get_review(reviewID)
+		self.assertFalse(hasError)
+
+	def testGetReviewWrongID(self):
+		"""
+		Get review with ID too big. Should fail.
+		"""
+		reviewID = models.Review.objects.all()[0].id + 1
+		hasError, review = models.Review.get_review(reviewID)
+		self.assertTrue(hasError)
+
+#########################################################################################
 
 class CartListFactory(factory.django.DjangoModelFactory):
 	class Meta:
@@ -339,5 +396,121 @@ class ListItemFactory(factory.django.DjangoModelFactory):
 	cartlist = factory.SubFactory(CartListFactory)
 	item = factory.SubFactory(ItemFactory)
 	item_name = "apple"
-	list_position = 1
+	list_position = factory.Sequence(lambda n: '%d' % n)
 
+class CartListTestCase(TestCase):
+
+	def setUp(self):
+		inventory = InventoryFactory()
+		store = inventory.store
+		item = ItemFactory(inventory=inventory, store=store)
+		userinfo = CustomerUserInfoFactory()
+		cartlist = CartListFactory(user=userinfo.user)
+		listitem = ListItemFactory(cartlist=cartlist, item=item)
+		self.assertTrue(cartlist.id is not None)
+		self.assertTrue(listitem.id is not None)
+		item = ItemFactory(inventory=inventory, store=store, name='pear', description='amazing', price=0.8)
+		listitem = ListItemFactory(cartlist=cartlist, item=None, item_name='pear')
+		item = ItemFactory(inventory=inventory, store=store, name='banana', description='bonanza', price=0.8)
+		listitem = ListItemFactory(cartlist=cartlist, item=None, item_name='banana')
+
+	def tearDown(self):
+	    errors = []
+	    try:
+	        model = [
+	                  models.User, 
+	                  models.UserInfo, 
+	                  models.Store, 
+	                  models.Inventory, 
+	                  models.Item, 
+	                  models.Review,
+	                  models.CartList,
+	                  models.ListItem,
+	                  ]
+	        for m in model:
+	            m.objects.all().delete()
+	    except Exception as e:
+	        errors.append(e)
+	    self.assertEqual(0, len(errors))
+
+	def testRefillList(self):
+		"""
+		Give correct listID and content. Should succeed.
+		"""
+		cartlistID = models.CartList.objects.all()[0].id
+		content = [ {'type': 'id', 'name': models.Item.objects.get(name='apple').id},
+					{'type': 'name', 'name': 'pear'},
+					{'type': 'name', 'name': 'banana'},
+					]
+		errors = models.CartList.refill_list(cartlistID, content)
+		self.assertEqual('Success', errors, errors)
+
+	def testRefillListWrongID(self):
+		"""
+		Give incorrect listID and content. Should fail.
+		"""
+		cartlistID = models.CartList.objects.all()[0].id+1
+		content = [ {'type': 'id', 'name': models.Item.objects.get(name='apple').id},
+					{'type': 'name', 'name': 'pear'},
+					{'type': 'name', 'name': 'banana'},
+					]
+		errors = models.CartList.refill_list(cartlistID, content)
+		self.assertEqual(None, errors, errors)
+
+	def testGetCartList(self):
+		"""
+		Get review with correct ID. Should succeed.
+		"""
+		cartlistID = models.CartList.objects.all()[0].id
+		hasError, cartlist = models.CartList.get_cartlist(cartlistID)
+		self.assertFalse(hasError)
+
+	def testGetCartListWrongID(self):
+		"""
+		Get review with ID too big. Should fail.
+		"""
+		cartlistID = models.CartList.objects.all()[0].id + 1
+		hasError, cartlist = models.CartList.get_cartlist(cartlistID)
+		self.assertTrue(hasError)
+
+	def testResolveList(self):
+		"""
+		Give correct listID and location. Should succeed.
+		"""
+		cartlistID = models.CartList.objects.all()[0].id
+		errors = models.CartList.resolve_list(cartlistID, '94709')
+		self.assertEqual(0, len(errors), errors)
+
+	def testResolveListWrongID(self):
+		"""
+		Give wrong listID and correct location. Should fail and return 1 error.
+		"""
+		cartlistID = models.CartList.objects.all()[0].id+1
+		errors = models.CartList.resolve_list(cartlistID, '94709')
+		self.assertEqual(1, len(errors), errors)
+
+	def testResolveListBadLocation(self):
+		"""
+		Give correct listID and bad location. Should fail and return 1 error.
+		"""
+		cartlistID = models.CartList.objects.all()[0].id
+		errors = models.CartList.resolve_list(cartlistID, '94709ads;lfkjqwoeirjoiajdkfl;jals;dfjoij;lkj;lskdfj')
+		self.assertEqual(1, len(errors), errors)
+
+	def testResolveListWrongLocation(self):
+		"""
+		Give wrong listID and 94030. Should fail and return 1 error.
+		"""
+		cartlistID = models.CartList.objects.all()[0].id
+		errors = models.CartList.resolve_list(cartlistID, '94030')
+		self.assertEqual(2, len(errors), errors)
+
+	def testResolveListNoItem(self):
+		"""
+		Give correct listID and location, but item does not exist. Should fail and return 1 error.
+		"""
+		cartlist = models.CartList.objects.all()[0]
+		listitem = ListItemFactory(cartlist=cartlist, item=None, item_name='peach')
+		cartlistID = cartlist.id
+		errors = models.CartList.resolve_list(cartlistID, '94709')
+		self.assertEqual(1, len(errors), errors)
