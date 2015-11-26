@@ -311,20 +311,16 @@ class Item(models.Model):
 class Review(models.Model):
 
     user = models.ForeignKey(User)
+    item = models.ForeignKey(Item, null=True, blank=True)
     store = models.ForeignKey(Store)
-    item = models.ForeignKey(Item, null=True)
     rating = models.PositiveSmallIntegerField()
-    text = models.CharField(max_length=4096, null=True)
+    text = models.CharField(max_length=4096, null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
     @staticmethod
     def create_new_review(user, item, store, rating, text):
-        if item:
-            new_review = Review(user=user, item=item, store=store, 
-                                rating=rating, text=text)
-        else:
-            new_review = Review(user=user, store=store, 
+        new_review = Review(user=user, item=item, store=store, 
                                 rating=rating, text=text)
         new_review.full_clean()
         new_review.save()
