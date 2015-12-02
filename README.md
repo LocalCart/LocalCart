@@ -17,7 +17,7 @@ A. Merchant and Inventory Checking:
 2. Log in as the merchant.
 3. Use the interface to create a store. Make sure the address used is a real address.
 4. Then edit the inventory manually or with the provided CSV file. Add items that will be searched for in later manual tests.
-5. Repeat this process (Steps 1-4) for multiple merchants at multiple locations. Make sure that these locations are not too far from eachother in order to later test the search algorithm.
+5. Repeat this process (Steps 1-4) for multiple merchants at multiple locations. Make sure that these locations are not too far from each other in order to later test the search algorithm.
 
 B. Customer View, List, and Search checking
 6. Create a customer account.
@@ -32,14 +32,14 @@ B. Customer View, List, and Search checking
 
 C. Resolve List checking
 15. Go to the View Shopping List menu.
-16. On any existing or new list, use Item Name field and Add Item button to add text-only items to the list. Make sure that these search queries have relevant entries in the inventories constructed earlier (otherwise the search algroithm will not return results for those items without matches)
+16. On any existing or new list, use Item Name field and Add Item button to add text-only items to the list. Make sure that these search queries have relevant entries in the inventories constructed earlier (otherwise the search algorithm will not return results for those items without matches)
 17. Input a Location in the Location field at the bottom of the Shopping List menu and then select resolve list.
 18. If the search algorithm finds a matching local store item, the items will be replaced with the best choice. Otherwise, an error will display.
 
 D. Store and Review checking
 19. Select the store name in any search result to open a new tab to that store.
 20. On this page, you can view the inventory of the selected store and add items to the cart.
-21. Select on the Reviews tab and leave a review. The review requires a rating number as well.
+21. Select the Reviews tab and leave a review. The review requires a rating number as well.
 
 
 
@@ -68,10 +68,10 @@ To otherwise use the application locally, send GET and POST requests using curl 
 III. Running Automated UI Tests with Selenium
 
 To run automated UI tests:
-    
+	
 1. Download Selenium IDE plugin (v2.9.0) in Firefox (http://docs.seleniumhq.org/download/) 
-2. Click on â€œSelenium IDEâ€ in upper-right part of browser
-3. File-->Open Test Suite-->AutomatedUITests/TestSuite
-4. Actions-->Play entire test suite
-
+2. Click on “Selenium IDE” in upper-right part of browser
+3. File-->Open Test Suite-->testing/AutomatedUITests/iter3/TestSuite
+4. Change speed to “Slow”
+5. Actions-->Play entire test suite
 
